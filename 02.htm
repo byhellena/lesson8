@@ -912,6 +912,9 @@ function finishStage1(){
 /* ---------------- 공통 음성 ---------------- */
 const SpeechRecCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
 const hasSpeechRecognition = !!SpeechRecCtor;
+const isSecureCtx = window.isSecureContext;
+let activeRecognition = null;
+let persistentMicStream = null;
 
 function getRecognition(){
   if(!SpeechRecCtor) return null;
@@ -966,14 +969,32 @@ function startSpeakingWith(target, ids, handlers){
 }
 
 function runRecognition(rec, target, tag, resultBox, speakBtn, handlers){
+  // 이전에 남아있던 인식 세션이 있으면 완전히 정리하고 시작 (안 그러면 두 번째 시도부터 먹통이 되는 원인이 됨)
+  if(activeRecognition && activeRecognition !== rec){
+    try{
+      activeRecognition.onresult = null;
+      activeRecognition.onerror = null;
+      activeRecognition.onend = null;
+      activeRecognition.abort();
+    }catch(e0){}
+  }
+  activeRecognition = rec;
+  // TTS(듣기 재생)가 마이크와 오디오 자원을 붙잡고 있을 수 있으므로 먼저 중지
+  try{ speechSynthesis.cancel(); }catch(e0){}
+
   speakBtn.disabled = true;
   tag.textContent = '🎧 듣는 중...';
   let finished = false;
+
+  const cleanup = ()=>{
+    if(activeRecognition === rec) activeRecognition = null;
+  };
 
   const timeoutId = setTimeout(()=>{
     if(finished) return;
     finished = true;
     try{ rec.stop(); }catch(e){}
+    cleanup();
     tag.textContent = '';
     speakBtn.disabled = false;
     handlers.onFail('시간이 초과됐어요 ⏰ 다시 말해볼까요?');
@@ -983,6 +1004,7 @@ function runRecognition(rec, target, tag, resultBox, speakBtn, handlers){
     if(finished) return;
     finished = true;
     clearTimeout(timeoutId);
+    cleanup();
     tag.textContent = '';
     speakBtn.disabled = false;
     const transcript = e.results[0][0].transcript;
@@ -992,19 +1014,24 @@ function runRecognition(rec, target, tag, resultBox, speakBtn, handlers){
     if(finished) return;
     finished = true;
     clearTimeout(timeoutId);
+    cleanup();
     tag.textContent = '';
     speakBtn.disabled = false;
+    const code = e && e.error ? e.error : 'unknown';
     let msg = '잘 안들려요 😅 다시 시도해보세요.';
-    if(e && e.error === 'not-allowed' || e && e.error === 'permission-denied'){
+    if(code === 'not-allowed' || code === 'permission-denied'){
       msg = '마이크 권한이 꺼져 있어요. 브라우저 설정에서 마이크를 허용해주세요! 🎙️';
-    } else if(e && e.error === 'audio-capture'){
+    } else if(code === 'audio-capture'){
       msg = '마이크를 찾을 수 없어요. 기기의 마이크를 확인해주세요! 🎙️';
-    } else if(e && e.error === 'no-speech'){
+    } else if(code === 'no-speech'){
       msg = '목소리가 들리지 않았어요. 버튼을 누르고 바로 말해보세요! 🗣️';
+    } else if(code === 'service-not-allowed' || code === 'network'){
+      msg = '음성 인식 서버에 연결하지 못했어요. 인터넷 연결을 확인해주세요! 📶';
     }
-    handlers.onFail(msg);
+    handlers.onFail(msg + ` <span style="opacity:.5;font-size:11px;">(${code})</span>`);
   };
   rec.onend = ()=>{
+    cleanup();
     speakBtn.disabled = false;
   };
   try{
@@ -1018,6 +1045,7 @@ function runRecognition(rec, target, tag, resultBox, speakBtn, handlers){
       catch(err2){
         clearTimeout(timeoutId);
         finished = true;
+        cleanup();
         tag.textContent = '';
         speakBtn.disabled = false;
         handlers.onFail('마이크를 시작하지 못했어요. 다시 눌러주세요! 🎙️');
@@ -1469,8 +1497,16 @@ function closeMicGate(){
   if(gate) gate.classList.add('hidden');
 }
 function initMicGate(){
+  const card = document.querySelector('#mic-gate .mic-card');
+  if(!isSecureCtx){
+    if(card){
+      card.querySelector('h3').textContent = '⚠️ 주소를 확인해주세요';
+      card.querySelector('p').innerHTML = '지금 열린 방식(파일로 직접 열기 등)에서는<br>마이크를 사용할 수 없어요.<br>선생님이 알려주신 <b>인터넷 주소(https://...)</b>를<br>브라우저 주소창에 입력해서 열어주세요!';
+      card.querySelector('.mic-allow-btn').textContent = '그래도 계속하기';
+    }
+    return;
+  }
   if(!hasSpeechRecognition){
-    const card = document.querySelector('#mic-gate .mic-card');
     if(card){
       card.querySelector('h3').textContent = '듣기 학습을 시작해요!';
       card.querySelector('p').innerHTML = '이 브라우저(기기)에서는<br>음성 인식이 지원되지 않아요.<br>듣고 따라 말한 뒤,<br>스스로 확인하며 학습해요!';
@@ -1491,7 +1527,10 @@ function requestMicPermission(){
   }
   statusEl.textContent = '마이크 확인 중... 🎙️';
   navigator.mediaDevices.getUserMedia({ audio:true }).then(stream=>{
-    stream.getTracks().forEach(t=>t.stop());
+    // 스트림을 여기서 바로 끄지 않고 계속 살려둡니다.
+    // 이렇게 하면 브라우저가 "마이크 사용 중"으로 계속 인식해서
+    // 이후 문제마다 말하기 버튼을 눌러도 권한을 다시 묻지 않습니다.
+    persistentMicStream = stream;
     statusEl.textContent = '완료! 시작해볼까요? 🎉';
     setTimeout(closeMicGate, 500);
   }).catch(()=>{
@@ -1500,6 +1539,11 @@ function requestMicPermission(){
   });
 }
 initMicGate();
+window.addEventListener('beforeunload', ()=>{
+  if(persistentMicStream){
+    try{ persistentMicStream.getTracks().forEach(t=>t.stop()); }catch(e){}
+  }
+});
 
 /* ---------------- CERT ---------------- */
 function showCert(){
