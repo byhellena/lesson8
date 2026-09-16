@@ -113,6 +113,50 @@ body{
   margin-bottom:16px;
 }
 .cert-time b{ color:var(--pink-dark); }
+
+/* ---- 마이크 권한 안내 오버레이 ---- */
+.mic-gate{
+  position:fixed;
+  inset:0;
+  z-index:60;
+  background:linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+}
+.mic-gate.hidden{ display:none; }
+.mic-card{
+  background:var(--card);
+  border-radius:var(--radius-lg);
+  border:3px solid var(--pink);
+  box-shadow:5px 5px 0 var(--pink);
+  padding:32px 24px;
+  max-width:380px;
+  text-align:center;
+}
+.mic-card .mic-emoji{ font-size:56px; display:block; margin-bottom:10px; }
+.mic-card h3{ font-family:'Jua',sans-serif; font-size:19px; color:var(--pink-dark); margin:0 0 12px; }
+.mic-card p{ font-family:'Gaegu',sans-serif; font-weight:700; font-size:16px; color:var(--ink-soft); line-height:1.6; margin:0 0 20px; }
+.mic-allow-btn{
+  font-family:'Jua',sans-serif;
+  font-size:17px;
+  border:none;
+  border-radius:100px;
+  padding:16px 28px;
+  color:#fff;
+  background:var(--pink);
+  box-shadow:0 4px 0 var(--pink-dark);
+  cursor:pointer;
+}
+.mic-allow-btn:active{ transform:translateY(3px); box-shadow:0 1px 0 var(--pink-dark); }
+.mic-status{
+  font-family:'Jua',sans-serif;
+  font-size:13px;
+  color:var(--ink-soft);
+  margin-top:14px;
+  min-height:18px;
+}
 .screen{ display:none; }
 .screen.active{ display:block; animation: fadein .35s ease; }
 @keyframes fadein{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
@@ -203,6 +247,15 @@ body{
 .stage-info h3{ font-family:'Jua',sans-serif; margin:0 0 4px; font-size:18px; }
 .stage-info p{ margin:0; font-size:14px; color:var(--ink-soft); }
 .stage-status{ font-size:26px; }
+.stage-status.success{
+  font-family:'Jua',sans-serif;
+  font-size:14px;
+  color:#fff;
+  background:var(--green);
+  padding:8px 12px;
+  border-radius:100px;
+  white-space:nowrap;
+}
 
 .cert-btn{
   width:100%;
@@ -559,6 +612,16 @@ body{
 </style>
 </head>
 <body>
+<div class="mic-gate" id="mic-gate">
+  <div class="mic-card">
+    <span class="mic-emoji">🎤</span>
+    <h3>마이크를 사용할게요!</h3>
+    <p>이 학습 앱은 말하기 연습을 위해<br>마이크가 필요해요.<br>마이크 사용을 허용해주세요!</p>
+    <button class="mic-allow-btn" onclick="requestMicPermission()">허용하고 시작하기</button>
+    <div class="mic-status" id="mic-status"></div>
+  </div>
+</div>
+
 <div class="wrap">
   <div class="blob" style="width:180px;height:180px;background:#FFE7EF;top:-40px;left:-60px;"></div>
   <div class="blob" style="width:140px;height:140px;background:#DFF3FF;top:120px;right:-50px;"></div>
@@ -746,7 +809,13 @@ function refreshHome(){
     const card = document.getElementById('card-stage'+m.n);
     const status = document.getElementById('status-'+m.n);
     card.classList.remove('locked');
-    status.textContent = m.done ? '✅' : '▶️';
+    if(m.done){
+      status.textContent = '성공';
+      status.classList.add('success');
+    } else {
+      status.textContent = '▶️';
+      status.classList.remove('success');
+    }
   });
   const certBtn = document.getElementById('cert-btn');
   const allDone = state.stage1 && state.stage2 && state.stage3 && state.stage4;
@@ -1369,6 +1438,29 @@ function stopTimer(){
   document.getElementById('timer-time').textContent = fmtDuration(elapsedMs);
   document.getElementById('timer-label').textContent = '🏁 학습 완료!';
   document.getElementById('timer-bar').classList.add('stopped');
+}
+
+/* ---------------- 마이크 권한 안내 ---------------- */
+function closeMicGate(){
+  const gate = document.getElementById('mic-gate');
+  if(gate) gate.classList.add('hidden');
+}
+function requestMicPermission(){
+  const statusEl = document.getElementById('mic-status');
+  if(!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)){
+    statusEl.textContent = '이 기기(브라우저)에서는 마이크 기능을 지원하지 않아요.';
+    setTimeout(closeMicGate, 1200);
+    return;
+  }
+  statusEl.textContent = '마이크 확인 중... 🎙️';
+  navigator.mediaDevices.getUserMedia({ audio:true }).then(stream=>{
+    stream.getTracks().forEach(t=>t.stop());
+    statusEl.textContent = '완료! 시작해볼까요? 🎉';
+    setTimeout(closeMicGate, 500);
+  }).catch(()=>{
+    statusEl.textContent = '마이크 허용이 안 되면 듣기 학습만 가능해요. 그래도 시작할게요!';
+    setTimeout(closeMicGate, 1400);
+  });
 }
 
 /* ---------------- CERT ---------------- */
