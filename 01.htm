@@ -210,6 +210,7 @@ body{
 }
 .qcount{ font-family:'Jua',sans-serif; font-size:13px; color:var(--accent-dark); margin-bottom:10px; }
 .qimg{ font-size:86px; line-height:1; margin:6px 0 18px; }
+.qimg.qimg-text{ font-size:42px; font-family:'Baloo 2',sans-serif; color:var(--sky-dark); font-weight:700; }
 .choices{ display:flex; flex-direction:column; gap:10px; }
 .choice-btn{
   font-family:'Baloo 2',sans-serif;
@@ -529,12 +530,17 @@ body{
 
 <script>
 const subjects = [
-  { kr:'수학', en:'math', emoji:'🔢' },
+  { kr:'수학', en:'math', emoji:'1 + 2 = 3', imgType:'text' },
   { kr:'영어', en:'English', emoji:'🔤' },
   { kr:'과학', en:'science', emoji:'🔬' },
   { kr:'음악', en:'music', emoji:'🎵' },
   { kr:'미술', en:'art', emoji:'🎨' },
   { kr:'체육', en:'P.E.', emoji:'⚽' }
+];
+
+const wordMeaningQuestions = [
+  { word:'favorite', options:['좋아하는','싫어하는','맛있는','무서워하는'], answer:'좋아하는' },
+  { word:'subject', options:['친구','과목','직업','취미'], answer:'과목' }
 ];
 
 const state = { stage1:false, stage2:false, stage3:false };
@@ -596,9 +602,10 @@ function initStage1(){
   renderStage1();
 }
 function renderStage1(){
-  updateDots(1, subjects.length, s1Index, false);
+  const totalStage1 = subjects.length + wordMeaningQuestions.length;
+  updateDots(1, totalStage1, s1Index, false);
   const body = document.getElementById('stage1-body');
-  if(s1Index >= subjects.length){
+  if(s1Index >= totalStage1){
     body.innerHTML = `
       <div class="done-panel">
         <div class="big-emoji">🎉</div>
@@ -608,15 +615,29 @@ function renderStage1(){
       </div>`;
     return;
   }
-  const cur = subjects[s1Index];
-  const wrongPool = shuffle(subjects.filter(s=>s.en!==cur.en)).slice(0,2);
-  const options = shuffle([cur, ...wrongPool]);
+  if(s1Index < subjects.length){
+    const cur = subjects[s1Index];
+    const wrongPool = shuffle(subjects.filter(s=>s.en!==cur.en)).slice(0,2);
+    const options = shuffle([cur, ...wrongPool]);
+    body.innerHTML = `
+      <div class="qcard" style="--accent:#4C9AFF; --accent-dark:#1F5FBF;">
+        <div class="qcount">${s1Index+1} / ${totalStage1}</div>
+        <div class="qimg ${cur.imgType==='text' ? 'qimg-text' : ''}">${cur.emoji}</div>
+        <div class="choices">
+          ${options.map(o=>`<button class="choice-btn" onclick="checkStage1(this,'${o.en}','${cur.en}')">${o.en}</button>`).join('')}
+        </div>
+        <div class="feedback-msg" id="s1-feedback"></div>
+      </div>`;
+    return;
+  }
+  const wm = wordMeaningQuestions[s1Index - subjects.length];
+  const wmOptions = shuffle(wm.options);
   body.innerHTML = `
     <div class="qcard" style="--accent:#4C9AFF; --accent-dark:#1F5FBF;">
-      <div class="qcount">${s1Index+1} / ${subjects.length}</div>
-      <div class="qimg">${cur.emoji}</div>
+      <div class="qcount">${s1Index+1} / ${totalStage1}</div>
+      <div class="qimg qimg-text">${wm.word}</div>
       <div class="choices">
-        ${options.map(o=>`<button class="choice-btn" onclick="checkStage1(this,'${o.en}','${cur.en}')">${o.en}</button>`).join('')}
+        ${wmOptions.map(o=>`<button class="choice-btn" onclick="checkStage1(this,'${o}','${wm.answer}')">${o}</button>`).join('')}
       </div>
       <div class="feedback-msg" id="s1-feedback"></div>
     </div>`;
