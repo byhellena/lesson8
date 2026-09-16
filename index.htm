@@ -789,6 +789,7 @@ const sbProblems = [
     id:'p2',
     prefix:'My',
     mid:'is',
+    midAfter:1,
     suffix:'.',
     correct:['favorite','subject','math'],
     fake:['favorites','class'],
@@ -821,7 +822,7 @@ function renderProblem(p, idx){
   blanksHtml.push(`<span class="fixed-word">${p.prefix}</span>`);
   st.blanks.forEach((word, i)=>{
     blanksHtml.push(`<span class="blank-slot ${word?'filled':''}" onclick="removeBlank('${p.id}',${i})">${word ? word : '____'}</span>`);
-    if(p.mid && i===0){ blanksHtml.push(`<span class="fixed-word">${p.mid}</span>`); }
+    if(p.mid && p.midAfter===i){ blanksHtml.push(`<span class="fixed-word">${p.mid}</span>`); }
   });
   blanksHtml.push(`<span class="fixed-word">${p.suffix}</span>`);
   const bankHtml = st.bank.map((w,i)=>{
