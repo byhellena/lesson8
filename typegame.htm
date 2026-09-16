@@ -1,0 +1,1079 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>본리초등학교 지키기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@400;700&family=Baloo+2:wght@500;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky-top:#6EC6FF;
+    --sky-bottom:#CDEFFF;
+    --brick:#C96A4B;
+    --brick-dark:#A34F37;
+    --cream:#F6E9C9;
+    --roof:#5B4636;
+    --grass-1:#8FCB6B;
+    --grass-2:#79B857;
+    --ink:#2B2B2B;
+    --gauge-safe:#4CAF50;
+    --gauge-warn:#FF9800;
+    --gauge-danger:#E53935;
+    --panel:#FFFFFFE6;
+    --accent:#FF7043;
+    --accent-2:#3F6FD1;
+    --word-bg:#2B3A55;
+  }
+  :root:not([data-theme="light"]){}
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --panel:#20242EEE;
+      --ink:#F0F0F0;
+    }
+  }
+  :root[data-theme="dark"]{
+    --panel:#20242EEE;
+    --ink:#F0F0F0;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;padding:0;width:100%;height:100%;overflow:hidden;
+    background:linear-gradient(var(--sky-top), var(--sky-bottom));
+    font-family:'Gaegu', sans-serif;
+    color:var(--ink);
+  }
+  #stage{
+    position:relative;
+    width:100%;
+    height:100%;
+    min-height:100vh;
+    overflow:hidden;
+  }
+
+  /* clouds */
+  .cloud{
+    position:absolute;
+    background:#fff;
+    border-radius:50%;
+    opacity:.85;
+    filter:blur(.5px);
+  }
+  .cloud::before,.cloud::after{
+    content:"";
+    position:absolute;
+    background:#fff;
+    border-radius:50%;
+  }
+
+  /* ===== HUD ===== */
+  #hud{
+    position:absolute;
+    top:0;left:0;right:0;
+    padding:12px 16px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    z-index:30;
+    pointer-events:none;
+  }
+  .hud-chip{
+    background:var(--panel);
+    border-radius:14px;
+    padding:8px 14px;
+    font-family:'Jua',sans-serif;
+    font-size:15px;
+    box-shadow:0 3px 0 rgba(0,0,0,.12);
+    display:flex;
+    align-items:center;
+    gap:6px;
+    white-space:nowrap;
+  }
+  .hud-chip b{font-family:'Baloo 2',sans-serif; font-size:17px;}
+  #gaugeWrap{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+  }
+  #gaugeLabel{
+    font-family:'Jua',sans-serif;
+    font-size:13px;
+    background:var(--panel);
+    border-radius:10px;
+    padding:2px 10px;
+    align-self:flex-start;
+    box-shadow:0 2px 0 rgba(0,0,0,.1);
+  }
+  #gaugeOuter{
+    height:16px;
+    background:#00000022;
+    border-radius:10px;
+    overflow:hidden;
+    box-shadow:inset 0 2px 4px rgba(0,0,0,.25);
+    border:2px solid #ffffffaa;
+  }
+  #gaugeInner{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,var(--gauge-safe),#7ED957);
+    border-radius:10px 0 0 10px;
+    transition:width .35s ease, background .35s ease;
+  }
+
+  /* ===== School scene ===== */
+  #groundWrap{
+    position:absolute;
+    bottom:0;left:0;right:0;
+    height:46%;
+    z-index:5;
+  }
+  #grass{
+    position:absolute;
+    bottom:0;left:0;right:0;
+    height:22%;
+    background:linear-gradient(var(--grass-1), var(--grass-2));
+    border-top:6px solid #6BA84F;
+  }
+  #school{
+    position:absolute;
+    left:50%;
+    bottom:16%;
+    transform:translateX(-50%);
+    width:min(560px, 78vw);
+    transition:transform .12s ease;
+    filter:drop-shadow(0 10px 14px rgba(0,0,0,.25));
+  }
+  #school.shake{ animation:shake .35s ease; }
+  @keyframes shake{
+    0%,100%{transform:translateX(-50%) rotate(0deg);}
+    25%{transform:translateX(-50%) rotate(-1.2deg);}
+    75%{transform:translateX(-50%) rotate(1.2deg);}
+  }
+  #school.tilt{ transform:translateX(-50%) rotate(-2.5deg) translateY(4px); }
+  #school.collapsed{
+    animation:collapseFall .9s forwards ease-in;
+  }
+  @keyframes collapseFall{
+    to{ transform:translateX(-50%) translateY(60px) rotate(9deg); opacity:.15; }
+  }
+  #crackOverlay{
+    position:absolute; inset:0;
+    opacity:0;
+    transition:opacity .4s ease;
+    pointer-events:none;
+  }
+  .signboard text{
+    font-family:'Jua',sans-serif;
+  }
+
+  /* ===== Falling words layer ===== */
+  #playfield{
+    position:absolute;
+    top:0;left:0;right:0;
+    bottom:0;
+    z-index:10;
+  }
+  .word{
+    position:absolute;
+    top:-60px;
+    transform:translateX(-50%);
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    font-size:clamp(18px,3.4vw,28px);
+    color:#fff;
+    background:var(--word-bg);
+    padding:6px 16px;
+    border-radius:999px;
+    box-shadow:0 4px 0 rgba(0,0,0,.25), 0 0 0 3px #ffffff22 inset;
+    white-space:nowrap;
+    letter-spacing:.5px;
+  }
+  .word .typed{ color:#FFD54F; }
+  .word.match{
+    box-shadow:0 4px 0 rgba(0,0,0,.25), 0 0 0 3px #FFD54F;
+    transform:translateX(-50%) scale(1.08);
+  }
+  .word.pop{
+    animation:pop .35s forwards;
+  }
+  @keyframes pop{
+    to{ transform:translateX(-50%) scale(1.6); opacity:0; }
+  }
+  .word.crash{
+    animation:crash .4s forwards;
+  }
+  @keyframes crash{
+    to{ transform:translateX(-50%) translateY(10px) scale(.7); opacity:0; }
+  }
+  .scorePop{
+    position:absolute;
+    font-family:'Jua',sans-serif;
+    font-size:20px;
+    color:#FFB300;
+    text-shadow:0 2px 0 #7a4a00;
+    pointer-events:none;
+    animation:floatUp .7s forwards ease-out;
+    z-index:15;
+  }
+  @keyframes floatUp{
+    0%{opacity:1; transform:translate(-50%,0);}
+    100%{opacity:0; transform:translate(-50%,-40px);}
+  }
+
+  /* ===== Bottom input bar ===== */
+  #inputBar{
+    position:absolute;
+    bottom:16px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:30;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:var(--panel);
+    padding:10px 14px;
+    border-radius:18px;
+    box-shadow:0 5px 0 rgba(0,0,0,.15);
+    width:min(520px,90vw);
+  }
+  #typedInput{
+    flex:1;
+    border:3px solid #cfd8ea;
+    border-radius:12px;
+    padding:10px 14px;
+    font-family:'Baloo 2',sans-serif;
+    font-size:20px;
+    font-weight:700;
+    outline:none;
+    background:#fff;
+    color:#222;
+  }
+  #typedInput:focus{ border-color:var(--accent-2); }
+  #typedHint{
+    font-family:'Jua',sans-serif;
+    font-size:13px;
+    color:var(--ink);
+    opacity:.7;
+    min-width:60px;
+    text-align:center;
+  }
+
+  /* ===== Overlays (start / stageclear / end) ===== */
+  .overlay{
+    position:absolute; inset:0;
+    z-index:50;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(180deg,#1b2740cc,#0d1424e6);
+    text-align:center;
+    padding:20px;
+  }
+  .overlay.hidden{ display:none; }
+  .card{
+    background:var(--panel);
+    border-radius:24px;
+    padding:32px 28px;
+    max-width:460px;
+    width:100%;
+    box-shadow:0 12px 0 rgba(0,0,0,.2);
+  }
+  .card h1{
+    font-family:'Jua',sans-serif;
+    font-size:clamp(26px,5.5vw,34px);
+    margin:0 0 6px;
+    color:var(--brick-dark);
+  }
+  .card h2{
+    font-family:'Jua',sans-serif;
+    font-size:22px;
+    margin:0 0 14px;
+    color:var(--accent-2);
+  }
+  .card p{
+    font-family:'Gaegu',sans-serif;
+    font-size:17px;
+    line-height:1.6;
+    margin:6px 0;
+  }
+  .wordListPreview{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    justify-content:center;
+    margin:14px 0;
+  }
+  .wordListPreview span{
+    background:var(--word-bg);
+    color:#fff;
+    font-family:'Baloo 2',sans-serif;
+    font-size:13px;
+    font-weight:700;
+    padding:4px 10px;
+    border-radius:999px;
+  }
+  .btn{
+    font-family:'Jua',sans-serif;
+    font-size:19px;
+    padding:12px 26px;
+    border:none;
+    border-radius:14px;
+    background:var(--accent);
+    color:#fff;
+    box-shadow:0 4px 0 #C1502E;
+    cursor:pointer;
+    margin-top:10px;
+    transition:transform .08s;
+  }
+  .btn:active{ transform:translateY(3px); box-shadow:0 1px 0 #C1502E; }
+  .btn.secondary{
+    background:var(--accent-2);
+    box-shadow:0 4px 0 #2A4E9C;
+  }
+  .btn.secondary:active{ box-shadow:0 1px 0 #2A4E9C; }
+  .stat-row{
+    display:flex;
+    justify-content:center;
+    gap:22px;
+    margin:16px 0;
+    font-family:'Jua',sans-serif;
+  }
+  .stat-row .stat b{
+    display:block;
+    font-family:'Baloo 2',sans-serif;
+    font-size:26px;
+    color:var(--brick-dark);
+  }
+  .stat-row .stat{ font-size:13px; opacity:.8; }
+  .best-badge{
+    display:inline-block;
+    background:#FFECB3;
+    color:#8a5a00;
+    font-family:'Jua',sans-serif;
+    font-size:13px;
+    padding:4px 12px;
+    border-radius:999px;
+    margin-top:4px;
+  }
+  .stageDots{
+    display:flex;
+    gap:6px;
+    justify-content:center;
+    margin:10px 0 16px;
+  }
+  .stageDots span{
+    width:12px;height:12px;border-radius:50%;
+    background:#d8dbe4;
+  }
+  .stageDots span.done{ background:var(--accent);}
+  .stageDots span.active{ background:var(--accent-2); box-shadow:0 0 0 4px #3f6fd133;}
+
+  #stageBanner{
+    position:absolute;
+    inset:0;
+    z-index:45;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    pointer-events:none;
+    opacity:0;
+  }
+  #stageBanner.show{
+    animation:bannerShow 1.6s ease forwards;
+  }
+  @keyframes bannerShow{
+    0%{opacity:0; transform:scale(.7);}
+    15%{opacity:1; transform:scale(1.05);}
+    25%{transform:scale(1);}
+    80%{opacity:1;}
+    100%{opacity:0;}
+  }
+  #stageBanner .txt{
+    font-family:'Jua',sans-serif;
+    font-size:clamp(30px,7vw,50px);
+    color:#fff;
+    text-shadow:0 4px 0 #00000055, 0 0 24px #ffffffaa;
+    background:linear-gradient(90deg,var(--accent),#FFB300);
+    padding:14px 36px;
+    border-radius:20px;
+  }
+
+  #miniStatus{
+    position:fixed;
+    bottom:6px;right:10px;
+    font-size:10px;
+    color:#ffffff88;
+    font-family:sans-serif;
+    z-index:5;
+  }
+
+  @media (max-width:480px){
+    .hud-chip{ font-size:12px; padding:6px 10px;}
+    #inputBar{ bottom:10px; padding:8px 10px;}
+    #typedInput{ font-size:17px; padding:8px 10px;}
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- clouds -->
+  <div class="cloud" style="top:8%;left:8%;width:70px;height:26px;"></div>
+  <div class="cloud" style="top:14%;left:60%;width:90px;height:32px;"></div>
+  <div class="cloud" style="top:5%;left:75%;width:50px;height:20px;"></div>
+
+  <!-- HUD -->
+  <div id="hud">
+    <div class="hud-chip">🏆 <b id="scoreVal">0</b></div>
+    <div class="hud-chip">📚 <span id="stageVal">1</span>단계</div>
+    <div id="gaugeWrap">
+      <div id="gaugeLabel">🏫 붕괴 게이지</div>
+      <div id="gaugeOuter"><div id="gaugeInner"></div></div>
+    </div>
+    <button class="hud-chip" id="soundBtn" style="pointer-events:auto;cursor:pointer;border:none;font-family:'Jua',sans-serif;font-size:16px;" aria-label="소리 켜기/끄기">🔊</button>
+  </div>
+
+  <!-- School scene -->
+  <div id="groundWrap">
+    <div id="grass"></div>
+    <svg id="school" viewBox="0 0 520 300" xmlns="http://www.w3.org/2000/svg">
+      <!-- shadow base -->
+      <ellipse cx="260" cy="292" rx="230" ry="10" fill="#00000022"/>
+
+      <!-- side wings -->
+      <rect x="20" y="150" width="90" height="130" fill="var(--brick)"/>
+      <rect x="20" y="150" width="90" height="14" fill="var(--brick-dark)"/>
+      <rect x="410" y="150" width="90" height="130" fill="var(--brick)"/>
+      <rect x="410" y="150" width="90" height="14" fill="var(--brick-dark)"/>
+      <rect x="35" y="175" width="20" height="26" rx="3" fill="#DDEFFF"/>
+      <rect x="75" y="175" width="20" height="26" rx="3" fill="#DDEFFF"/>
+      <rect x="35" y="215" width="20" height="26" rx="3" fill="#DDEFFF"/>
+      <rect x="75" y="215" width="20" height="26" rx="3" fill="#DDEFFF"/>
+      <rect x="425" y="175" width="20" height="26" rx="3" fill="#DDEFFF"/>
+      <rect x="465" y="175" width="20" height="26" rx="3" fill="#DDEFFF"/>
+      <rect x="425" y="215" width="20" height="26" rx="3" fill="#DDEFFF"/>
+      <rect x="465" y="215" width="20" height="26" rx="3" fill="#DDEFFF"/>
+
+      <!-- main building -->
+      <rect x="90" y="90" width="340" height="190" fill="var(--cream)"/>
+      <rect x="90" y="90" width="340" height="16" fill="#E9D9A8"/>
+      <!-- roof -->
+      <polygon points="80,92 260,30 440,92" fill="var(--roof)"/>
+      <rect x="76" y="88" width="368" height="10" fill="#3E3024"/>
+
+      <!-- clock tower -->
+      <rect x="235" y="0" width="50" height="40" fill="var(--brick)"/>
+      <polygon points="228,2 260,-24 292,2" fill="var(--roof)"/>
+      <circle cx="260" cy="20" r="12" fill="#fff" stroke="#3E3024" stroke-width="3"/>
+      <line x1="260" y1="20" x2="260" y2="12" stroke="#3E3024" stroke-width="2"/>
+      <line x1="260" y1="20" x2="266" y2="22" stroke="#3E3024" stroke-width="2"/>
+
+      <!-- flag -->
+      <line x1="360" y1="0" x2="360" y2="30" stroke="#7a5230" stroke-width="3"/>
+      <polygon points="360,2 388,10 360,18" fill="#3F6FD1"/>
+
+      <!-- windows row 1 -->
+      <g fill="#DDEFFF" stroke="#B7CCE0" stroke-width="2">
+        <rect x="112" y="115" width="34" height="34" rx="3"/>
+        <rect x="160" y="115" width="34" height="34" rx="3"/>
+        <rect x="326" y="115" width="34" height="34" rx="3"/>
+        <rect x="374" y="115" width="34" height="34" rx="3"/>
+      </g>
+      <!-- windows row 2 -->
+      <g fill="#DDEFFF" stroke="#B7CCE0" stroke-width="2">
+        <rect x="112" y="175" width="34" height="34" rx="3"/>
+        <rect x="160" y="175" width="34" height="34" rx="3"/>
+        <rect x="326" y="175" width="34" height="34" rx="3"/>
+        <rect x="374" y="175" width="34" height="34" rx="3"/>
+      </g>
+      <!-- window cross bars -->
+      <g stroke="#B7CCE0" stroke-width="2">
+        <line x1="129" y1="115" x2="129" y2="149"/><line x1="112" y1="132" x2="146" y2="132"/>
+        <line x1="177" y1="115" x2="177" y2="149"/><line x1="160" y1="132" x2="194" y2="132"/>
+        <line x1="343" y1="115" x2="343" y2="149"/><line x1="326" y1="132" x2="360" y2="132"/>
+        <line x1="391" y1="115" x2="391" y2="149"/><line x1="374" y1="132" x2="408" y2="132"/>
+        <line x1="129" y1="175" x2="129" y2="209"/><line x1="112" y1="192" x2="146" y2="192"/>
+        <line x1="177" y1="175" x2="177" y2="209"/><line x1="160" y1="192" x2="194" y2="192"/>
+        <line x1="343" y1="175" x2="343" y2="209"/><line x1="326" y1="192" x2="360" y2="192"/>
+        <line x1="391" y1="175" x2="391" y2="209"/><line x1="374" y1="192" x2="408" y2="192"/>
+      </g>
+
+      <!-- door -->
+      <rect x="235" y="225" width="50" height="55" rx="4" fill="#7a4a2c"/>
+      <rect x="240" y="230" width="18" height="45" rx="2" fill="#9a6338"/>
+      <rect x="262" y="230" width="18" height="45" rx="2" fill="#9a6338"/>
+      <circle cx="277" cy="252" r="2" fill="#FFD54F"/>
+      <circle cx="243" cy="252" r="2" fill="#FFD54F"/>
+
+      <!-- sign board -->
+      <rect x="175" y="98" width="170" height="26" rx="13" fill="#3E5C3A"/>
+      <text x="260" y="116" text-anchor="middle" fill="#fff" font-size="16" class="signboard">본리초등학교</text>
+
+      <!-- crack overlay (visible as gauge rises) -->
+      <g id="crackOverlay" stroke="#3a2418" stroke-width="2.4" fill="none" stroke-linecap="round">
+        <path d="M130 95 L150 140 L135 180 L155 230"/>
+        <path d="M300 95 L320 130 L305 170 L330 220 L315 270"/>
+        <path d="M230 95 L245 150 L225 200"/>
+        <path d="M380 110 L395 160 L380 210"/>
+        <path d="M60 160 L80 200 L65 260"/>
+      </g>
+    </svg>
+  </div>
+
+  <!-- falling words -->
+  <div id="playfield"></div>
+
+  <!-- stage clear banner -->
+  <div id="stageBanner"><div class="txt" id="stageBannerText">1단계 클리어!</div></div>
+
+  <!-- input -->
+  <div id="inputBar">
+    <span id="typedHint">⌨️</span>
+    <input id="typedInput" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="떨어지는 영어 단어를 입력하세요" />
+  </div>
+
+  <!-- START overlay -->
+  <div class="overlay" id="startOverlay">
+    <div class="card">
+      <h1>🏫 본리초등학교 지키기</h1>
+      <h2>영어 동명사 타자 게임</h2>
+      <p>하늘에서 영어 단어가 내려와요.<br>단어를 빠르게 입력해서 학교를 지켜주세요!</p>
+      <p>단어를 놓치면 <b>붕괴 게이지</b>가 올라가고,<br>100%가 되면 학교가 무너져요 😢</p>
+      <div class="wordListPreview" id="wordPreview"></div>
+      <button class="btn" id="startBtn">게임 시작 ▶</button>
+      <div id="bestScoreStart" class="best-badge" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- GAME OVER overlay -->
+  <div class="overlay hidden" id="overOverlay">
+    <div class="card">
+      <h1>🏚️ 학교가 무너졌어요!</h1>
+      <p>다시 도전해서 학교를 지켜주세요.</p>
+      <div class="stat-row">
+        <div class="stat">점수<b id="overScore">0</b></div>
+        <div class="stat">도달 단계<b id="overStage">1</b></div>
+      </div>
+      <div class="best-badge" id="overBest"></div><br>
+      <button class="btn" id="retryBtnOver">다시 시작 🔁</button>
+    </div>
+  </div>
+
+  <!-- CLEAR overlay -->
+  <div class="overlay hidden" id="clearOverlay">
+    <div class="card">
+      <h1>🎉 학교를 지켜냈어요!</h1>
+      <p>4단계를 모두 클리어했습니다. 최고예요!</p>
+      <div class="stat-row">
+        <div class="stat">최종 점수<b id="clearScore">0</b></div>
+      </div>
+      <div class="best-badge" id="clearBest"></div><br>
+      <button class="btn" id="retryBtnClear">다시 도전 🔁</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- audio engine (synthesized, no external files) ----------
+  var Audio2 = (function(){
+    var ctx = null;
+    var master = null;
+    var muted = false;
+    var bgmTimer = null;
+    var bgmStep = 0;
+
+    function ensureCtx(){
+      if(!ctx){
+        var AC = window.AudioContext || window.webkitAudioContext;
+        ctx = new AC();
+        master = ctx.createGain();
+        master.gain.value = 0.55;
+        master.connect(ctx.destination);
+      }
+      if(ctx.state === 'suspended') ctx.resume();
+      return ctx;
+    }
+
+    function tone(freq, startDelay, dur, opts){
+      opts = opts || {};
+      var c = ensureCtx();
+      var t0 = c.currentTime + (startDelay||0);
+      var osc = c.createOscillator();
+      var g = c.createGain();
+      osc.type = opts.type || 'square';
+      osc.frequency.setValueAtTime(freq, t0);
+      if(opts.glide){
+        osc.frequency.exponentialRampToValueAtTime(Math.max(20,opts.glide), t0 + dur);
+      }
+      var peak = (opts.gain!=null?opts.gain:0.18);
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(peak, t0 + Math.min(0.02,dur*0.3));
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      osc.connect(g); g.connect(master);
+      osc.start(t0);
+      osc.stop(t0 + dur + 0.02);
+    }
+
+    function noiseBurst(startDelay, dur, gainVal){
+      var c = ensureCtx();
+      var t0 = c.currentTime + (startDelay||0);
+      var bufferSize = c.sampleRate * dur;
+      var buffer = c.createBuffer(1, bufferSize, c.sampleRate);
+      var data = buffer.getChannelData(0);
+      for(var i=0;i<bufferSize;i++){ data[i] = (Math.random()*2-1) * (1 - i/bufferSize); }
+      var src = c.createBufferSource();
+      src.buffer = buffer;
+      var g = c.createGain();
+      g.gain.setValueAtTime(gainVal!=null?gainVal:0.25, t0);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+      var filt = c.createBiquadFilter();
+      filt.type = 'lowpass';
+      filt.frequency.value = 700;
+      src.connect(filt); filt.connect(g); g.connect(master);
+      src.start(t0); src.stop(t0+dur+0.02);
+    }
+
+    // ---- sfx ----
+    function sfxType(){ if(!muted) tone(740,0,0.045,{type:'square',gain:0.06}); }
+    function sfxSuccess(){
+      if(muted) return;
+      tone(523.25,0,0.09,{type:'triangle',gain:0.22});
+      tone(659.25,0.07,0.09,{type:'triangle',gain:0.22});
+      tone(783.99,0.14,0.16,{type:'triangle',gain:0.24});
+    }
+    function sfxMiss(){
+      if(muted) return;
+      tone(180,0,0.22,{type:'sawtooth',gain:0.16,glide:70});
+      noiseBurst(0,0.18,0.18);
+    }
+    function sfxStage(){
+      if(muted) return;
+      [523.25,659.25,783.99,1046.5].forEach(function(f,i){
+        tone(f, i*0.12, 0.16, {type:'triangle', gain:0.22});
+      });
+    }
+    function sfxGameOver(){
+      if(muted) return;
+      [392,349.2,293.7,220,164.8].forEach(function(f,i){
+        tone(f, i*0.16, 0.3, {type:'sawtooth', gain:0.17});
+      });
+    }
+    function sfxClear(){
+      if(muted) return;
+      [523.25,659.25,783.99,1046.5,1318.5].forEach(function(f,i){
+        tone(f, i*0.13, 0.28, {type:'triangle', gain:0.24});
+      });
+    }
+
+    // ---- background music: cheerful looping chiptune ----
+    var MELODY = [
+      523.25,587.33,659.25,783.99, 659.25,587.33,523.25,440.00,
+      493.88,523.25,587.33,659.25, 587.33,523.25,493.88,440.00
+    ];
+    var STEP_MS = 260;
+
+    function scheduleBgmStep(){
+      if(muted){
+        bgmTimer = setTimeout(scheduleBgmStep, STEP_MS);
+        return;
+      }
+      var freq = MELODY[bgmStep % MELODY.length];
+      tone(freq, 0, STEP_MS/1000*0.85, {type:'triangle', gain:0.07});
+      if(bgmStep % 4 === 0){ tone(freq/2, 0, STEP_MS/1000*1.6, {type:'sine', gain:0.05}); }
+      bgmStep++;
+      bgmTimer = setTimeout(scheduleBgmStep, STEP_MS);
+    }
+
+    function startBgm(){
+      ensureCtx();
+      stopBgm();
+      bgmStep = 0;
+      scheduleBgmStep();
+    }
+    function stopBgm(){
+      if(bgmTimer){ clearTimeout(bgmTimer); bgmTimer = null; }
+    }
+    function toggleMute(){
+      muted = !muted;
+      if(master) master.gain.value = muted ? 0 : 0.55;
+      return muted;
+    }
+
+    return {
+      unlock: ensureCtx,
+      type: sfxType,
+      success: sfxSuccess,
+      miss: sfxMiss,
+      stage: sfxStage,
+      gameOver: sfxGameOver,
+      clear: sfxClear,
+      startBgm: startBgm,
+      stopBgm: stopBgm,
+      toggleMute: toggleMute,
+      isMuted: function(){ return muted; }
+    };
+  })();
+
+  // ---------- word data ----------
+  var WORDS = ["reading","playing","speaking","drawing","singing","listening","dancing","making",
+    "camping","hiking","swimming","skiing","shopping","skating","running","cooking",
+    "visiting","learning","writing","eating"];
+
+  var wordPreviewEl = document.getElementById('wordPreview');
+  WORDS.forEach(function(w){
+    var s = document.createElement('span');
+    s.textContent = w;
+    wordPreviewEl.appendChild(s);
+  });
+
+  // ---------- stage config (slower for beginner typists) ----------
+  // fallMs: time for a word to fall from top to ground (bigger = slower)
+  // spawnMs: time between spawns
+  // needed: correct words required to clear the stage
+  var STAGES = [
+    { fallMs: 15000, spawnMs: 3400, needed: 5, maxOnScreen: 2 },
+    { fallMs: 12500, spawnMs: 2900, needed: 6, maxOnScreen: 3 },
+    { fallMs: 10500, spawnMs: 2500, needed: 7, maxOnScreen: 3 },
+    { fallMs: 8800,  spawnMs: 2100, needed: 8, maxOnScreen: 4 }
+  ];
+  var GAUGE_PER_MISS = 11; // % added per missed word
+
+  // ---------- state ----------
+  var state = null;
+  function freshState(){
+    return {
+      running:false,
+      stageIdx:0,
+      score:0,
+      gauge:0,
+      stageProgress:0,
+      words:[], // {id, el, text, top, spawnT, fallMs, matched}
+      nextId:1,
+      lastSpawn:0,
+      lastFrame:0,
+      spawnTimer:null,
+      recentWords:[]
+    };
+  }
+
+  var playfield = document.getElementById('playfield');
+  var input = document.getElementById('typedInput');
+  var scoreVal = document.getElementById('scoreVal');
+  var stageVal = document.getElementById('stageVal');
+  var gaugeInner = document.getElementById('gaugeInner');
+  var schoolEl = document.getElementById('school');
+  var crackOverlay = document.getElementById('crackOverlay');
+  var stageBanner = document.getElementById('stageBanner');
+  var stageBannerText = document.getElementById('stageBannerText');
+
+  var startOverlay = document.getElementById('startOverlay');
+  var overOverlay = document.getElementById('overOverlay');
+  var clearOverlay = document.getElementById('clearOverlay');
+
+  // ---------- best score (per-viewer local storage) ----------
+  var BEST_KEY = 'bonri_school_defense_best_score';
+  function getBest(){
+    try{
+      var v = localStorage.getItem(BEST_KEY);
+      return v ? parseInt(v,10) : 0;
+    }catch(e){ return 0; }
+  }
+  function setBest(v){
+    try{ localStorage.setItem(BEST_KEY, String(v)); }catch(e){}
+  }
+  function refreshBestBadges(){
+    var best = getBest();
+    var startBadge = document.getElementById('bestScoreStart');
+    if(best>0){
+      startBadge.style.display = 'inline-block';
+      startBadge.textContent = '🏆 최고 점수: ' + best;
+    }
+  }
+  refreshBestBadges();
+
+  // ---------- helpers ----------
+  function pickWord(){
+    // avoid repeating the last 3 words too often
+    var candidates = WORDS.filter(function(w){ return state.recentWords.indexOf(w) === -1; });
+    if(candidates.length === 0) candidates = WORDS.slice();
+    var w = candidates[Math.floor(Math.random()*candidates.length)];
+    state.recentWords.push(w);
+    if(state.recentWords.length > 4) state.recentWords.shift();
+    return w;
+  }
+
+  function currentStageCfg(){ return STAGES[state.stageIdx]; }
+
+  function spawnWord(){
+    if(!state.running) return;
+    var cfg = currentStageCfg();
+    if(state.words.length >= cfg.maxOnScreen) return;
+
+    var text = pickWord();
+    var el = document.createElement('div');
+    el.className = 'word';
+    el.innerHTML = '<span class="typed"></span><span class="rest">'+text+'</span>';
+    var leftPct = 12 + Math.random()*76;
+    el.style.left = leftPct + '%';
+    playfield.appendChild(el);
+
+    var w = {
+      id: state.nextId++,
+      el: el,
+      text: text,
+      startT: performance.now(),
+      fallMs: cfg.fallMs,
+      matched:false
+    };
+    state.words.push(w);
+  }
+
+  function scheduleSpawn(){
+    clearTimeout(state.spawnTimer);
+    if(!state.running) return;
+    var cfg = currentStageCfg();
+    state.spawnTimer = setTimeout(function(){
+      spawnWord();
+      scheduleSpawn();
+    }, cfg.spawnMs);
+  }
+
+  function updateGaugeUI(){
+    gaugeInner.style.width = Math.min(100,state.gauge) + '%';
+    var color = 'var(--gauge-safe)';
+    if(state.gauge >= 66) color = 'var(--gauge-danger)';
+    else if(state.gauge >= 33) color = 'var(--gauge-warn)';
+    gaugeInner.style.background = color;
+
+    crackOverlay.style.opacity = Math.min(1, state.gauge/85);
+    schoolEl.classList.toggle('tilt', state.gauge >= 70);
+  }
+
+  function shakeSchool(){
+    schoolEl.classList.remove('shake');
+    void schoolEl.offsetWidth; // reflow to restart animation
+    schoolEl.classList.add('shake');
+  }
+
+  function floatScore(el, text){
+    var rect = el.getBoundingClientRect();
+    var pop = document.createElement('div');
+    pop.className = 'scorePop';
+    pop.textContent = text;
+    pop.style.left = (rect.left + rect.width/2) + 'px';
+    pop.style.top = rect.top + 'px';
+    document.body.appendChild(pop);
+    setTimeout(function(){ pop.remove(); }, 720);
+  }
+
+  function removeWordEl(w, cls){
+    if(cls){
+      w.el.classList.add(cls);
+      setTimeout(function(){ if(w.el.parentNode) w.el.parentNode.removeChild(w.el); }, 420);
+    } else {
+      if(w.el.parentNode) w.el.parentNode.removeChild(w.el);
+    }
+  }
+
+  function onWordSuccess(w){
+    Audio2.success();
+    floatScore(w.el, '+10');
+    removeWordEl(w, 'pop');
+    state.words = state.words.filter(function(x){ return x.id !== w.id; });
+    state.score += 10;
+    scoreVal.textContent = state.score;
+    state.stageProgress++;
+
+    var cfg = currentStageCfg();
+    if(state.stageProgress >= cfg.needed){
+      advanceStage();
+    }
+  }
+
+  function onWordMiss(w){
+    Audio2.miss();
+    removeWordEl(w, 'crash');
+    state.words = state.words.filter(function(x){ return x.id !== w.id; });
+    state.gauge = Math.min(100, state.gauge + GAUGE_PER_MISS);
+    updateGaugeUI();
+    shakeSchool();
+    if(state.gauge >= 100){
+      gameOver();
+    }
+  }
+
+  function advanceStage(){
+    state.stageIdx++;
+    state.stageProgress = 0;
+    if(state.stageIdx >= STAGES.length){
+      gameClear();
+      return;
+    }
+    stageVal.textContent = (state.stageIdx+1);
+    Audio2.stage();
+    showStageBanner((state.stageIdx+1) + '단계 시작!');
+  }
+
+  function showStageBanner(text){
+    stageBannerText.textContent = text;
+    stageBanner.classList.remove('show');
+    void stageBanner.offsetWidth;
+    stageBanner.classList.add('show');
+  }
+
+  // ---------- main loop ----------
+  function loop(ts){
+    if(!state.running) return;
+    for(var i=state.words.length-1;i>=0;i--){
+      var w = state.words[i];
+      var elapsed = ts - w.startT;
+      var pct = Math.min(1, elapsed / w.fallMs);
+      var topPx = pct * (playfield.clientHeight - 210); // stop roughly above ground
+      w.el.style.top = topPx + 'px';
+      if(pct >= 1){
+        onWordMiss(w);
+      }
+    }
+    requestAnimationFrame(loop);
+  }
+
+  // ---------- input handling ----------
+  function updateWordHighlights(typedRaw){
+    var typed = typedRaw.toLowerCase();
+    var matchW = null;
+    state.words.forEach(function(w){
+      var isMatchPrefix = typed.length>0 && w.text.indexOf(typed) === 0;
+      w.el.classList.toggle('match', isMatchPrefix);
+      if(isMatchPrefix){
+        w.el.querySelector('.typed').textContent = w.text.slice(0, typed.length);
+        w.el.querySelector('.rest').textContent = w.text.slice(typed.length);
+        if(!matchW || w.startT < matchW.startT) matchW = w; // prefer the one that's fallen longest
+      } else {
+        w.el.querySelector('.typed').textContent = '';
+        w.el.querySelector('.rest').textContent = w.text;
+      }
+      if(typed === w.text){
+        matchW = w;
+      }
+    });
+    return matchW;
+  }
+
+  input.addEventListener('input', function(){
+    if(!state.running) return;
+    Audio2.type();
+    var typed = input.value.trim().toLowerCase();
+    var exact = null;
+    state.words.forEach(function(w){ if(w.text === typed) exact = w; });
+    updateWordHighlights(typed);
+    if(exact){
+      onWordSuccess(exact);
+      input.value = '';
+    }
+  });
+
+  input.addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      var typed = input.value.trim().toLowerCase();
+      var exact = null;
+      state.words.forEach(function(w){ if(w.text === typed) exact = w; });
+      if(exact){
+        onWordSuccess(exact);
+      }
+      input.value = '';
+      updateWordHighlights('');
+    }
+  });
+
+  // ---------- game flow ----------
+  function startGame(){
+    Audio2.unlock();
+    Audio2.startBgm();
+    state = freshState();
+    state.running = true;
+    playfield.innerHTML = '';
+    scoreVal.textContent = '0';
+    stageVal.textContent = '1';
+    state.stageIdx = 0;
+    updateGaugeUI();
+    schoolEl.classList.remove('tilt','collapsed');
+    startOverlay.classList.add('hidden');
+    overOverlay.classList.add('hidden');
+    clearOverlay.classList.add('hidden');
+    input.value = '';
+    input.disabled = false;
+    input.focus();
+    showStageBanner('1단계 시작!');
+    scheduleSpawn();
+    requestAnimationFrame(loop);
+  }
+
+  function stopSpawning(){
+    clearTimeout(state.spawnTimer);
+  }
+
+  function gameOver(){
+    state.running = false;
+    stopSpawning();
+    Audio2.stopBgm();
+    Audio2.gameOver();
+    schoolEl.classList.add('collapsed');
+    input.disabled = true;
+    var best = getBest();
+    if(state.score > best){ best = state.score; setBest(best); }
+    document.getElementById('overScore').textContent = state.score;
+    document.getElementById('overStage').textContent = (state.stageIdx+1);
+    var bestBadge = document.getElementById('overBest');
+    bestBadge.textContent = '🏆 최고 점수: ' + best;
+    setTimeout(function(){
+      overOverlay.classList.remove('hidden');
+    }, 500);
+  }
+
+  function gameClear(){
+    state.running = false;
+    stopSpawning();
+    Audio2.stopBgm();
+    Audio2.clear();
+    input.disabled = true;
+    var best = getBest();
+    if(state.score > best){ best = state.score; setBest(best); }
+    document.getElementById('clearScore').textContent = state.score;
+    document.getElementById('clearBest').textContent = '🏆 최고 점수: ' + best;
+    showStageBanner('🎉 클리어! 🎉');
+    setTimeout(function(){
+      clearOverlay.classList.remove('hidden');
+    }, 900);
+  }
+
+  document.getElementById('soundBtn').addEventListener('click', function(e){
+    e.stopPropagation();
+    Audio2.unlock();
+    var isMuted = Audio2.toggleMute();
+    this.textContent = isMuted ? '🔇' : '🔊';
+  });
+
+  document.getElementById('startBtn').addEventListener('click', startGame);
+  document.getElementById('retryBtnOver').addEventListener('click', startGame);
+  document.getElementById('retryBtnClear').addEventListener('click', startGame);
+
+  // keep input focused for convenience (desktop) without stealing focus from buttons
+  document.getElementById('stage').addEventListener('click', function(e){
+    if(state && state.running && e.target.tagName !== 'BUTTON'){
+      input.focus();
+    }
+  });
+
+  refreshBestBadges();
+})();
+</script>
+</body>
+</html>
