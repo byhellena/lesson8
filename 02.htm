@@ -910,10 +910,12 @@ function finishStage1(){
 }
 
 /* ---------------- 공통 음성 ---------------- */
+const SpeechRecCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+const hasSpeechRecognition = !!SpeechRecCtor;
+
 function getRecognition(){
-  const R = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(!R) return null;
-  const r = new R();
+  if(!SpeechRecCtor) return null;
+  const r = new SpeechRecCtor();
   r.lang = 'en-US';
   r.interimResults = false;
   r.maxAlternatives = 1;
@@ -956,20 +958,11 @@ function startSpeakingWith(target, ids, handlers){
     return;
   }
   resultBox.innerHTML = '';
-  if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
-    speakBtn.disabled = true;
-    tag.textContent = '🎙️ 마이크 확인 중...';
-    navigator.mediaDevices.getUserMedia({ audio:true }).then(stream=>{
-      stream.getTracks().forEach(t=>t.stop());
-      runRecognition(rec, target, tag, resultBox, speakBtn, handlers);
-    }).catch(()=>{
-      tag.textContent = '';
-      speakBtn.disabled = false;
-      resultBox.innerHTML = `<div class="result-fb low">마이크 사용 권한이 필요해요. 설정에서 허용해주세요! 🎙️</div>`;
-    });
-  } else {
-    runRecognition(rec, target, tag, resultBox, speakBtn, handlers);
-  }
+  // 모바일에서는 사용자가 버튼을 누른 그 순간(제스처) 안에서 곧바로
+  // recognition.start()를 호출해야 마이크 권한 창이 뜨고 인식이 시작됩니다.
+  // 중간에 Promise(getUserMedia 등)를 먼저 거치면 그 사이 제스처가 끊겨
+  // 모바일 브라우저가 마이크를 열어주지 않는 경우가 많아 바로 시작합니다.
+  runRecognition(rec, target, tag, resultBox, speakBtn, handlers);
 }
 
 function runRecognition(rec, target, tag, resultBox, speakBtn, handlers){
@@ -995,22 +988,41 @@ function runRecognition(rec, target, tag, resultBox, speakBtn, handlers){
     const transcript = e.results[0][0].transcript;
     handlers.onPct(calcAccuracy(transcript, target));
   };
-  rec.onerror = ()=>{
+  rec.onerror = (e)=>{
     if(finished) return;
     finished = true;
     clearTimeout(timeoutId);
     tag.textContent = '';
     speakBtn.disabled = false;
-    handlers.onFail('잘 안들려요 😅 다시 시도해보세요.');
+    let msg = '잘 안들려요 😅 다시 시도해보세요.';
+    if(e && e.error === 'not-allowed' || e && e.error === 'permission-denied'){
+      msg = '마이크 권한이 꺼져 있어요. 브라우저 설정에서 마이크를 허용해주세요! 🎙️';
+    } else if(e && e.error === 'audio-capture'){
+      msg = '마이크를 찾을 수 없어요. 기기의 마이크를 확인해주세요! 🎙️';
+    } else if(e && e.error === 'no-speech'){
+      msg = '목소리가 들리지 않았어요. 버튼을 누르고 바로 말해보세요! 🗣️';
+    }
+    handlers.onFail(msg);
   };
   rec.onend = ()=>{
     speakBtn.disabled = false;
   };
-  try{ rec.start(); }catch(e){
-    clearTimeout(timeoutId);
-    finished = true;
-    tag.textContent = '';
-    speakBtn.disabled = false;
+  try{
+    rec.start();
+  } catch(err){
+    // 이미 시작된 인식기라면 정지 후 잠깐 뒤에 재시도
+    try{ rec.stop(); }catch(e2){}
+    setTimeout(()=>{
+      if(finished) return;
+      try{ rec.start(); }
+      catch(err2){
+        clearTimeout(timeoutId);
+        finished = true;
+        tag.textContent = '';
+        speakBtn.disabled = false;
+        handlers.onFail('마이크를 시작하지 못했어요. 다시 눌러주세요! 🎙️');
+      }
+    }, 150);
   }
 }
 
@@ -1018,6 +1030,11 @@ function fbStyle(pct){
   if(pct <= 50) return {cls:'low', text:'잘 안들려요 😅'};
   if(pct <= 80) return {cls:'mid', text:'좋아요! 👍'};
   return {cls:'high', text:'원어민인가요? 😲'};
+}
+function selfCheckPass(resultBoxId, onDone){
+  const resultBox = document.getElementById(resultBoxId);
+  resultBox.innerHTML = `<div class="result-fb" style="color:#217A48;">참 잘했어요! 🎉</div>`;
+  setTimeout(onDone, 900);
 }
 
 /* ---------------- STAGE 2 ---------------- */
@@ -1045,6 +1062,9 @@ function renderStage2(){
   }
   const cur = subjects[s2Index];
   const answerSentence = `My favorite subject is ${cur.en}.`;
+  const speakControlHtml = hasSpeechRecognition
+    ? `<button class="round-btn mic" id="speak-btn" onclick="startSpeaking('${answerSentence.replace(/'/g,"\\'")}')">🎤 말하기</button>`
+    : `<button class="round-btn mic" id="speak-btn" onclick="selfCheckPass('result-box', ()=>{ s2Passed[s2Index]=true; setTimeout(()=>{ s2Index++; renderStage2(); },900); })">🗣️ 다 말했어요!</button>`;
   body.innerHTML = `
     <div class="speak-card">
       <div class="qcount" style="color:#5B3FC4;">${s2Index+1} / ${subjects.length}</div>
@@ -1058,7 +1078,7 @@ function renderStage2(){
       </div>
       <div class="btn-row">
         <button class="round-btn" id="listen-btn" onclick="playSentence('${answerSentence.replace(/'/g,"\\'")}')">🔊 듣기</button>
-        <button class="round-btn mic" id="speak-btn" onclick="startSpeaking('${answerSentence.replace(/'/g,"\\'")}')">🎤 말하기</button>
+        ${speakControlHtml}
       </div>
       <div class="listening-tag" id="listening-tag"></div>
       <div class="result-box" id="result-box"></div>
@@ -1294,6 +1314,9 @@ function renderStage4Speak(){
   }
   const cur = gerundSentences[s4Index];
   const safe = cur.en.replace(/'/g,"\\'");
+  const speakControlHtml = hasSpeechRecognition
+    ? `<button class="round-btn mic" id="speak-btn4" onclick="startSpeaking4('${safe}')">🎤 말하기</button>`
+    : `<button class="round-btn mic" id="speak-btn4" onclick="selfCheckPass('result-box4', ()=>{ s4Index++; renderStage4Speak(); updateStage4Progress(); })">🗣️ 다 말했어요!</button>`;
   body.innerHTML = `
     <div class="speak-card">
       <div class="qcount" style="color:#5B3FC4;">듣고 따라 말하기 ${s4Index+1} / ${gerundSentences.length}</div>
@@ -1304,7 +1327,7 @@ function renderStage4Speak(){
       </div>
       <div class="btn-row">
         <button class="round-btn" onclick="playSentence('${safe}')">🔊 듣기</button>
-        <button class="round-btn mic" id="speak-btn4" onclick="startSpeaking4('${safe}')">🎤 말하기</button>
+        ${speakControlHtml}
       </div>
       <div class="listening-tag" id="listening-tag4"></div>
       <div class="result-box" id="result-box4"></div>
@@ -1445,7 +1468,21 @@ function closeMicGate(){
   const gate = document.getElementById('mic-gate');
   if(gate) gate.classList.add('hidden');
 }
+function initMicGate(){
+  if(!hasSpeechRecognition){
+    const card = document.querySelector('#mic-gate .mic-card');
+    if(card){
+      card.querySelector('h3').textContent = '듣기 학습을 시작해요!';
+      card.querySelector('p').innerHTML = '이 브라우저(기기)에서는<br>음성 인식이 지원되지 않아요.<br>듣고 따라 말한 뒤,<br>스스로 확인하며 학습해요!';
+      card.querySelector('.mic-allow-btn').textContent = '시작하기';
+    }
+  }
+}
 function requestMicPermission(){
+  if(!hasSpeechRecognition){
+    closeMicGate();
+    return;
+  }
   const statusEl = document.getElementById('mic-status');
   if(!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)){
     statusEl.textContent = '이 기기(브라우저)에서는 마이크 기능을 지원하지 않아요.';
@@ -1462,6 +1499,7 @@ function requestMicPermission(){
     setTimeout(closeMicGate, 1400);
   });
 }
+initMicGate();
 
 /* ---------------- CERT ---------------- */
 function showCert(){
