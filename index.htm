@@ -446,7 +446,7 @@ body{
       <div class="stage-status" id="status-1">▶️</div>
     </div>
 
-    <div class="stage-card" id="card-stage2" style="--accent:#9C7BFF; --accent-dark:#5B3FC4;" onclick="goStage(2)">
+    <div class="stage-card locked" id="card-stage2" style="--accent:#9C7BFF; --accent-dark:#5B3FC4;" onclick="goStage(2)">
       <div class="stage-num" style="background:#9C7BFF;">2</div>
       <div class="stage-info">
         <h3>말하기 학습</h3>
@@ -455,7 +455,7 @@ body{
       <div class="stage-status" id="status-2">🔒</div>
     </div>
 
-    <div class="stage-card" id="card-stage3" style="--accent:#FF9640; --accent-dark:#B85E00;" onclick="goStage(3)">
+    <div class="stage-card locked" id="card-stage3" style="--accent:#FF9640; --accent-dark:#B85E00;" onclick="goStage(3)">
       <div class="stage-num" style="background:#FF9640;">3</div>
       <div class="stage-info">
         <h3>문장 구성하기</h3>
@@ -556,15 +556,17 @@ function goHome(){
 
 function refreshHome(){
   const map = [
-    {n:1, done:state.stage1},
-    {n:2, done:state.stage2},
-    {n:3, done:state.stage3}
+    {n:1, done:state.stage1, locked:false},
+    {n:2, done:state.stage2, locked:!state.stage1},
+    {n:3, done:state.stage3, locked:!state.stage2}
   ];
   map.forEach(m=>{
     const card = document.getElementById('card-stage'+m.n);
     const status = document.getElementById('status-'+m.n);
-    card.classList.remove('locked');
-    status.textContent = m.done ? '✅' : '▶️';
+    card.classList.toggle('locked', m.locked && !m.done);
+    if(m.done){ status.textContent = '✅'; }
+    else if(m.locked){ status.textContent = '🔒'; }
+    else { status.textContent = '▶️'; }
   });
   const certBtn = document.getElementById('cert-btn');
   const allDone = state.stage1 && state.stage2 && state.stage3;
@@ -572,6 +574,8 @@ function refreshHome(){
 }
 
 function goStage(n){
+  if(n===2 && !state.stage1) return;
+  if(n===3 && !state.stage2) return;
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-stage'+n).classList.add('active');
   if(n===1) initStage1();
@@ -646,11 +650,9 @@ function finishStage1(){
 let s2Index = 0;
 let recognizer = null;
 let s2Passed = [];
-let s2Attempts = [];
 function initStage2(){
   s2Index = 0;
   s2Passed = subjects.map(()=>false);
-  s2Attempts = subjects.map(()=>0);
   renderStage2();
 }
 function getRecognition(){
@@ -721,8 +723,6 @@ function calcAccuracy(transcript, target){
   ratio = Math.max(0, Math.min(1, ratio));
   return Math.round(ratio*100);
 }
-const SPEAK_TIMEOUT_MS = 6000;
-
 function startSpeaking(target){
   const tag = document.getElementById('listening-tag');
   const resultBox = document.getElementById('result-box');
@@ -732,110 +732,42 @@ function startSpeaking(target){
     resultBox.innerHTML = `<div class="result-fb low">이 기기(브라우저)에서는 음성 인식을 지원하지 않아요. 😥</div>`;
     return;
   }
-  resultBox.innerHTML = '';
-  // 마이크 권한을 명시적으로 먼저 요청해서, 모바일에서도 권한 확인창이 확실히 뜨도록 함
-  if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
-    speakBtn.disabled = true;
-    tag.textContent = '🎙️ 마이크 확인 중...';
-    navigator.mediaDevices.getUserMedia({ audio:true }).then(stream=>{
-      stream.getTracks().forEach(t=>t.stop());
-      runRecognition(rec, target, tag, resultBox, speakBtn);
-    }).catch(()=>{
-      tag.textContent = '';
-      speakBtn.disabled = false;
-      resultBox.innerHTML = `<div class="result-fb low">마이크 사용 권한이 필요해요. 설정에서 허용해주세요! 🎙️</div>`;
-    });
-  } else {
-    runRecognition(rec, target, tag, resultBox, speakBtn);
-  }
-}
-
-function runRecognition(rec, target, tag, resultBox, speakBtn){
   speakBtn.disabled = true;
   tag.textContent = '🎧 듣는 중...';
-  let finished = false;
-
-  const timeoutId = setTimeout(()=>{
-    if(finished) return;
-    finished = true;
-    try{ rec.stop(); }catch(e){}
-    tag.textContent = '';
-    speakBtn.disabled = false;
-    registerFailedAttempt('시간이 초과됐어요 ⏰ 다시 말해볼까요?');
-  }, SPEAK_TIMEOUT_MS);
-
+  resultBox.innerHTML = '';
   rec.onresult = (e)=>{
-    if(finished) return;
-    finished = true;
-    clearTimeout(timeoutId);
-    tag.textContent = '';
-    speakBtn.disabled = false;
     const transcript = e.results[0][0].transcript;
     const pct = calcAccuracy(transcript, target);
     showResult(pct);
   };
   rec.onerror = ()=>{
-    if(finished) return;
-    finished = true;
-    clearTimeout(timeoutId);
     tag.textContent = '';
     speakBtn.disabled = false;
-    registerFailedAttempt('잘 안들려요 😅 다시 시도해보세요.');
+    resultBox.innerHTML = `<div class="result-fb low">잘 안들려요 😅 다시 시도해보세요.</div>`;
   };
   rec.onend = ()=>{
+    tag.textContent = '';
     speakBtn.disabled = false;
   };
   try{ rec.start(); }catch(e){
-    clearTimeout(timeoutId);
-    finished = true;
     tag.textContent = '';
     speakBtn.disabled = false;
   }
 }
-
-function registerFailedAttempt(customMsg){
-  const resultBox = document.getElementById('result-box');
-  s2Attempts[s2Index]++;
-  if(s2Attempts[s2Index] >= 2){
-    resultBox.innerHTML = `<div class="result-fb" style="color:#5B3FC4;">노력이 대단해요! 💪</div>`;
-    s2Passed[s2Index] = true;
-    setTimeout(()=>{ s2Index++; renderStage2(); }, 1400);
-  } else {
-    resultBox.innerHTML = `<div class="result-fb low">${customMsg}</div>`;
-  }
-}
-
 function showResult(pct){
   const resultBox = document.getElementById('result-box');
   let fbClass, fbText;
   if(pct <= 50){ fbClass='low'; fbText='잘 안들려요 😅'; }
   else if(pct <= 80){ fbClass='mid'; fbText='좋아요! 👍'; }
   else { fbClass='high'; fbText='원어민인가요? 😲'; }
-
+  resultBox.innerHTML = `
+    <div class="result-pct">${pct}%</div>
+    <div class="result-fb ${fbClass}">${fbText}</div>
+    ${pct>=60 ? '<div class="result-fb" style="color:#217A48; margin-top:4px;">성공! 🎉</div>' : ''}
+  `;
   if(pct>=60){
-    resultBox.innerHTML = `
-      <div class="result-pct">${pct}%</div>
-      <div class="result-fb ${fbClass}">${fbText}</div>
-      <div class="result-fb" style="color:#217A48; margin-top:4px;">성공! 🎉</div>
-    `;
     s2Passed[s2Index] = true;
     setTimeout(()=>{ s2Index++; renderStage2(); }, 1200);
-    return;
-  }
-
-  s2Attempts[s2Index]++;
-  if(s2Attempts[s2Index] >= 2){
-    resultBox.innerHTML = `
-      <div class="result-pct">${pct}%</div>
-      <div class="result-fb" style="color:#5B3FC4;">노력이 대단해요! 💪</div>
-    `;
-    s2Passed[s2Index] = true;
-    setTimeout(()=>{ s2Index++; renderStage2(); }, 1400);
-  } else {
-    resultBox.innerHTML = `
-      <div class="result-pct">${pct}%</div>
-      <div class="result-fb ${fbClass}">${fbText}</div>
-    `;
   }
 }
 function finishStage2(){
@@ -847,7 +779,7 @@ function finishStage2(){
 const sbProblems = [
   {
     id:'p1',
-    prefix:'What\\'s',
+    prefix:'What\'s',
     suffix:'?',
     correct:['your','favorite','subject'],
     fake:['you','book'],
@@ -862,16 +794,6 @@ const sbProblems = [
     correct:['favorite','subject','math'],
     fake:['favorites','class'],
     prompt:'내가 가장 좋아하는 과목은 수학이야.'
-  },
-  {
-    id:'p3',
-    prefix:'My',
-    mid:'is',
-    midAfter:1,
-    suffix:'.',
-    correct:['favorite','subject','science'],
-    fake:['favorites','lesson'],
-    prompt:'내가 가장 좋아하는 과목은 과학이야.'
   }
 ];
 const sbState = {};
