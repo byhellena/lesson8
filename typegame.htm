@@ -3,7 +3,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>본리초등학교 지키기</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -46,10 +46,10 @@
     color:var(--ink);
   }
   #stage{
-    position:fixed;
-    top:0;left:0;
+    position:relative;
     width:100%;
     height:100%;
+    min-height:100vh;
     overflow:hidden;
   }
 
@@ -72,7 +72,7 @@
   #hud{
     position:absolute;
     top:0;left:0;right:0;
-    padding:8px 10px;
+    padding:6px 10px;
     display:flex;
     align-items:center;
     gap:8px;
@@ -81,42 +81,36 @@
   }
   .hud-chip{
     background:var(--panel);
-    border-radius:12px;
-    padding:6px 10px;
+    border-radius:11px;
+    padding:5px 10px;
     font-family:'Jua',sans-serif;
-    font-size:14px;
-    box-shadow:0 3px 0 rgba(0,0,0,.12);
+    font-size:12px;
+    box-shadow:0 2px 0 rgba(0,0,0,.12);
     display:flex;
     align-items:center;
     gap:5px;
     white-space:nowrap;
   }
-  .hud-chip b{font-family:'Baloo 2',sans-serif; font-size:16px;}
-  #slowChip{
-    display:none;
-    background:linear-gradient(90deg,#3F9FD1,#7ED1FF);
-    color:#fff;
-  }
-  #slowChip.show{ display:flex; }
+  .hud-chip b{font-family:'Baloo 2',sans-serif; font-size:14px;}
   #gaugeWrap{
     flex:1;
     display:flex;
     flex-direction:column;
-    gap:3px;
+    gap:2px;
   }
   #gaugeLabel{
     font-family:'Jua',sans-serif;
-    font-size:13px;
+    font-size:11px;
     background:var(--panel);
-    border-radius:10px;
-    padding:2px 10px;
+    border-radius:8px;
+    padding:1px 8px;
     align-self:flex-start;
     box-shadow:0 2px 0 rgba(0,0,0,.1);
   }
   #gaugeOuter{
-    height:16px;
+    height:11px;
     background:#00000022;
-    border-radius:10px;
+    border-radius:8px;
     overflow:hidden;
     box-shadow:inset 0 2px 4px rgba(0,0,0,.25);
     border:2px solid #ffffffaa;
@@ -133,7 +127,7 @@
   #groundWrap{
     position:absolute;
     bottom:0;left:0;right:0;
-    height:32%;
+    height:34%;
     z-index:5;
   }
   #grass{
@@ -146,9 +140,9 @@
   #school{
     position:absolute;
     left:50%;
-    bottom:14%;
+    bottom:12%;
     transform:translateX(-50%);
-    width:min(420px, 58vw);
+    width:min(420px, 62vw);
     transition:transform .12s ease;
     filter:drop-shadow(0 10px 14px rgba(0,0,0,.25));
   }
@@ -188,36 +182,19 @@
     transform:translateX(-50%);
     font-family:'Baloo 2', sans-serif;
     font-weight:700;
-    font-size:clamp(21px,5vw,36px);
+    font-size:clamp(13px,2.4vw,19px);
     color:#fff;
     background:var(--word-bg);
-    padding:7px 18px;
+    padding:4px 11px;
     border-radius:999px;
-    box-shadow:0 4px 0 rgba(0,0,0,.25), 0 0 0 3px #ffffff22 inset;
+    box-shadow:0 3px 0 rgba(0,0,0,.25), 0 0 0 3px #ffffff22 inset;
     white-space:nowrap;
-    letter-spacing:.5px;
+    letter-spacing:.3px;
   }
   .word .typed{ color:#FFD54F; }
-  .word .icon{ margin-right:2px; }
   .word.match{
     box-shadow:0 4px 0 rgba(0,0,0,.25), 0 0 0 3px #FFD54F;
     transform:translateX(-50%) scale(1.08);
-  }
-  .word.special-slow{
-    background:linear-gradient(90deg,#2E6FA3,#3FA9D8);
-    animation:glowSlow 1s ease-in-out infinite;
-  }
-  .word.special-clear{
-    background:linear-gradient(90deg,#B8860B,#FFC94A);
-    animation:glowClear .9s ease-in-out infinite;
-  }
-  @keyframes glowSlow{
-    0%,100%{ box-shadow:0 4px 0 rgba(0,0,0,.25), 0 0 8px 2px #8FE0FF; }
-    50%{ box-shadow:0 4px 0 rgba(0,0,0,.25), 0 0 18px 6px #8FE0FF; }
-  }
-  @keyframes glowClear{
-    0%,100%{ box-shadow:0 4px 0 rgba(0,0,0,.25), 0 0 8px 2px #FFE28A; }
-    50%{ box-shadow:0 4px 0 rgba(0,0,0,.25), 0 0 18px 6px #FFE28A; }
   }
   .word.pop{
     animation:pop .35s forwards;
@@ -249,26 +226,26 @@
   /* ===== Bottom input bar ===== */
   #inputBar{
     position:absolute;
-    bottom:10px;
+    bottom:8px;
     left:50%;
     transform:translateX(-50%);
     z-index:30;
     display:flex;
     align-items:center;
-    gap:10px;
+    gap:8px;
     background:var(--panel);
-    padding:8px 14px;
-    border-radius:18px;
-    box-shadow:0 5px 0 rgba(0,0,0,.15);
-    width:min(520px,92vw);
+    padding:6px 10px;
+    border-radius:14px;
+    box-shadow:0 4px 0 rgba(0,0,0,.15);
+    width:min(460px,88vw);
   }
   #typedInput{
     flex:1;
-    border:3px solid #cfd8ea;
-    border-radius:12px;
-    padding:10px 14px;
+    border:2px solid #cfd8ea;
+    border-radius:10px;
+    padding:7px 11px;
     font-family:'Baloo 2',sans-serif;
-    font-size:22px;
+    font-size:16px;
     font-weight:700;
     outline:none;
     background:#fff;
@@ -277,10 +254,10 @@
   #typedInput:focus{ border-color:var(--accent-2); }
   #typedHint{
     font-family:'Jua',sans-serif;
-    font-size:13px;
+    font-size:12px;
     color:var(--ink);
     opacity:.7;
-    min-width:60px;
+    min-width:44px;
     text-align:center;
   }
 
@@ -434,20 +411,9 @@
   }
 
   @media (max-width:480px){
-    .hud-chip{ font-size:13px; padding:5px 8px;}
-    #inputBar{ bottom:8px; padding:6px 10px;}
-    #typedInput{ font-size:19px; padding:8px 10px;}
-  }
-  /* shorter viewports (e.g. keyboard open, landscape) — compact vertical chrome */
-  @media (max-height:520px){
-    #hud{ padding:4px 8px; gap:6px; }
-    .hud-chip{ padding:4px 8px; font-size:12px; }
-    #gaugeOuter{ height:11px; }
-    #groundWrap{ height:22%; }
-    #grass{ height:14%; }
-    #school{ bottom:10%; width:min(320px,42vw); }
-    #inputBar{ bottom:6px; padding:6px 10px; }
-    #typedInput{ font-size:18px; padding:7px 10px; }
+    .hud-chip{ font-size:11px; padding:4px 8px;}
+    #inputBar{ bottom:6px; padding:5px 8px;}
+    #typedInput{ font-size:15px; padding:6px 9px;}
   }
 </style>
 </head>
@@ -467,7 +433,6 @@
       <div id="gaugeLabel">🏫 붕괴 게이지</div>
       <div id="gaugeOuter"><div id="gaugeInner"></div></div>
     </div>
-    <div class="hud-chip" id="slowChip">❄️ <span id="slowSecLeft">10</span>초</div>
     <button class="hud-chip" id="soundBtn" style="pointer-events:auto;cursor:pointer;border:none;font-family:'Jua',sans-serif;font-size:16px;" aria-label="소리 켜기/끄기">🔊</button>
   </div>
 
@@ -615,34 +580,6 @@
 <script>
 (function(){
   "use strict";
-
-  // ---------- keep #stage sized to the visible viewport (so the iPad/mobile
-  // on-screen keyboard doesn't cover the falling words) ----------
-  (function setupViewportFit(){
-    var stageEl = document.getElementById('stage');
-    function apply(){
-      var vv = window.visualViewport;
-      if(vv){
-        stageEl.style.width = vv.width + 'px';
-        stageEl.style.height = vv.height + 'px';
-        stageEl.style.top = vv.offsetTop + 'px';
-        stageEl.style.left = vv.offsetLeft + 'px';
-      } else {
-        stageEl.style.width = window.innerWidth + 'px';
-        stageEl.style.height = window.innerHeight + 'px';
-        stageEl.style.top = '0px';
-        stageEl.style.left = '0px';
-      }
-      window.scrollTo(0,0);
-    }
-    if(window.visualViewport){
-      window.visualViewport.addEventListener('resize', apply);
-      window.visualViewport.addEventListener('scroll', apply);
-    }
-    window.addEventListener('resize', apply);
-    window.addEventListener('orientationchange', apply);
-    apply();
-  })();
 
   // ---------- audio engine (synthesized, no external files) ----------
   var Audio2 = (function(){
@@ -801,19 +738,12 @@
   // spawnMs: time between spawns
   // needed: correct words required to clear the stage
   var STAGES = [
-    { fallMs: 19000, spawnMs: 3600, needed: 5, maxOnScreen: 2 },
-    { fallMs: 12500, spawnMs: 2900, needed: 6, maxOnScreen: 3 },
+    { fallMs: 19000, spawnMs: 4200, needed: 5, maxOnScreen: 2 },
+    { fallMs: 16000, spawnMs: 3700, needed: 6, maxOnScreen: 3 },
     { fallMs: 10500, spawnMs: 2500, needed: 7, maxOnScreen: 3 },
     { fallMs: 8800,  spawnMs: 2100, needed: 8, maxOnScreen: 4 }
   ];
   var GAUGE_PER_MISS = 11; // % added per missed word
-
-  // ---------- special item config ----------
-  var SPECIAL_CHANCE = 0.20;   // 20% of spawned words are special
-  var SPECIAL_SLOW_SHARE = 0.5; // half of specials are "slow", half are "clear"
-  var SLOW_FACTOR = 0.5;        // fall speed multiplier while slow buff is active
-  var SLOW_DURATION_MS = 10000; // 10 seconds
-  var CLEAR_BONUS_SCORE = 5;
 
   // ---------- state ----------
   var state = null;
@@ -824,17 +754,12 @@
       score:0,
       gauge:0,
       stageProgress:0,
-      words:[], // {id, el, text, top, spawnT, fallMs, matched, special}
+      words:[], // {id, el, text, top, spawnT, fallMs, matched}
       nextId:1,
       lastSpawn:0,
       lastFrame:0,
       spawnTimer:null,
-      recentWords:[],
-      gameClock:0,
-      lastTs:null,
-      slowActive:false,
-      slowEndAt:0,
-      slowTimer:null
+      recentWords:[]
     };
   }
 
@@ -847,8 +772,6 @@
   var crackOverlay = document.getElementById('crackOverlay');
   var stageBanner = document.getElementById('stageBanner');
   var stageBannerText = document.getElementById('stageBannerText');
-  var slowChip = document.getElementById('slowChip');
-  var slowSecLeft = document.getElementById('slowSecLeft');
 
   var startOverlay = document.getElementById('startOverlay');
   var overOverlay = document.getElementById('overOverlay');
@@ -888,22 +811,15 @@
 
   function currentStageCfg(){ return STAGES[state.stageIdx]; }
 
-  function rollSpecial(){
-    if(Math.random() >= SPECIAL_CHANCE) return null;
-    return (Math.random() < SPECIAL_SLOW_SHARE) ? 'slow' : 'clear';
-  }
-
   function spawnWord(){
     if(!state.running) return;
     var cfg = currentStageCfg();
     if(state.words.length >= cfg.maxOnScreen) return;
 
     var text = pickWord();
-    var special = rollSpecial();
     var el = document.createElement('div');
-    el.className = 'word' + (special ? (' special-'+special) : '');
-    var icon = special === 'slow' ? '<span class="icon">❄️</span>' : (special === 'clear' ? '<span class="icon">💥</span>' : '');
-    el.innerHTML = icon + '<span class="typed"></span><span class="rest">'+text+'</span>';
+    el.className = 'word';
+    el.innerHTML = '<span class="typed"></span><span class="rest">'+text+'</span>';
     var leftPct = 12 + Math.random()*76;
     el.style.left = leftPct + '%';
     playfield.appendChild(el);
@@ -912,10 +828,9 @@
       id: state.nextId++,
       el: el,
       text: text,
-      startClock: state.gameClock,
+      startT: performance.now(),
       fallMs: cfg.fallMs,
-      matched:false,
-      special: special
+      matched:false
     };
     state.words.push(w);
   }
@@ -976,12 +891,6 @@
     scoreVal.textContent = state.score;
     state.stageProgress++;
 
-    if(w.special === 'slow'){
-      activateSlowBuff();
-    } else if(w.special === 'clear'){
-      clearLowestOtherWords(w, 2);
-    }
-
     var cfg = currentStageCfg();
     if(state.stageProgress >= cfg.needed){
       advanceStage();
@@ -1020,65 +929,19 @@
   }
 
   // ---------- main loop ----------
-  function updateSlowUI(){
-    if(state.slowActive){
-      var secLeft = Math.max(0, Math.ceil((state.slowEndAt - performance.now())/1000));
-      slowSecLeft.textContent = secLeft;
-      slowChip.classList.add('show');
-    } else {
-      slowChip.classList.remove('show');
-    }
-  }
-
   function loop(ts){
     if(!state.running) return;
-    if(state.lastTs === null) state.lastTs = ts;
-    var dt = ts - state.lastTs;
-    state.lastTs = ts;
-
-    if(state.slowActive && ts >= state.slowEndAt){
-      state.slowActive = false;
-    }
-    var mult = state.slowActive ? SLOW_FACTOR : 1;
-    state.gameClock += dt * mult;
-    updateSlowUI();
-
-    var groundBuffer = Math.max(90, Math.min(210, playfield.clientHeight * 0.3));
     for(var i=state.words.length-1;i>=0;i--){
       var w = state.words[i];
-      var elapsed = state.gameClock - w.startClock;
+      var elapsed = ts - w.startT;
       var pct = Math.min(1, elapsed / w.fallMs);
-      var topPx = pct * (playfield.clientHeight - groundBuffer); // stop roughly above ground
+      var topPx = pct * (playfield.clientHeight - 150); // stop roughly above ground
       w.el.style.top = topPx + 'px';
       if(pct >= 1){
         onWordMiss(w);
       }
     }
     requestAnimationFrame(loop);
-  }
-
-  function activateSlowBuff(){
-    state.slowActive = true;
-    state.slowEndAt = performance.now() + SLOW_DURATION_MS;
-    updateSlowUI();
-  }
-
-  function clearLowestOtherWords(excludeW, count){
-    var others = state.words.filter(function(x){ return x.id !== excludeW.id; });
-    others.sort(function(a,b){
-      var pctA = Math.min(1,(state.gameClock - a.startClock)/a.fallMs);
-      var pctB = Math.min(1,(state.gameClock - b.startClock)/b.fallMs);
-      return pctB - pctA; // furthest fallen (lowest on screen) first
-    });
-    var targets = others.slice(0, count);
-    targets.forEach(function(w){
-      Audio2.success();
-      floatScore(w.el, '+'+CLEAR_BONUS_SCORE);
-      removeWordEl(w, 'pop');
-      state.score += CLEAR_BONUS_SCORE;
-      scoreVal.textContent = state.score;
-      state.words = state.words.filter(function(x){ return x.id !== w.id; });
-    });
   }
 
   // ---------- input handling ----------
@@ -1141,7 +1004,6 @@
     stageVal.textContent = '1';
     state.stageIdx = 0;
     updateGaugeUI();
-    slowChip.classList.remove('show');
     schoolEl.classList.remove('tilt','collapsed');
     startOverlay.classList.add('hidden');
     overOverlay.classList.add('hidden');
