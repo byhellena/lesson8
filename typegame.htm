@@ -3,7 +3,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
 <title>본리초등학교 지키기</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -41,6 +41,10 @@
   *{box-sizing:border-box;}
   html,body{
     margin:0;padding:0;width:100%;height:100%;overflow:hidden;
+    position:fixed;
+    inset:0;
+    overscroll-behavior:none;
+    touch-action:none;
     background:linear-gradient(var(--sky-top), var(--sky-bottom));
     font-family:'Gaegu', sans-serif;
     color:var(--ink);
@@ -49,7 +53,7 @@
     position:relative;
     width:100%;
     height:100%;
-    min-height:100vh;
+    height:calc(var(--app-vh, 1vh) * 100);
     overflow:hidden;
   }
 
@@ -127,22 +131,22 @@
   #groundWrap{
     position:absolute;
     bottom:0;left:0;right:0;
-    height:34%;
+    height:26%;
     z-index:5;
   }
   #grass{
     position:absolute;
     bottom:0;left:0;right:0;
-    height:18%;
+    height:16%;
     background:linear-gradient(var(--grass-1), var(--grass-2));
     border-top:6px solid #6BA84F;
   }
   #school{
     position:absolute;
     left:50%;
-    bottom:12%;
+    bottom:11%;
     transform:translateX(-50%);
-    width:min(420px, 62vw);
+    width:min(320px, 48vw);
     transition:transform .12s ease;
     filter:drop-shadow(0 10px 14px rgba(0,0,0,.25));
   }
@@ -182,14 +186,14 @@
     transform:translateX(-50%);
     font-family:'Baloo 2', sans-serif;
     font-weight:700;
-    font-size:clamp(13px,2.4vw,19px);
+    font-size:clamp(11px,2vw,15px);
     color:#fff;
     background:var(--word-bg);
-    padding:4px 11px;
+    padding:3px 9px;
     border-radius:999px;
     box-shadow:0 3px 0 rgba(0,0,0,.25), 0 0 0 3px #ffffff22 inset;
     white-space:nowrap;
-    letter-spacing:.3px;
+    letter-spacing:.2px;
   }
   .word .typed{ color:#FFD54F; }
   .word.match{
@@ -581,6 +585,25 @@
 (function(){
   "use strict";
 
+  // ---------- lock the viewport so the on-screen keyboard shrinks the game
+  //            instead of scrolling the page to reveal the focused input ----------
+  function setAppHeight(){
+    var h = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
+    document.documentElement.style.setProperty('--app-vh', (h/100) + 'px');
+  }
+  setAppHeight();
+  window.addEventListener('resize', setAppHeight);
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize', setAppHeight);
+    window.visualViewport.addEventListener('scroll', setAppHeight);
+  }
+  // belt-and-suspenders: never let the document itself scroll
+  window.addEventListener('scroll', function(){ window.scrollTo(0,0); }, {passive:true});
+  document.addEventListener('touchmove', function(e){
+    if(e.target && (e.target.id === 'typedInput')) return;
+    e.preventDefault();
+  }, {passive:false});
+
   // ---------- audio engine (synthesized, no external files) ----------
   var Audio2 = (function(){
     var ctx = null;
@@ -935,7 +958,7 @@
       var w = state.words[i];
       var elapsed = ts - w.startT;
       var pct = Math.min(1, elapsed / w.fallMs);
-      var topPx = pct * (playfield.clientHeight - 150); // stop roughly above ground
+      var topPx = pct * (playfield.clientHeight - 110); // stop roughly above ground
       w.el.style.top = topPx + 'px';
       if(pct >= 1){
         onWordMiss(w);
