@@ -270,8 +270,7 @@ function donePanel(n,color,title,text,fn){
 }
 
 /* MIC (한 번만 묻기) */
-let micOK=false,rec=null;
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let micOK=false;
 async function askMic(){
   const btn=$('mic-btn');btn.disabled=true;
   try{
@@ -285,13 +284,6 @@ async function askMic(){
     btn.disabled=false;btn.textContent='그래도 시작하기';btn.onclick=()=>$('mic-overlay').classList.remove('active');
   }
 }
-function getRec(){
-  if(!SR)return null;
-  try{rec&&rec.abort()}catch(e){}
-  rec=new SR();rec.lang='en-US';rec.interimResults=false;rec.maxAlternatives=3;rec.interimResults=true;
-  return rec;
-}
-
 /* STAGE 1 */
 let i1=0,pos=[];
 function makePos(n){
@@ -371,53 +363,37 @@ function score(heard,target){
   });
   return sum/tot;
 }
-const LISTEN_MS=6000;
-function noHear(){judge(0,true)}
 function speak(){
   if(busy)return;
-  const r=getRec(),res=$('res'),spk=$('spk'),lis=$('lis');
-  if(!r){res.innerHTML=`<div class="msg low">이 기기에서는 말하기를 쓸 수 없어요 😥</div><button class="pbtn" style="margin-top:8px" onclick="next2()">다음으로 넘어가기</button>`;return}
-  const target=sentences[i2].en;let got=false,timer=null,last=null;
-  const stop=()=>clearTimeout(timer);
-  const idle=()=>{lis.textContent='';spk.disabled=false};
-  const finish=alts=>{
-    if(got)return;got=true;stop();try{r.abort()}catch(e){}idle();
-    let best=0;const txt=alts.find(s=>s.trim());
-    alts.forEach(s=>{best=Math.max(best,score(s,target))});
-    if(!txt){noHear();return}
-    judge(best);
-    const d=document.createElement('div');d.className='try';d.textContent='들린 소리: '+txt.trim();res.appendChild(d);
+  const tag=$('lis'),res=$('res'),spk=$('spk');
+  const target=sentences[i2].en;
+  const R=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!R){
+    res.innerHTML=`<div class="msg low">이 기기에서는 말하기를 쓸 수 없어요 😥</div><button class="pbtn" style="margin-top:8px" onclick="next2()">다음으로 넘어가기</button>`;
+    return;
+  }
+  const rec=new R();
+  rec.lang='en-US';rec.interimResults=false;rec.maxAlternatives=1;
+  let got=false;
+  spk.disabled=true;tag.textContent='🎧 듣는 중...';res.innerHTML='';
+  rec.onresult=e=>{
+    got=true;
+    const transcript=e.results[0][0].transcript;
+    if(!transcript.trim()){judge(0,true);return}
+    judge(score(transcript,target));
+    const d=document.createElement('div');d.className='try';d.textContent='들린 소리: '+transcript.trim();res.appendChild(d);
   };
-  const giveUp=()=>{
-    if(got)return;if(last){finish(last);return}
-    got=true;try{r.abort()}catch(e){}lis.textContent='';noHear();setTimeout(()=>{spk.disabled=false},800);
-  };
-  spk.disabled=true;lis.textContent='🎤 잠깐만요...';res.innerHTML='';
-  r.onstart=r.onaudiostart=()=>{if(r===rec&&!got)lis.textContent='🎧 지금 말해보세요!'};
-  r.onspeechstart=()=>{if(r===rec&&!got){stop();timer=setTimeout(giveUp,9000)}};
-  r.onresult=e=>{
-    if(r!==rec||got)return;
-    const rs=e.results[e.results.length-1];
-    const alts=Array.from({length:rs.length},(_,k)=>rs[k].transcript);
-    if(rs.isFinal){finish(alts);return}
-    last=alts;stop();timer=setTimeout(()=>finish(last),1500);
-  };
-  r.onerror=e=>{
-    if(r!==rec||got)return;
-    if(e.error==='aborted')return;
-    got=true;stop();idle();
+  rec.onerror=e=>{
+    tag.textContent='';spk.disabled=false;
     if(e.error==='not-allowed'||e.error==='service-not-allowed'){
-      res.innerHTML='<div class="msg low">마이크가 꺼져 있어요. 선생님께 알려주세요! 🙋</div>';return}
-    e.error==='no-speech'?noHear():judge(0,true);
+      got=true;res.innerHTML='<div class="msg low">마이크가 꺼져 있어요. 선생님께 알려주세요! 🙋</div>';return}
+    if(!got){got=true;judge(0,true)}
   };
-  r.onend=()=>{
-    if(r!==rec)return;
-    if(!got){if(last){finish(last)}else{got=true;stop();idle();noHear()}}
-    else idle();
+  rec.onend=()=>{
+    tag.textContent='';spk.disabled=false;
+    if(!got){got=true;judge(0,true)}
   };
-  timer=setTimeout(giveUp,6000);
-  try{speechSynthesis.cancel()}catch(e){}
-  try{r.start()}catch(e){stop();idle()}
+  try{rec.start()}catch(e){tag.textContent='';spk.disabled=false}
 }
 let praiseN=0;
 const PRAISE=[['너무나 정확해요!! 😲🤩','🎉👏✨🌟🏆✨👏🎉'],['원어민이신가요?! 🤯🎉','🥳🌈💯🔥💯🌈🥳']];
