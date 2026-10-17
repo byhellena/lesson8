@@ -60,6 +60,8 @@ background:radial-gradient(circle at 1px 1px,#ffd9e6 2px,transparent 2.5px) 0 0/
 .listen{min-height:26px;margin-top:12px;color:var(--pink-d);font-size:17px}
 .res{min-height:70px}.pct{font-size:44px;color:var(--purple-d)}
 .msg{font-size:20px;margin-top:4px}.msg.low{color:var(--orange-d)}.msg.mid{color:var(--sky-d)}.msg.high{color:var(--mint-d)}
+.wow{font-size:27px;line-height:1.35;color:var(--pink-d);margin-top:6px;animation:wowp .7s ease-in-out infinite alternate}.wow2{font-size:30px;margin-top:6px;animation:bob 1.2s ease-in-out infinite}
+@keyframes wowp{from{transform:scale(1) rotate(-2deg)}to{transform:scale(1.12) rotate(2deg)}}
 .try{font-size:14px;color:var(--soft);margin-top:8px}
 .sb{background:#fff;border:4px solid var(--orange);border-radius:26px;padding:16px;margin-bottom:16px;box-shadow:0 5px 0 var(--orange)}
 .sb.solved{border-color:var(--mint);box-shadow:0 5px 0 var(--mint);background:#f2fff9}
@@ -68,6 +70,8 @@ background:radial-gradient(circle at 1px 1px,#ffd9e6 2px,transparent 2.5px) 0 0/
 .slot{min-width:64px;padding:6px 10px;text-align:center;border-bottom:4px dashed var(--orange);border-radius:10px;color:#ccc}
 .slot.f{color:var(--orange-d);background:#fff3e0;border-bottom-color:var(--orange)}
 .bank{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:10px}
+.slot.ok{background:#e6fff4;border-bottom-color:var(--mint);color:var(--mint-d)}.slot.x{background:#ffe3ec;border-bottom-color:var(--pink);color:var(--pink-d);animation:shake .3s}
+.sbf.hint{color:var(--orange-d);line-height:1.4}
 .tile{font:800 19px 'Baloo 2';padding:9px 15px;border-radius:16px;border:3px solid var(--purple);background:#fff;color:var(--purple-d);box-shadow:0 4px 0 var(--purple)}
 .tile.used{opacity:.25;box-shadow:none}
 .reset{background:#fff;border:2px solid var(--lock);border-radius:100px;padding:5px 14px;font:400 14px 'Jua';color:var(--soft)}
@@ -152,12 +156,12 @@ const sentences=[
  {en:'There is a bathtub.',kr:'욕조가 있어요.',e:'🛁',key:'bathtub'},
  {en:'There is a sofa.',kr:'소파가 있어요.',e:'🛋️',key:'sofa'}];
 const problems=[
- {kr:'침실에 무엇이 있나요?',pre:"What's",ok:['in','the','bedroom'],fake:['on','a'],suf:'?'},
- {kr:'책장이 하나 있어요.',pre:'There',ok:['is','a','bookshelf'],fake:['are','desk'],suf:'.'},
- {kr:'의자 두 개가 있어요.',pre:'There',ok:['are','two','chairs'],fake:['is','chair'],suf:'.'},
- {kr:'이곳은 부엌입니다.',pre:'This',ok:['is','the','kitchen'],fake:['bathroom','in'],suf:'.'},
- {kr:'욕조가 있어요.',pre:'There',ok:['is','a','bathtub'],fake:['are','kitchen'],suf:'.'},
- {kr:'소파가 있어요.',pre:'There',ok:['is','a','sofa'],fake:['are','chair'],suf:'.'}];
+ {kr:'침실에 무엇이 있나요?',pre:"What's",ok:['in','the','bedroom'],fake:['on','a'],h:{on:"'on'은 '~위에'라는 뜻이에요. '~안에'는 뭘까요?",a:"여기서는 'a' 말고 다른 짧은 단어가 어울려요. the 를 써볼까요?"},suf:'?'},
+ {kr:'책장이 하나 있어요.',pre:'There',ok:['is','a','bookshelf'],fake:['are','desk'],h:{are:"책장은 하나예요. 하나일 때는 is 와 are 중 뭘 쓸까요?",desk:"desk는 책상이에요. 책장은 뭐였죠? 📚"},suf:'.'},
+ {kr:'의자 두 개가 있어요.',pre:'There',ok:['are','two','chairs'],fake:['is','chair'],h:{is:"의자가 두 개예요! 여러 개일 때는 is 와 are 중 뭘 쓸까요?",chair:"의자가 여러 개일 땐 chair 끝에 s가 붙어요!"},suf:'.'},
+ {kr:'이곳은 부엌입니다.',pre:'This',ok:['is','the','kitchen'],fake:['bathroom','in'],h:{bathroom:"bathroom은 욕실이에요. 부엌은 뭐였죠? 🍳",in:"'in'은 '~안에'예요. '이곳은 ~입니다'는 다른 단어를 써요!"},suf:'.'},
+ {kr:'욕조가 있어요.',pre:'There',ok:['is','a','bathtub'],fake:['are','kitchen'],h:{are:"욕조는 하나예요. 하나일 때는 is 와 are 중 뭘 쓸까요?",kitchen:"kitchen은 부엌이에요. 욕조는 뭐였죠? 🛁"},suf:'.'},
+ {kr:'소파가 있어요.',pre:'There',ok:['is','a','sofa'],fake:['are','chair'],h:{are:"소파는 하나예요. 하나일 때는 is 와 are 중 뭘 쓸까요?",chair:"chair는 의자예요. 소파는 sofa! 🛋️"},suf:'.'}];
 const state={1:false,2:false,3:false};
 const $=id=>document.getElementById(id);
 const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
@@ -276,35 +280,58 @@ function score(heard,target){
   });
   return sum/t.length;
 }
+const LISTEN_MS=6000;
+function noHear(){judge(0,true)}
 function speak(){
   if(busy)return;
   const r=getRec(),res=$('res'),spk=$('spk'),lis=$('lis');
   if(!r){res.innerHTML=`<div class="msg low">이 기기에서는 말하기를 쓸 수 없어요 😥</div><button class="pbtn" style="margin-top:8px" onclick="next2()">다음으로 넘어가기</button>`;return}
-  const target=sentences[i2].en;let got=false;
+  const target=sentences[i2].en;let got=false,timer=null;
+  const stop=()=>clearTimeout(timer);
   spk.disabled=true;lis.textContent='🎧 듣고 있어요... 말해보세요!';res.innerHTML='';
   r.onresult=e=>{
-    got=true;let best=0;
-    for(let k=0;k<e.results[0].length;k++)best=Math.max(best,score(e.results[0][k].transcript,target));
-    judge(best);
+    stop();if(got)return;got=true;
+    let best=0,heard=false;
+    for(let k=0;k<e.results[0].length;k++){
+      const tr=e.results[0][k].transcript;
+      if(tr.trim())heard=true;
+      best=Math.max(best,score(tr,target));
+    }
+    heard?judge(best):noHear();
   };
   r.onerror=e=>{
-    if(got)return;got=true;
+    stop();if(got)return;got=true;
     if(e.error==='not-allowed'||e.error==='service-not-allowed'){
       res.innerHTML='<div class="msg low">마이크가 꺼져 있어요. 선생님께 알려주세요! 🙋</div>';return}
     if(e.error==='aborted')return;
-    judge(0,true);
+    e.error==='no-speech'?noHear():judge(0,true);
   };
-  r.onend=()=>{lis.textContent='';spk.disabled=false;if(!got){got=true;judge(0,true)}};
-  try{r.start()}catch(e){lis.textContent='';spk.disabled=false}
+  r.onend=()=>{stop();lis.textContent='';spk.disabled=false;if(!got){got=true;noHear()}};
+  timer=setTimeout(()=>{
+    if(got)return;got=true;
+    try{r.abort()}catch(e){}
+    lis.textContent='';noHear();
+    setTimeout(()=>{if(spk.disabled){spk.disabled=false;rec=null}},1200);
+  },LISTEN_MS);
+  try{r.start()}catch(e){stop();lis.textContent='';spk.disabled=false}
 }
+let praiseN=0;
+const PRAISE=[['너무나 정확해요!! 😲🤩','🎉👏✨🌟🏆✨👏🎉'],['원어민이신가요?! 🤯🎉','🥳🌈💯🔥💯🌈🥳']];
 function judge(ratio,miss){
   if(busy)return;
   const res=$('res');
   const pct=ratio>0?Math.min(100,Math.round(ratio*100+20)):0;
   if(ratio>=.4){
     busy=true;
-    res.innerHTML=`<div class="pct en">${pct}%</div><div class="msg high">${pct>=90?'최고예요! 원어민 같아요 😲':'잘했어요! 🎉'}</div>`;
-    setTimeout(next2,1500);return;
+    if(pct>=90){
+      const k=praiseN++%2;
+      res.innerHTML=`<div class="pct en">${pct}%</div><div class="wow">${PRAISE[k][0]}</div><div class="wow2">${PRAISE[k][1]}</div>`;
+      setTimeout(next2,2800);
+    }else{
+      res.innerHTML=`<div class="pct en">${pct}%</div><div class="msg high">잘했어요! 🎉</div>`;
+      setTimeout(next2,1500);
+    }
+    return;
   }
   tries++;
   if(tries>=2){
@@ -313,14 +340,14 @@ function judge(ratio,miss){
     res.innerHTML=`<div class="msg mid">${m}</div><div class="try">다음 문제로 가요!</div>`;
     setTimeout(next2,2200);return;
   }
-  res.innerHTML=`${miss?'':`<div class="pct en">${pct}%</div>`}<div class="msg low">${miss?'잘 안 들렸어요 😅':'조금만 더! 💪'}</div><div class="try">한 번 더 해볼까요? (기회가 1번 더 있어요)</div>`;
+  res.innerHTML=`${miss?'':`<div class="pct en">${pct}%</div>`}<div class="msg low">${miss?'소리가 잘 안 들렸어요 🙉':'조금만 더! 💪'}</div><div class="try">다시 🎤 버튼을 눌러 말해봐요!</div>`;
 }
 function next2(){i2++;r2()}
 
 /* STAGE 3 */
 const sb=[];
 function init3(){
-  problems.forEach((p,i)=>{sb[i]={slots:p.ok.map(()=>null),bank:shuffle([...p.ok,...p.fake]),src:p.ok.map(()=>null),solved:false,msg:''}});
+  problems.forEach((p,i)=>{sb[i]={slots:p.ok.map(()=>null),bank:shuffle([...p.ok,...p.fake]),src:p.ok.map(()=>null),solved:false,msg:'',bad:false}});
   r3();
 }
 function r3(){
@@ -329,13 +356,20 @@ function r3(){
   $('body-3').innerHTML=problems.map((p,i)=>{
     const s=sb[i];
     return `<div class="sb ${s.solved?'solved':''}"><div class="sbt">${i+1}. ${p.kr}</div>
-     <div class="row"><span>${p.pre}</span>${s.slots.map((w,k)=>`<span class="slot ${w?'f':''}" onclick="rm(${i},${k})">${w||'____'}</span>`).join('')}<span>${p.suf}</span></div>
+     <div class="row"><span>${p.pre}</span>${s.slots.map((w,k)=>`<span class="slot ${w?(s.bad?(w===p.ok[k]?'ok':'x'):'f'):''}" onclick="rm(${i},${k})">${w||'____'}</span>`).join('')}<span>${p.suf}</span></div>
      <div class="bank">${s.bank.map((w,k)=>`<button class="tile ${s.src.includes(k)?'used':''}" onclick="pick(${i},${k})">${w}</button>`).join('')}</div>
      <button class="reset" onclick="reset(${i})">🔄 다시하기</button>
-     <div class="sbf ${s.msg.startsWith('다시')?'bad':''}">${s.solved?'성공! 🎉':s.msg}</div></div>`;
+     <div class="sbf ${s.bad?'hint':''}">${s.solved?'성공! 🎉':s.msg}</div></div>`;
   }).join('');
   $('bottom-home').classList.toggle('glow',all);
   if(all)state[3]=true;
+}
+function hintFor(i){
+  const p=problems[i],s=sb[i];
+  const fk=s.slots.find(w=>p.fake.includes(w));
+  if(fk)return '💡 '+p.h[fk]+' 빨간 칸을 눌러 바꿔봐요!';
+  const n=s.slots.findIndex((w,k)=>w!==p.ok[k]);
+  return `💡 단어는 모두 맞아요! ${n+1}번째 칸부터 순서를 다시 생각해봐요. 빨간 칸을 눌러 바꿔봐요!`;
 }
 function pick(i,k){
   const s=sb[i],p=problems[i];
@@ -344,17 +378,17 @@ function pick(i,k){
   s.slots[e]=s.bank[k];s.src[e]=k;s.msg='';
   if(s.slots.every(Boolean)){
     if(s.slots.join(' ')===p.ok.join(' '))s.solved=true;
-    else{s.msg='다시 생각해봐요! 🤔';setTimeout(()=>reset(i,s.msg),900)}
+    else{s.bad=true;s.msg=hintFor(i)}
   }
   r3();
 }
 function rm(i,k){
   const s=sb[i];if(s.solved||!s.slots[k])return;
-  s.slots[k]=null;s.src[k]=null;s.msg='';r3();
+  s.slots[k]=null;s.src[k]=null;s.msg='';s.bad=false;r3();
 }
 function reset(i,m){
   const s=sb[i];if(s.solved)return;
-  s.slots=s.slots.map(()=>null);s.src=s.src.map(()=>null);s.msg=m||'';r3();
+  s.slots=s.slots.map(()=>null);s.src=s.src.map(()=>null);s.msg=m||'';s.bad=false;r3();
 }
 
 /* CERT */
