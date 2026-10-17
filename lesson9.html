@@ -88,6 +88,27 @@ background:radial-gradient(circle at 1px 1px,#ffd9e6 2px,transparent 2.5px) 0 0/
 .cert .body{font-size:20px;line-height:1.7}.signoff{color:var(--orange-d);margin:12px 0}
 .mic-box{border:5px solid var(--pink);background:#fff}.mic-box .big{font-size:70px}.mic-box h2{margin:4px 0;font-weight:400;font-size:24px;color:var(--pink-d)}
 .mic-box p{color:var(--soft);font-size:16px;line-height:1.5;margin:6px 0 16px}
+#cert-overlay{background:rgba(255,236,246,.97);align-items:flex-start;overflow-y:auto;padding:10px}
+.cwrap{width:100%;max-width:860px;margin:0 auto}
+#cert-overlay .cert{position:relative;overflow:hidden;max-width:none;width:100%;min-height:min(66vh,620px);display:flex;flex-direction:column;justify-content:center;padding:28px 18px;border-width:10px;background:var(--cb,#fffdf3);transition:background .4s}
+.cst{font-size:clamp(30px,7vw,60px)}
+#cert-overlay .cert h2{font-size:clamp(46px,12vw,96px);letter-spacing:.12em;margin:6px 0}
+#cert-overlay .cert .body{font-size:clamp(22px,5vw,40px);line-height:1.6;margin:8px 0}
+#cert-overlay .signoff{font-size:clamp(18px,4vw,30px)}
+.cert.dk{color:#fff}.cert.dk h2{color:#ffb3d1}
+#draw,#fx,#stk{position:absolute;inset:0;width:100%;height:100%}
+#draw{touch-action:none;cursor:crosshair}#fx,#stk{pointer-events:none}
+.stk{position:absolute;font-size:clamp(40px,9vw,76px);line-height:1;touch-action:none;user-select:none;-webkit-user-select:none;pointer-events:auto;transform:translate(-50%,-50%);cursor:grab}
+.tools{background:#fff;border:4px solid var(--purple);border-radius:26px;padding:12px;margin:12px 0 30px;text-align:center}
+.trow{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;margin-bottom:10px}
+.tb{font:400 16px 'Jua';padding:9px 14px;border:3px solid var(--purple);background:#fff;color:var(--purple-d);border-radius:100px}
+.tb.on{background:var(--purple);color:#fff}
+.sw{width:38px;height:38px;border-radius:50%;border:4px solid #fff;box-shadow:0 0 0 2px #ccc}.sw.on{box-shadow:0 0 0 4px var(--ink);transform:scale(1.15)}
+.sk{font-size:34px;background:#fff6;border:0;padding:4px}
+.fxr b{color:var(--pink-d);font-weight:400}
+.cert.neon{animation:ne .9s steps(1) infinite}.cert.neon h2,.cert.neon .body{animation:nt .9s steps(1) infinite}
+@keyframes ne{0%{border-color:#ff2bd6;box-shadow:0 0 14px 4px #ff2bd6,inset 0 0 30px #ff2bd6}34%{border-color:#19e6ff;box-shadow:0 0 14px 4px #19e6ff,inset 0 0 30px #19e6ff}67%{border-color:#fff700;box-shadow:0 0 14px 4px #fff700,inset 0 0 30px #fff700}}
+@keyframes nt{0%{text-shadow:0 0 8px #ff2bd6,0 0 22px #ff2bd6}34%{text-shadow:0 0 8px #19e6ff,0 0 22px #19e6ff}67%{text-shadow:0 0 8px #fff700,0 0 22px #fff700}}
 </style>
 </head>
 <body>
@@ -134,12 +155,21 @@ background:radial-gradient(circle at 1px 1px,#ffd9e6 2px,transparent 2.5px) 0 0/
 </div>
 
 <div class="overlay" id="cert-overlay">
-  <div class="cert">
-    <div style="font-size:30px">⭐️⭐️⭐️⭐️⭐️</div>
-    <h2>이 수 증</h2>
-    <p class="body">위 학생은<br>9단원 What's in the bedroom?<br>영어로 말하기를<br>멋지게 이수했습니다.</p>
-    <div class="signoff">선생님께 보여드리세요! 🌟</div>
-    <button class="pbtn" onclick="closeCert()">닫기</button>
+  <div class="cwrap">
+    <div class="cert" id="cert">
+      <div class="cst">⭐️⭐️⭐️⭐️⭐️</div>
+      <h2>이 수 증</h2>
+      <p class="body">위 학생은<br>9단원 What's in the bedroom?<br>영어로 말하기를<br>멋지게 이수했습니다.</p>
+      <div class="signoff">선생님께 보여드리세요! 🌟</div>
+      <canvas id="draw"></canvas><div id="stk"></div><canvas id="fx"></canvas>
+    </div>
+    <div class="tools">
+      <div class="trow" id="colors"></div>
+      <div class="trow"><button class="tb on" id="b-pen" onclick="setMode('pen')">✏️ 펜</button><button class="tb" id="b-eraser" onclick="setMode('eraser')">🧽 지우개</button><input type="range" id="psize" min="3" max="26" value="9"><button class="tb" onclick="undo()">↩️ 되돌리기</button><button class="tb" onclick="clearAll()">🗑️ 모두 지우기</button></div>
+      <div class="trow" id="stickers"></div>
+      <div class="trow fxr"><b>✨ 특수효과</b><button class="tb" onclick="nextBg()">🎨 배경색</button><button class="tb" id="fx-sakura" onclick="toggleFx('sakura')">🌸 벚꽃</button><button class="tb" id="fx-snow" onclick="toggleFx('snow')">❄️ 눈</button><button class="tb" id="fx-neon" onclick="toggleFx('neon')">💡 네온</button><button class="tb" id="fx-fire" onclick="toggleFx('fire')">🎆 폭죽</button></div>
+      <button class="pbtn" onclick="closeCert()">닫기</button>
+    </div>
   </div>
 </div>
 
@@ -205,7 +235,8 @@ async function askMic(){
 }
 function getRec(){
   if(!SR)return null;
-  if(!rec){rec=new SR();rec.lang='en-US';rec.interimResults=false;rec.maxAlternatives=3}
+  try{rec&&rec.abort()}catch(e){}
+  rec=new SR();rec.lang='en-US';rec.interimResults=false;rec.maxAlternatives=3;
   return rec;
 }
 
@@ -290,7 +321,7 @@ function speak(){
   const stop=()=>clearTimeout(timer);
   spk.disabled=true;lis.textContent='🎧 듣고 있어요... 말해보세요!';res.innerHTML='';
   r.onresult=e=>{
-    stop();if(got)return;got=true;
+    if(r!==rec)return;stop();if(got)return;got=true;
     let best=0,heard=false;
     for(let k=0;k<e.results[0].length;k++){
       const tr=e.results[0][k].transcript;
@@ -300,20 +331,21 @@ function speak(){
     heard?judge(best):noHear();
   };
   r.onerror=e=>{
-    stop();if(got)return;got=true;
+    if(r!==rec)return;stop();if(got)return;got=true;
     if(e.error==='not-allowed'||e.error==='service-not-allowed'){
       res.innerHTML='<div class="msg low">마이크가 꺼져 있어요. 선생님께 알려주세요! 🙋</div>';return}
     if(e.error==='aborted')return;
     e.error==='no-speech'?noHear():judge(0,true);
   };
-  r.onend=()=>{stop();lis.textContent='';spk.disabled=false;if(!got){got=true;noHear()}};
+  r.onend=()=>{if(r!==rec)return;stop();lis.textContent='';spk.disabled=false;if(!got){got=true;noHear()}};
   timer=setTimeout(()=>{
     if(got)return;got=true;
     try{r.abort()}catch(e){}
     lis.textContent='';noHear();
-    setTimeout(()=>{if(spk.disabled){spk.disabled=false;rec=null}},1200);
+    setTimeout(()=>{if(spk.disabled)spk.disabled=false},1200);
   },LISTEN_MS);
-  try{r.start()}catch(e){stop();lis.textContent='';spk.disabled=false}
+  try{speechSynthesis.cancel()}catch(e){}
+  setTimeout(()=>{try{r.start()}catch(e){stop();lis.textContent='';spk.disabled=false}},250);
 }
 let praiseN=0;
 const PRAISE=[['너무나 정확해요!! 😲🤩','🎉👏✨🌟🏆✨👏🎉'],['원어민이신가요?! 🤯🎉','🥳🌈💯🔥💯🌈🥳']];
@@ -326,10 +358,10 @@ function judge(ratio,miss){
     if(pct>=90){
       const k=praiseN++%2;
       res.innerHTML=`<div class="pct en">${pct}%</div><div class="wow">${PRAISE[k][0]}</div><div class="wow2">${PRAISE[k][1]}</div>`;
-      setTimeout(next2,2800);
+      setTimeout(next2,1400);
     }else{
       res.innerHTML=`<div class="pct en">${pct}%</div><div class="msg high">잘했어요! 🎉</div>`;
-      setTimeout(next2,1500);
+      setTimeout(next2,1000);
     }
     return;
   }
@@ -337,8 +369,8 @@ function judge(ratio,miss){
   if(tries>=2){
     busy=true;
     const m=['이번에도 노력이 멋져요! 👏','발전하고 있어요! 🌱'][Math.floor(Math.random()*2)];
-    res.innerHTML=`<div class="msg mid">${m}</div><div class="try">다음 문제로 가요!</div>`;
-    setTimeout(next2,2200);return;
+    res.innerHTML=`<div class="msg mid">${m}</div>`;
+    setTimeout(next2,1800);return;
   }
   res.innerHTML=`${miss?'':`<div class="pct en">${pct}%</div>`}<div class="msg low">${miss?'소리가 잘 안 들렸어요 🙉':'조금만 더! 💪'}</div><div class="try">다시 🎤 버튼을 눌러 말해봐요!</div>`;
 }
@@ -392,7 +424,82 @@ function reset(i,m){
 }
 
 /* CERT */
-function showCert(){if(state[1]&&state[2]&&state[3])$('cert-overlay').classList.add('active')}
+const CC=['#ff4d6d','#ff9f1c','#ffd60a','#3ec99a','#4fb0ff','#a58bff','#8b5a2b','#222222','#ffffff'];
+const STK=['⭐','🌈','🦄','🐰','🐻','🐱','🐶','🌸','🌻','🍭','🍓','🎀','👑','💖','🚀','🎈','🏆','🌟','🍀','🦋','🎵','☁️'];
+const BGS=['#fffdf3','#ffe3ef','#e3f4ff','#e8ffe9','#f1e6ff','linear-gradient(135deg,#ffd6e8,#d6ecff)','linear-gradient(135deg,#fff3b0,#ffc2d4)','#252550'];
+let pen=CC[0],mode='pen',strokes=[],cur=null,bgi=0,fx=new Set(),parts=[],raf=0,inited=false;
+function initCert(){
+  if(inited)return;inited=true;
+  $('colors').innerHTML=CC.map((c,i)=>`<button class="sw ${i?'':'on'}" style="background:${c}" onclick="setPen('${c}',this)"></button>`).join('');
+  $('stickers').innerHTML=STK.map(s=>`<button class="tb sk" onclick="addStk('${s}')">${s}</button>`).join('');
+  const c=$('draw');
+  const pt=e=>{const r=c.getBoundingClientRect();return[(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height]};
+  c.addEventListener('pointerdown',e=>{e.preventDefault();c.setPointerCapture(e.pointerId);cur={c:pen,w:+$('psize').value,e:mode==='eraser',p:[pt(e)]};if(cur.e)cur.w*=2.2;strokes.push(cur);redraw()});
+  c.addEventListener('pointermove',e=>{if(!cur)return;cur.p.push(pt(e));redraw()});
+  ['pointerup','pointercancel'].forEach(n=>c.addEventListener(n,()=>{cur=null}));
+  window.addEventListener('resize',sizeCv);
+}
+function sizeCv(){
+  const r=$('cert').getBoundingClientRect(),d=window.devicePixelRatio||1;
+  ['draw','fx'].forEach(id=>{const c=$(id);c.width=r.width*d;c.height=r.height*d});redraw();
+}
+function redraw(){
+  const c=$('draw'),x=c.getContext('2d'),W=c.width,H=c.height;
+  x.clearRect(0,0,W,H);x.lineCap=x.lineJoin='round';
+  strokes.forEach(s=>{
+    x.globalCompositeOperation=s.e?'destination-out':'source-over';x.strokeStyle=s.c;x.lineWidth=s.w*W/1000;
+    x.beginPath();s.p.forEach((q,i)=>i?x.lineTo(q[0]*W,q[1]*H):x.moveTo(q[0]*W,q[1]*H));
+    if(s.p.length===1)x.lineTo(s.p[0][0]*W+.1,s.p[0][1]*H);x.stroke();
+  });
+  x.globalCompositeOperation='source-over';
+}
+function setPen(c,b){pen=c;setMode('pen');document.querySelectorAll('.sw').forEach(s=>s.classList.toggle('on',s===b))}
+function setMode(m){mode=m;$('b-pen').classList.toggle('on',m==='pen');$('b-eraser').classList.toggle('on',m==='eraser')}
+function undo(){const s=$('stk');if(strokes.length)strokes.pop(),redraw();else if(s.lastChild)s.removeChild(s.lastChild)}
+function clearAll(){strokes=[];redraw();$('stk').innerHTML=''}
+function addStk(e){
+  const el=document.createElement('div');el.className='stk';el.textContent=e;
+  el.style.left=(30+Math.random()*40)+'%';el.style.top=(30+Math.random()*40)+'%';
+  let ox=0,oy=0,mv=0,last=0;
+  el.addEventListener('pointerdown',ev=>{ev.preventDefault();el.setPointerCapture(ev.pointerId);mv=0;ox=ev.clientX;oy=ev.clientY});
+  el.addEventListener('pointermove',ev=>{
+    if(!el.hasPointerCapture(ev.pointerId))return;
+    const r=$('cert').getBoundingClientRect();mv+=Math.abs(ev.clientX-ox)+Math.abs(ev.clientY-oy);ox=ev.clientX;oy=ev.clientY;
+    el.style.left=Math.min(100,Math.max(0,(ev.clientX-r.left)/r.width*100))+'%';el.style.top=Math.min(100,Math.max(0,(ev.clientY-r.top)/r.height*100))+'%';
+  });
+  el.addEventListener('pointerup',()=>{if(mv<8){const n=Date.now();if(n-last<400)el.remove();last=n}});
+  $('stk').appendChild(el);
+}
+function nextBg(){
+  bgi=(bgi+1)%BGS.length;const c=$('cert');
+  c.style.setProperty('--cb',BGS[bgi]);c.classList.toggle('dk',bgi===BGS.length-1);
+}
+function toggleFx(n){
+  fx.has(n)?fx.delete(n):fx.add(n);$('fx-'+n).classList.toggle('on',fx.has(n));
+  if(n==='neon')$('cert').classList.toggle('neon',fx.has(n));
+  if(!raf)raf=requestAnimationFrame(fxLoop);
+}
+function fxLoop(){
+  const c=$('fx'),x=c.getContext('2d'),W=c.width,H=c.height,d=window.devicePixelRatio||1,R=Math.random;
+  x.clearRect(0,0,W,H);
+  if(fx.has('sakura')&&R()<.25)parts.push({t:'s',x:R()*W,y:-20,v:(1+R()*1.5)*d,r:(7+R()*7)*d,a:R()*6});
+  if(fx.has('snow')&&R()<.5)parts.push({t:'n',x:R()*W,y:-10,v:(1+R()*2)*d,r:(2.5+R()*4)*d,a:R()*6});
+  if(fx.has('fire')&&R()<.035){const bx=W*(.15+R()*.7),by=H*(.15+R()*.4),h=R()*360;for(let i=0;i<48;i++){const an=i/48*6.283,sp=(1.5+R()*3.5)*d;parts.push({t:'f',x:bx,y:by,vx:Math.cos(an)*sp,vy:Math.sin(an)*sp,l:1,h,r:2.4*d})}}
+  parts=parts.filter(p=>{
+    if(p.t==='f'){p.x+=p.vx;p.y+=p.vy;p.vy+=.05*d;p.l-=.013;if(p.l<=0)return false;x.fillStyle=`hsla(${p.h},100%,60%,${p.l})`;x.beginPath();x.arc(p.x,p.y,p.r,0,6.283);x.fill();return true}
+    p.y+=p.v;p.a+=.04;p.x+=Math.sin(p.a)*(p.t==='s'?1.3:.6)*d;if(p.y>H+20)return false;
+    x.beginPath();
+    if(p.t==='s'){x.fillStyle='rgba(255,160,195,.92)';x.ellipse(p.x,p.y,p.r,p.r*.6,p.a,0,6.283);x.fill()}
+    else{x.fillStyle='#fff';x.strokeStyle='rgba(110,160,230,.9)';x.lineWidth=d;x.arc(p.x,p.y,p.r,0,6.283);x.fill();x.stroke()}
+    return true;
+  });
+  raf=(fx.size||parts.length)&&$('cert-overlay').classList.contains('active')?requestAnimationFrame(fxLoop):0;
+}
+function showCert(){
+  if(!(state[1]&&state[2]&&state[3]))return;
+  $('cert-overlay').classList.add('active');initCert();sizeCv();
+  if(fx.size&&!raf)raf=requestAnimationFrame(fxLoop);
+}
 function closeCert(){$('cert-overlay').classList.remove('active')}
 refresh();
 </script>
