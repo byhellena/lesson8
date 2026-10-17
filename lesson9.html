@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>본리 영어 9단원 기초다지기</title>
+<meta name="theme-color" content="#fff0f6">
+<title>9단원 What's in the bedroom?</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jua&family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
@@ -129,6 +130,36 @@ background:radial-gradient(circle at 1px 1px,#ffd9e6 2px,transparent 2.5px) 0 0/
   .tools{width:min(42%,400px);max-height:none;display:flex;flex-direction:column;justify-content:space-evenly}
   .tools .trow{margin-bottom:0}.sk{font-size:34px;padding:3px 5px}.tb{font-size:15px;padding:8px 13px}.sw{width:34px;height:34px}
 }
+/* 갤럭시 탭 최적화 */
+html,body{overscroll-behavior:none}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
+button{touch-action:manipulation}
+@media (min-width:760px){
+  .wrap{max-width:880px;padding-top:22px}
+  .title h1 b{font-size:38px}.title h1{font-size:26px}.mascot{font-size:78px}
+  .stage-card{padding:20px}.stage-card h3{font-size:23px}.stage-card p{font-size:16px}.num{width:62px;height:62px;min-width:62px;font-size:32px}
+  .choices{grid-template-columns:repeat(3,1fr);gap:14px}
+  .choice{font-size:28px;padding:18px 8px}
+  .qimg{font-size:112px}.qkr{font-size:30px}
+  .sent{font-size:38px}.kr{font-size:23px}
+  .rbtn{font-size:22px;padding:17px 8px;max-width:230px}
+  .pct{font-size:52px}.msg{font-size:24px}.wow{font-size:34px}.fb{font-size:22px}
+  .sbt{font-size:21px}.row{font-size:25px}.tile{font-size:23px;padding:10px 18px}.slot{min-width:80px}
+}
+@media (min-width:900px){#body-3{display:grid;grid-template-columns:1fr 1fr;gap:16px}#body-3 .sb{margin-bottom:0}#body-3 .done{grid-column:1/-1}}
+@media (max-height:760px) and (orientation:landscape){
+  .mascot{font-size:52px}.title{margin:0 0 10px}.title h1 b{font-size:30px}.stage-card{margin-bottom:12px;padding:12px}.cert-btn{padding:14px}.wrap{padding-top:12px}
+}
+@media (max-height:620px) and (orientation:landscape){
+  .wrap{padding:10px 16px 20px}.mascot{font-size:44px}.title{margin:0 0 8px}.title h1{font-size:18px}.title h1 b{font-size:26px}.title p,.sh p{display:none}
+  .stage-card{margin-bottom:10px;padding:10px}.cert-btn{padding:12px}.sh{margin-bottom:6px}.topbar{margin-bottom:6px}
+  .qcard{padding:12px;margin-bottom:8px}.qimg{font-size:72px}.qkr{margin:2px 0 8px}.choice{padding:10px 8px;font-size:24px}
+  .fb{min-height:20px;margin-top:6px}.res{min-height:50px}.kr{margin-bottom:8px}.sent{font-size:30px}
+}
+@media (max-height:640px) and (orientation:landscape){
+  .sk{font-size:26px!important;padding:1px 3px!important}.tb{padding:5px 10px!important;font-size:13px!important}.sw{width:28px!important;height:28px!important}
+  .tools .trow{margin-bottom:4px!important}
+}
 </style>
 </head>
 <body>
@@ -169,6 +200,7 @@ background:radial-gradient(circle at 1px 1px,#ffd9e6 2px,transparent 2.5px) 0 0/
   <div class="mic-box">
     <div class="big">🎤</div>
     <h2>마이크를 켜도 될까요?</h2>
+    <p id="sam-tip" style="display:none;color:#c93f72;font-size:14px;margin:0 0 8px">💡 삼성 인터넷에서는 말하기가 잘 안 될 수 있어요. 크롬으로 열어주세요!</p>
     <p id="mic-text">말하기 연습을 하려면 마이크가 필요해요.<br>아래 버튼을 누른 뒤 <b>'허용'</b>을 눌러주세요!</p>
     <button class="pbtn" id="mic-btn" onclick="askMic()">좋아요! 시작하기</button>
   </div>
@@ -228,7 +260,7 @@ function refresh(){
 function goStage(n){
   if((n===2&&!state[1])||(n===3&&!state[2]))return;
   show('screen-'+n);
-  if(n===1){i1=0;r1()}if(n===2){i2=0;r2()}if(n===3)init3();
+  if(n===1){i1=0;pos=makePos(words.length);r1()}if(n===2){i2=0;r2()}if(n===3)init3();
 }
 function dots(n,total,idx,all){
   $('dots-'+n).innerHTML=Array.from({length:total},(_,i)=>`<div class="dot ${all||i<idx?'done':i===idx?'now':''}"></div>`).join('');
@@ -256,18 +288,23 @@ async function askMic(){
 function getRec(){
   if(!SR)return null;
   try{rec&&rec.abort()}catch(e){}
-  rec=new SR();rec.lang='en-US';rec.interimResults=false;rec.maxAlternatives=3;
+  rec=new SR();rec.lang='en-US';rec.interimResults=false;rec.maxAlternatives=3;rec.interimResults=true;
   return rec;
 }
 
 /* STAGE 1 */
-let i1=0;
+let i1=0,pos=[];
+function makePos(n){
+  let a;
+  do{a=shuffle(Array.from({length:n},(_,i)=>i%3))}while(a.some((v,i)=>i&&v===a[i-1]));
+  return a;
+}
 function r1(){
   dots(1,words.length,i1,false);
   const b=$('body-1');
   if(i1>=words.length){b.innerHTML=donePanel(1,'#3ec99a','1단계 완료!','단어 학습을 모두 마쳤어요.','finish(1)');return}
   const cur=words[i1];
-  const opts=shuffle([cur,...shuffle(words.filter(w=>w.en!==cur.en)).slice(0,2)]);
+  const opts=shuffle(words.filter(w=>w.en!==cur.en)).slice(0,2);opts.splice(pos[i1],0,cur);
   b.innerHTML=`<div class="qcard" style="--a:#4fb0ff"><div class="qcount">${i1+1} / ${words.length}</div>
    <div class="qimg">${cur.e}</div><div class="qkr">${cur.kr}</div>
    <div class="choices">${opts.map(o=>`<button class="choice" onclick="c1(this,'${o.en}')">${o.en}</button>`).join('')}</div>
@@ -340,35 +377,47 @@ function speak(){
   if(busy)return;
   const r=getRec(),res=$('res'),spk=$('spk'),lis=$('lis');
   if(!r){res.innerHTML=`<div class="msg low">이 기기에서는 말하기를 쓸 수 없어요 😥</div><button class="pbtn" style="margin-top:8px" onclick="next2()">다음으로 넘어가기</button>`;return}
-  const target=sentences[i2].en;let got=false,timer=null;
+  const target=sentences[i2].en;let got=false,timer=null,last=null;
   const stop=()=>clearTimeout(timer);
-  spk.disabled=true;lis.textContent='🎧 듣고 있어요... 말해보세요!';res.innerHTML='';
+  const idle=()=>{lis.textContent='';spk.disabled=false};
+  const finish=alts=>{
+    if(got)return;got=true;stop();try{r.abort()}catch(e){}idle();
+    let best=0;const txt=alts.find(s=>s.trim());
+    alts.forEach(s=>{best=Math.max(best,score(s,target))});
+    if(!txt){noHear();return}
+    judge(best);
+    const d=document.createElement('div');d.className='try';d.textContent='들린 소리: '+txt.trim();res.appendChild(d);
+  };
+  const giveUp=()=>{
+    if(got)return;if(last){finish(last);return}
+    got=true;try{r.abort()}catch(e){}lis.textContent='';noHear();setTimeout(()=>{spk.disabled=false},800);
+  };
+  spk.disabled=true;lis.textContent='🎤 잠깐만요...';res.innerHTML='';
+  r.onstart=r.onaudiostart=()=>{if(r===rec&&!got)lis.textContent='🎧 지금 말해보세요!'};
+  r.onspeechstart=()=>{if(r===rec&&!got){stop();timer=setTimeout(giveUp,9000)}};
   r.onresult=e=>{
-    if(r!==rec)return;stop();if(got)return;got=true;
-    let best=0,heard=false;
-    for(let k=0;k<e.results[0].length;k++){
-      const tr=e.results[0][k].transcript;
-      if(tr.trim())heard=true;
-      best=Math.max(best,score(tr,target));
-    }
-    heard?judge(best):noHear();
+    if(r!==rec||got)return;
+    const rs=e.results[e.results.length-1];
+    const alts=Array.from({length:rs.length},(_,k)=>rs[k].transcript);
+    if(rs.isFinal){finish(alts);return}
+    last=alts;stop();timer=setTimeout(()=>finish(last),1500);
   };
   r.onerror=e=>{
-    if(r!==rec)return;stop();if(got)return;got=true;
+    if(r!==rec||got)return;
+    if(e.error==='aborted')return;
+    got=true;stop();idle();
     if(e.error==='not-allowed'||e.error==='service-not-allowed'){
       res.innerHTML='<div class="msg low">마이크가 꺼져 있어요. 선생님께 알려주세요! 🙋</div>';return}
-    if(e.error==='aborted')return;
     e.error==='no-speech'?noHear():judge(0,true);
   };
-  r.onend=()=>{if(r!==rec)return;stop();lis.textContent='';spk.disabled=false;if(!got){got=true;noHear()}};
-  timer=setTimeout(()=>{
-    if(got)return;got=true;
-    try{r.abort()}catch(e){}
-    lis.textContent='';noHear();
-    setTimeout(()=>{if(spk.disabled)spk.disabled=false},1200);
-  },LISTEN_MS);
+  r.onend=()=>{
+    if(r!==rec)return;
+    if(!got){if(last){finish(last)}else{got=true;stop();idle();noHear()}}
+    else idle();
+  };
+  timer=setTimeout(giveUp,6000);
   try{speechSynthesis.cancel()}catch(e){}
-  setTimeout(()=>{try{r.start()}catch(e){stop();lis.textContent='';spk.disabled=false}},250);
+  try{r.start()}catch(e){stop();idle()}
 }
 let praiseN=0;
 const PRAISE=[['너무나 정확해요!! 😲🤩','🎉👏✨🌟🏆✨👏🎉'],['원어민이신가요?! 🤯🎉','🥳🌈💯🔥💯🌈🥳']];
@@ -524,6 +573,8 @@ function showCert(){
   if(fx.size&&!raf)raf=requestAnimationFrame(fxLoop);
 }
 function closeCert(){$('cert-overlay').classList.remove('active')}
+document.addEventListener('contextmenu',e=>e.preventDefault());
+if(/SamsungBrowser/i.test(navigator.userAgent))$('sam-tip').style.display='block';
 refresh();
 </script>
 </body>
