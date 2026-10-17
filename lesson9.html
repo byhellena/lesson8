@@ -109,6 +109,26 @@ background:radial-gradient(circle at 1px 1px,#ffd9e6 2px,transparent 2.5px) 0 0/
 .cert.neon{animation:ne .9s steps(1) infinite}.cert.neon h2,.cert.neon .body{animation:nt .9s steps(1) infinite}
 @keyframes ne{0%{border-color:#ff2bd6;box-shadow:0 0 14px 4px #ff2bd6,inset 0 0 30px #ff2bd6}34%{border-color:#19e6ff;box-shadow:0 0 14px 4px #19e6ff,inset 0 0 30px #19e6ff}67%{border-color:#fff700;box-shadow:0 0 14px 4px #fff700,inset 0 0 30px #fff700}}
 @keyframes nt{0%{text-shadow:0 0 8px #ff2bd6,0 0 22px #ff2bd6}34%{text-shadow:0 0 8px #19e6ff,0 0 22px #19e6ff}67%{text-shadow:0 0 8px #fff700,0 0 22px #fff700}}
+/* 한 화면 맞춤 */
+#cert-overlay{overflow:hidden;padding:8px;align-items:stretch}
+.cwrap{max-width:1100px;height:100%;display:flex;flex-direction:column;gap:8px;margin:0 auto}
+#cert-overlay .cert{flex:1;min-height:28vh;container-type:size;padding:8px 10px;border-width:7px;border-radius:24px}
+.cst{font-size:clamp(16px,6vw,34px);font-size:clamp(16px,6cqmin,34px)}
+#cert-overlay .cert h2{font-size:clamp(26px,8vw,54px);font-size:clamp(26px,9cqmin,54px);margin:2px 0}
+#cert-overlay .cert .body{font-size:clamp(14px,3.6vw,26px);font-size:clamp(14px,4.8cqmin,26px);line-height:1.5;margin:4px 0}
+#cert-overlay .signoff{font-size:clamp(12px,3vw,20px);font-size:clamp(12px,3.8cqmin,20px);margin:4px 0}
+.tools{flex:none;margin:0;padding:8px;border-width:3px;border-radius:20px;overflow-y:auto;max-height:55vh}
+.trow{gap:5px;margin-bottom:6px}
+.tb{font-size:14px;padding:6px 11px;border-width:2px}
+.sw{width:30px;height:30px;border-width:3px}
+.sk{font-size:26px;padding:1px 3px}
+#psize{width:90px}
+.tools .pbtn{padding:8px 26px;font-size:16px;box-shadow:0 3px 0 var(--mint-d)}
+@media (orientation:landscape) and (min-width:700px){
+  .cwrap{flex-direction:row}
+  .tools{width:min(42%,400px);max-height:none;display:flex;flex-direction:column;justify-content:space-evenly}
+  .tools .trow{margin-bottom:0}.sk{font-size:34px;padding:3px 5px}.tb{font-size:15px;padding:8px 13px}.sw{width:34px;height:34px}
+}
 </style>
 </head>
 <body>
@@ -299,17 +319,20 @@ function lev(a,b){
 function score(heard,target){
   const t=norm(target),r=norm(heard);
   if(!t.length||!r.length)return 0;
-  const pool=[...r];let sum=0;
+  const s=sentences.find(x=>x.en===target),K=s?norm(s.key):[];
+  const pool=[...r],joined=r.join('');let sum=0,tot=0;
   t.forEach(w=>{
+    const wt=K.includes(w)?3:1;tot+=wt;
+    if(w.length>=5&&joined.includes(w)){sum+=wt;return}
     let best=-1,bs=0;
     pool.forEach((x,i)=>{
       const base=x.replace(/s$/,''),tb=w.replace(/s$/,'');
       const sim=Math.max(1-lev(w,x)/Math.max(w.length,x.length),1-lev(tb,base)/Math.max(tb.length,base.length,1));
       if(sim>bs){bs=sim;best=i}
     });
-    if(best>-1&&bs>=.45){sum+=bs>=.65?1:.5;pool.splice(best,1)}
+    if(best>-1&&bs>=.5){sum+=wt*(bs>=.72?1:.5);pool.splice(best,1)}
   });
-  return sum/t.length;
+  return sum/tot;
 }
 const LISTEN_MS=6000;
 function noHear(){judge(0,true)}
@@ -352,8 +375,8 @@ const PRAISE=[['너무나 정확해요!! 😲🤩','🎉👏✨🌟🏆✨👏�
 function judge(ratio,miss){
   if(busy)return;
   const res=$('res');
-  const pct=ratio>0?Math.min(100,Math.round(ratio*100+20)):0;
-  if(ratio>=.4){
+  const pct=ratio>0?Math.min(100,Math.round(ratio*100+10)):0;
+  if(ratio>=.55){
     busy=true;
     if(pct>=90){
       const k=praiseN++%2;
