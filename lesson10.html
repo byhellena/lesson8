@@ -30,7 +30,8 @@ background:radial-gradient(circle at 1px 1px,#ffd9e6 2px,transparent 2.5px) 0 0/
 .num{width:54px;height:54px;min-width:54px;border-radius:50%;background:var(--c);color:#fff;font-size:28px;display:flex;align-items:center;justify-content:center}
 .stage-card h3{margin:0 0 3px;font-size:19px;font-weight:400}
 .stage-card p{margin:0;font-size:14px;color:var(--soft)}
-.stage-card .st{margin-left:auto;font-size:28px}
+.stage-card .st{margin-left:auto;font-size:17px;font-weight:700;white-space:nowrap;padding:6px 12px;border-radius:999px;background:#eceaf3;color:#7d7a8c}
+.stage-card .st.ok{background:#fff1b8;color:#c2570a}
 .cert-btn{width:100%;padding:18px;border:0;border-radius:100px;font:400 18px 'Jua';background:var(--lock);color:#fff}
 .cert-btn.ready{background:linear-gradient(90deg,#ffd23f,#ff9640,#ff6f91,#ffd23f);background-size:300% 100%;animation:shine 2.4s linear infinite;box-shadow:0 5px 0 #c9602a}
 @keyframes shine{to{background-position:300% 0}}
@@ -160,6 +161,34 @@ button{touch-action:manipulation}
   .sk{font-size:26px!important;padding:1px 3px!important}.tb{padding:5px 10px!important;font-size:13px!important}.sw{width:28px!important;height:28px!important}
   .tools .trow{margin-bottom:4px!important}
 }
+
+.ptt-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;margin:14px 0 4px}
+.ptt{position:relative;width:170px;height:170px;border-radius:50%;border:0;cursor:pointer;
+  background:#ee7fa6;box-shadow:0 8px 0 #b94a73;color:#fff;font-size:72px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;
+  touch-action:none;transition:transform .08s,box-shadow .08s,background .15s}
+.ptt *{pointer-events:none}
+.ptt-ico{position:relative;z-index:2}
+.ptt-ring{position:absolute;inset:0;border-radius:50%;border:6px solid #ff3b5c;opacity:0;pointer-events:none}
+.ptt.rec{background:#ff3b5c;box-shadow:0 2px 0 #a8142f;transform:translateY(6px) scale(1.04)}
+.ptt.rec .ptt-ring{animation:pttPulse 1.2s ease-out infinite}
+.ptt.rec .ptt-ring.r2{animation-delay:.6s}
+.ptt.wait{background:#9a8cff;box-shadow:0 4px 0 #6c5ccf}
+.ptt:disabled{opacity:.45;cursor:not-allowed}
+@keyframes pttPulse{0%{transform:scale(1);opacity:.9}100%{transform:scale(1.7);opacity:0}}
+.ptt-label{font-weight:800;font-size:19px;color:#5b4a73;min-height:28px;text-align:center}
+.ptt-label.rec{color:#ff3b5c;font-size:22px;animation:pttBlink 1s ease-in-out infinite}
+@keyframes pttBlink{50%{opacity:.55}}
+.ptt-bars{display:flex;gap:6px;height:34px;align-items:center;visibility:hidden}
+.ptt-bars.on{visibility:visible}
+.ptt-bars i{display:block;width:8px;height:10px;border-radius:4px;background:#ff3b5c;animation:pttBar .7s ease-in-out infinite}
+.ptt-bars i:nth-child(2){animation-delay:.1s}.ptt-bars i:nth-child(3){animation-delay:.2s}
+.ptt-bars i:nth-child(4){animation-delay:.3s}.ptt-bars i:nth-child(5){animation-delay:.15s}
+.ptt-bars i:nth-child(6){animation-delay:.25s}.ptt-bars i:nth-child(7){animation-delay:.05s}
+@keyframes pttBar{50%{height:32px}}
+.listen{font-size:17px;font-weight:700;color:#5b4a73;min-height:24px;text-align:center}
+.row .fx{padding:6px 2px}
 </style>
 </head>
 <body>
@@ -168,11 +197,11 @@ button{touch-action:manipulation}
     <div class="title">
       <span class="mascot">🧭</span>
       <h1>길 안내하기<b class="en">Giving Directions</b></h1>
-      <p>단계를 차례로 완료하고 이수 확인증을 받아보세요!</p>
+      <p>원하는 단계를 선택해 학습해 보세요!</p>
     </div>
-    <div class="stage-card" id="card-1" style="--c:var(--sky)" onclick="goStage(1)"><div class="num">1</div><div><h3>단어 학습</h3><p>그림과 뜻을 보고 영어 단어 고르기</p></div><div class="st" id="st-1">▶️</div></div>
-    <div class="stage-card locked" id="card-2" style="--c:var(--purple)" onclick="goStage(2)"><div class="num">2</div><div><h3>말하기 학습</h3><p>문장을 듣고 따라 말해보기</p></div><div class="st" id="st-2">🔒</div></div>
-    <div class="stage-card locked" id="card-3" style="--c:var(--orange)" onclick="goStage(3)"><div class="num">3</div><div><h3>문장 구성하기</h3><p>단어를 눌러 문장 완성하기</p></div><div class="st" id="st-3">🔒</div></div>
+    <div class="stage-card" id="card-1" style="--c:var(--sky)" onclick="goStage(1)"><div class="num">1</div><div><h3>단어 학습</h3><p>그림과 뜻을 보고 영어 단어 고르기</p></div><div class="st" id="st-1">도전 전</div></div>
+    <div class="stage-card" id="card-2" style="--c:var(--purple)" onclick="goStage(2)"><div class="num">2</div><div><h3>말하기 학습</h3><p>문장을 듣고 따라 말해보기</p></div><div class="st" id="st-2">도전 전</div></div>
+    <div class="stage-card" id="card-3" style="--c:var(--orange)" onclick="goStage(3)"><div class="num">3</div><div><h3>문장 구성하기</h3><p>빈칸에 알맞은 단어를 눌러 문장 완성하기</p></div><div class="st" id="st-3">도전 전</div></div>
     <button class="cert-btn" id="cert-btn" onclick="showCert()">✨ 이수 확인증 제출하기 ✨</button>
   </div>
 
@@ -190,7 +219,7 @@ button{touch-action:manipulation}
 
   <div class="screen" id="screen-3">
     <div class="topbar"><button class="home-btn" onclick="goHome()">🏠 처음으로</button><div class="dots" id="dots-3"></div></div>
-    <div class="sh"><div class="badge" style="background:var(--orange)">3</div><div><h2>문장 구성하기</h2><p>단어를 순서대로 눌러 문장을 완성해요</p></div></div>
+    <div class="sh"><div class="badge" style="background:var(--orange)">3</div><div><h2>문장 구성하기</h2><p>빈칸에 알맞은 단어를 눌러 문장을 완성해요</p></div></div>
     <div id="body-3"></div>
     <button class="bottom-home" id="bottom-home" onclick="goHome()">🏠 첫 화면으로</button>
   </div>
@@ -235,35 +264,36 @@ const sentences=[
  {en:'Turn right at the bank.',kr:'은행에서 오른쪽으로 도세요.',e:'➡️🏦',key:'right bank'},
  {en:'Turn left at the library.',kr:'도서관에서 왼쪽으로 도세요.',e:'⬅️📚',key:'left library'},
  {en:"Turn right at the McDonald's.",kr:'맥도날드에서 오른쪽으로 도세요.',e:'➡️🍔',key:'right mcdonalds'},
+ {en:'Turn left at the school.',kr:'학교에서 왼쪽으로 도세요.',e:'⬅️🏫',key:'left school'},
  {en:"It's on your left.",kr:'당신의 왼편에 있어요.',e:'📍⬅️',key:'left'},
  {en:"It's on your right.",kr:'당신의 오른편에 있어요.',e:'➡️📍',key:'right'},
  {en:'Go straight three blocks and turn right at the school.',kr:'세 블록 직진해서 학교에서 오른쪽으로 도세요.',e:'⬆️➡️🏫',key:'three right school'},
  {en:"Go straight one block. It's on your left.",kr:'한 블록 직진하세요. 당신의 왼편에 있어요.',e:'⬆️📍',key:'one left'},
  {en:"Go straight two blocks and turn left. It's on your right.",kr:'두 블록 직진해서 왼쪽으로 도세요. 당신의 오른편에 있어요.',e:'⬆️⬅️📍',key:'two left right'}];
+/* 문장 구성: w=전체 단어, b=학생이 채울 빈칸 위치(0부터), fake=헷갈리는 단어, suf=마침표 */
 const problems=[
- {kr:'한 블록 직진하세요.',pre:'Go',ok:['straight','one','block'],fake:['turn','blocks'],h:{turn:"turn은 '돌다'예요. 직진은 어떤 단어였죠? ⬆️",blocks:"한 블록일 때는 block, 여러 블록일 때는 blocks예요!"},suf:'.'},
- {kr:'두 블록 직진하세요.',pre:'Go',ok:['straight','two','blocks'],fake:['one','block'],h:{one:"one은 하나예요. 두 블록이니까 다른 숫자를 써요!",block:"블록이 둘 이상이면 block 끝에 s가 붙어요!"},suf:'.'},
- {kr:'은행에서 오른쪽으로 도세요.',pre:'Turn',ok:['right','at','the','bank'],fake:['left','library'],h:{left:"left는 왼쪽이에요. 오른쪽은 뭐였죠? ➡️",library:"library는 도서관이에요. 은행은 뭐였죠? 🏦"},suf:'.'},
- {kr:'도서관에서 왼쪽으로 도세요.',pre:'Turn',ok:['left','at','the','library'],fake:['right','bank'],h:{right:"right는 오른쪽이에요. 왼쪽은 뭐였죠? ⬅️",bank:"bank는 은행이에요. 도서관은 뭐였죠? 📚"},suf:'.'},
- {kr:'당신의 왼편에 있어요.',pre:"It's",ok:['on','your','left'],fake:['in','right'],h:{in:"in은 '~안에'예요. 방향을 말할 땐 on을 써요!",right:"right는 오른편이에요. 왼편은 뭐였죠? ⬅️"},suf:'.'},
- {kr:'당신의 오른편에 있어요.',pre:"It's",ok:['on','your','right'],fake:['at','left'],h:{at:"방향을 말할 땐 at 말고 on을 써요!",left:"left는 왼편이에요. 오른편은 뭐였죠? ➡️"},suf:'.'},
- {kr:'두 블록 직진해서 왼쪽으로 도세요.',pre:'Go',ok:['straight','two','blocks','and','turn','left'],fake:['one','right'],h:{one:"one은 하나예요. 두 블록이에요!",right:"right는 오른쪽이에요. 왼쪽으로 도는 거예요! ⬅️"},suf:'.'},
- {kr:'세 블록 직진해서 학교에서 오른쪽으로 도세요.',pre:'Go',ok:['straight','three','blocks','and','turn','right','at','the','school'],fake:['two','left'],h:{two:"two는 둘이에요. 세 블록이니까 three를 써요!",left:"left는 왼쪽이에요. 오른쪽으로 도는 거예요! ➡️"},suf:'.'}];
+ {kr:'한 블록 직진하세요.',w:['Go','straight','one','block'],b:[1,2],fake:['turn','blocks'],h:{turn:"turn은 '돌다'예요. 직진은 어떤 단어였죠? ⬆️",blocks:"한 블록일 때는 block, 여러 블록일 때는 blocks예요!"},suf:'.'},
+ {kr:'두 블록 직진하세요.',w:['Go','straight','two','blocks'],b:[2,3],fake:['one','block'],h:{one:"one은 하나예요. 두 블록이니까 다른 숫자를 써요!",block:"블록이 둘 이상이면 block 끝에 s가 붙어요!"},suf:'.'},
+ {kr:'은행에서 오른쪽으로 도세요.',w:['Turn','right','at','the','bank'],b:[1,4],fake:['left','library'],h:{left:"left는 왼쪽이에요. 오른쪽은 뭐였죠? ➡️",library:"library는 도서관이에요. 은행은 뭐였죠? 🏦"},suf:'.'},
+ {kr:'도서관에서 왼쪽으로 도세요.',w:['Turn','left','at','the','library'],b:[1,4],fake:['right','bank'],h:{right:"right는 오른쪽이에요. 왼쪽은 뭐였죠? ⬅️",bank:"bank는 은행이에요. 도서관은 뭐였죠? 📚"},suf:'.'},
+ {kr:'당신의 왼편에 있어요.',w:["It's",'on','your','left'],b:[1,3],fake:['in','right'],h:{in:"in은 '~안에'예요. 방향을 말할 땐 on을 써요!",right:"right는 오른편이에요. 왼편은 뭐였죠? ⬅️"},suf:'.'},
+ {kr:'두 블록 직진해서 왼쪽으로 도세요.',w:['Go','straight','two','blocks','and','turn','left'],b:[2,5,6],fake:['one','right'],h:{one:"one은 하나예요. 두 블록이에요!",right:"right는 오른쪽이에요. 왼쪽으로 도는 거예요! ⬅️"},suf:'.'},
+ {kr:'세 블록 직진해서 학교에서 오른쪽으로 도세요.',w:['Go','straight','three','blocks','and','turn','right','at','the','school'],b:[2,6,9],fake:['two','left'],h:{two:"two는 둘이에요. 세 블록이니까 three를 써요!",left:"left는 왼쪽이에요. 오른쪽으로 도는 거예요! ➡️"},suf:'.'}];
+problems.forEach(p=>{p.ok=p.b.map(j=>p.w[j])});
 const state={1:false,2:false,3:false};
 const $=id=>document.getElementById(id);
 const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active');window.scrollTo(0,0)}
-function goHome(){show('screen-home');refresh()}
+function goHome(){killPrev();show('screen-home');refresh()}
 function refresh(){
   [1,2,3].forEach(n=>{
-    const locked=(n===2&&!state[1])||(n===3&&!state[2]);
-    $('card-'+n).classList.toggle('locked',locked&&!state[n]);
-    $('st-'+n).textContent=state[n]?'✅':locked?'🔒':'▶️';
+    $('card-'+n).classList.remove('locked');
+    $('st-'+n).textContent=state[n]?'성공 🎆':'도전 전';
+    $('st-'+n).classList.toggle('ok',!!state[n]);
   });
   $('cert-btn').classList.toggle('ready',state[1]&&state[2]&&state[3]);
 }
 function goStage(n){
-  if((n===2&&!state[1])||(n===3&&!state[2]))return;
   show('screen-'+n);
   if(n===1){i1=0;pos=makePos(words.length);r1()}if(n===2){i2=0;r2()}if(n===3)init3();
 }
@@ -331,10 +361,20 @@ function r2(){
   b.innerHTML=`<div class="qcard" style="--a:#a58bff"><div class="qcount">${i2+1} / ${sentences.length}</div>
    <div class="qimg" style="font-size:70px">${s.e}</div>
    <div class="sent en">${s.en}</div><div class="kr">${s.kr}</div>
-   <div class="btns"><button class="rbtn" onclick="say()">🔊 듣기</button><button class="rbtn mic" id="spk" onclick="speak()">🎤 말하기</button></div>
+   <div class="btns"><button class="rbtn" onclick="say()">🔊 듣기</button></div>
+   <div class="ptt-wrap">
+     <button class="ptt" id="spk" type="button" aria-label="누르고 있는 동안 말하기">
+       <span class="ptt-ring"></span><span class="ptt-ring r2"></span>
+       <span class="ptt-ico" id="ptt-ico">🎤</span>
+     </button>
+     <div class="ptt-label" id="ptt-label">꾹 누르고 말하세요</div>
+     <div class="ptt-bars" id="ptt-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+   </div>
    <div class="listen" id="lis"></div><div class="res" id="res"></div></div>`;
+  setupPTT();
 }
 function say(){
+  dropSR();held=false;waitingMic=false;
   try{const u=new SpeechSynthesisUtterance(sentences[i2].en);u.lang='en-US';u.rate=.9;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}
 }
 const NUM={'1':'one','2':'two','3':'three','4':'four','5':'five'};
@@ -370,46 +410,174 @@ function score(heard,target){
   const ratio=sum/tot;
   return miss?Math.min(ratio,.5):ratio;
 }
-function speak(){
-  if(busy)return;
-  const tag=$('lis'),res=$('res'),spk=$('spk');
-  const target=sentences[i2].en;
+function speechDebugPanel(title){
+  const res=$('res');
+  const panel=document.createElement('div');
+  panel.className='msg low';
+  panel.style.cssText='margin-top:12px;text-align:center;white-space:normal;overflow-wrap:anywhere';
+  panel.textContent=title;
+  res.appendChild(panel);
+}
+/* ===== 누르고 있는 동안만 듣는 방식 (Push-to-talk) =====
+   아이폰 사파리는 인식 세션을 여러 번 새로 시작하면 2번째부터 소리가 안 들어오는 문제가 있어서,
+   세션을 한 번 열어 두고 계속 유지하면서, 버튼을 누르고 있는 동안 들린 소리만 사용합니다. */
+let SR=null, srRunning=false, srReady=false, srStale=false, lastRes=null, srErr='', srMsg='', srEvents=[];
+let held=false, waitingMic=false, pressAt=0, base=0, judging=false, noSoundFails=0;
+const evt=n=>{srEvents.push(n);if(srEvents.length>40)srEvents.shift()};
+function dropSR(){
+  if(SR){
+    const o=SR;SR=null;
+    ['onstart','onaudiostart','onsoundstart','onspeechstart','onspeechend','onsoundend','onaudioend','onnomatch','onresult','onerror','onend'].forEach(k=>o[k]=null);
+    try{o.abort()}catch(e){}
+  }
+  srRunning=false;srReady=false;lastRes=null;
+}
+function textFrom(from){
+  if(!lastRes)return '';
+  let t='';
+  for(let k=from;k<lastRes.length;k++)t+=lastRes[k][0].transcript+' ';
+  return t.trim();
+}
+function beginListen(){
+  waitingMic=false;
+  base=lastRes?lastRes.length:0;
+  pressAt=Date.now();
+  pttUI('rec');
+}
+function openSR(){            /* 반드시 버튼을 누른 순간(사용자 동작) 안에서 호출 */
+  dropSR();
+  srStale=false;srErr='';srMsg='';srEvents=[];evt('새 세션');
+  const R=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const rec=new R();
+  rec.lang='en-US';rec.continuous=true;rec.interimResults=true;rec.maxAlternatives=1;
+  rec.onstart=()=>{if(SR!==rec)return;srRunning=true;evt('start')};
+  rec.onaudiostart=()=>{
+    if(SR!==rec)return;
+    srReady=true;evt('audiostart');
+    if(held&&waitingMic)beginListen();
+  };
+  rec.onsoundstart=()=>{if(SR===rec)evt('soundstart')};
+  rec.onspeechstart=()=>{if(SR===rec)evt('speechstart')};
+  rec.onspeechend=()=>{if(SR===rec)evt('speechend')};
+  rec.onaudioend=()=>{if(SR===rec)evt('audioend')};
+  rec.onnomatch=()=>{if(SR===rec)evt('nomatch')};
+  rec.onresult=e=>{
+    if(SR!==rec)return;
+    evt('result');
+    lastRes=e.results;
+    if(held&&!waitingMic){
+      const t=textFrom(base);
+      const l=$('ptt-label');
+      if(t&&l)l.textContent='🔴 '+t;
+    }
+  };
+  rec.onerror=e=>{if(SR!==rec)return;srErr=e.error||'unknown-error';srMsg=e.message||'';evt('error:'+srErr)};
+  rec.onend=()=>{
+    if(SR!==rec)return;
+    evt('end');srRunning=false;srReady=false;
+  };
+  SR=rec;
+  rec.start();
+}
+
+function pttUI(state,text){
+  const b=$('spk'),l=$('ptt-label'),bars=$('ptt-bars'),ico=$('ptt-ico');
+  if(!b)return;
+  b.classList.toggle('rec',state==='rec');
+  b.classList.toggle('wait',state==='wait'||state==='warm');
+  l.className='ptt-label'+(state==='rec'?' rec':'');
+  bars.classList.toggle('on',state==='rec');
+  ico.textContent=state==='rec'?'🔴':(state==='wait'||state==='warm')?'⏳':'🎤';
+  l.textContent=text||(state==='rec'?'🔴 듣는 중! 손을 떼면 끝나요':state==='warm'?'마이크 켜는 중... 계속 누르고 있어요':state==='wait'?'확인하는 중...':'꾹 누르고 말하세요');
+}
+
+function setupPTT(){
+  const b=$('spk');
+  if(!b)return;
+  pttUI('idle');
+  b.addEventListener('pointerdown',e=>{e.preventDefault();if(busy||held||judging)return;pressStart()});
+  b.addEventListener('pointerup',e=>{e.preventDefault();if(held)pressEnd()});
+  b.addEventListener('pointercancel',()=>{if(held)pressEnd()});
+  b.addEventListener('pointerleave',e=>{if(held&&e.pointerType==='mouse')pressEnd()});
+  b.addEventListener('contextmenu',e=>e.preventDefault());
+  b.addEventListener('selectstart',e=>e.preventDefault());
+  if(!window.__pttDoc){
+    window.__pttDoc=true;
+    document.addEventListener('pointerup',()=>{if(held)pressEnd()});
+    document.addEventListener('touchend',()=>{if(held)pressEnd()});
+  }
+}
+
+function pressStart(){
+  const res=$('res'),tag=$('lis');
   const R=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!R){
-    res.innerHTML=`<div class="msg low">이 기기에서는 말하기를 쓸 수 없어요 😥</div><button class="pbtn" style="margin-top:8px" onclick="next2()">다음으로 넘어가기</button>`;
+    res.innerHTML='<div class="msg low">이 브라우저에서 음성 인식을 쓸 수 없어요.</div>';
+    
     return;
   }
-  const rec=new R();
-  rec.lang='en-US';rec.interimResults=false;rec.maxAlternatives=1;
-  let got=false,timer=null,kill=null;const clr=()=>{clearTimeout(timer);clearTimeout(kill)};
-  spk.disabled=true;tag.textContent='🎧 듣는 중...';res.innerHTML='';
-  rec.onresult=e=>{
-    clr();got=true;
-    const transcript=e.results[0][0].transcript;
-    if(!transcript.trim()){judge(0,true);return}
-    judge(score(transcript,target));
-    const d=document.createElement('div');d.className='try';d.textContent='들린 소리: '+transcript.trim();res.appendChild(d);
-  };
-  rec.onerror=e=>{
-    clr();tag.textContent='';spk.disabled=false;
-    if(e.error==='not-allowed'||e.error==='service-not-allowed'){
-      got=true;res.innerHTML='<div class="msg low">마이크가 꺼져 있어요. 선생님께 알려주세요! 🙋</div>';return}
-    if(!got){got=true;judge(0,true)}
-  };
-  rec.onend=()=>{
-    clr();tag.textContent='';spk.disabled=false;
-    if(!got){got=true;judge(0,true)}
-  };
-  try{
-    rec.start();
-    // 5초 동안 입력이 없으면 듣기를 멈춤 (말하던 중이면 거기까지 인식)
-    timer=setTimeout(()=>{
-      if(got)return;
-      try{rec.stop()}catch(e){}
-      kill=setTimeout(()=>{if(got)return;got=true;tag.textContent='';spk.disabled=false;judge(0,true)},1500);
-    },5000);
-  }catch(e){tag.textContent='';spk.disabled=false}
+  held=true;pressAt=Date.now();
+  res.innerHTML='';tag.textContent='';
+  try{speechSynthesis.cancel()}catch(e){}
+  evt('눌림');
+  if(SR&&srRunning&&srReady&&!srStale){
+    beginListen();               /* 이미 켜져 있는 세션 그대로 사용 */
+  }else{
+    waitingMic=true;
+    pttUI('warm');
+    try{openSR()}catch(e){
+      held=false;waitingMic=false;dropSR();
+      pttUI('idle');
+      speechDebugPanel('음성 인식을 시작하지 못했어요. 다시 꾹 눌러 주세요.');
+    }
+  }
 }
+
+function pressEnd(){
+  if(!held)return;
+  held=false;
+  evt('뗌');
+  if(waitingMic){                /* 마이크가 켜지기 전에 손을 뗌: 세션은 유지 */
+    waitingMic=false;
+    pttUI('idle','마이크가 켜지는 중이었어요. 잠시 뒤 다시 꾹 눌러요 🙂');
+    return;
+  }
+  if(Date.now()-pressAt<500){
+    pttUI('idle','조금 더 오래 꾹 눌러 주세요 👆');
+    return;
+  }
+  judging=true;
+  pttUI('wait');
+  setTimeout(pttFinish,1200);    /* 마지막 단어의 최종 결과를 기다림 */
+}
+
+function pttFinish(){
+  judging=false;
+  const res=$('res');
+  if(!res)return;
+  const text=textFrom(base);
+  if(text){
+    noSoundFails=0;
+    pttUI('idle');
+    judge(score(text,sentences[i2].en));
+    const d=document.createElement('div');d.className='try';d.textContent='들린 소리: '+text;res.appendChild(d);
+    return;
+  }
+  /* 아무것도 못 들음: 오답으로 세지 않음. 다음엔 새 세션으로 */
+  srStale=true;
+  noSoundFails++;
+  pttUI('idle','소리가 안 들렸어요 🙉 다시 꾹 눌러 말해요!');
+  speechDebugPanel('소리가 잘 안 들어왔어요. 마이크 가까이에서 한 번 더 말해 주세요.');
+  if(noSoundFails>=2){
+    const b=document.createElement('button');
+    b.className='rbtn';b.style.marginTop='12px';b.textContent='⏭️ 이 문제는 건너뛰기';
+    b.onclick=()=>{if(busy)return;busy=true;next2()};
+    res.appendChild(b);
+  }
+}
+function stopSR(cb){dropSR();cb&&cb()}
+function killPrev(){held=false;waitingMic=false;judging=false;noSoundFails=0;dropSR()}
+
 let praiseN=0;
 const PRAISE=[['너무나 정확해요!! 😲🤩','🎉👏✨🌟🏆✨👏🎉'],['원어민이신가요?! 🤯🎉','🥳🌈💯🔥💯🌈🥳']];
 function judge(ratio,miss){
@@ -435,11 +603,11 @@ function judge(ratio,miss){
     res.innerHTML=`<div class="msg mid">${m}</div>`;
     setTimeout(next2,1800);return;
   }
-  res.innerHTML=`${miss?'':`<div class="pct en">${pct}%</div>`}<div class="msg low">${miss?'소리가 잘 안 들렸어요 🙉':'조금만 더! 💪'}</div><div class="try">다시 🎤 버튼을 눌러 말해봐요!</div>`;
+  res.innerHTML=`${miss?'':`<div class="pct en">${pct}%</div>`}<div class="msg low">${miss?'소리가 잘 안 들렸어요 🙉':'조금만 더! 💪'}</div><div class="try">🎤 버튼을 꾹 누르고 다시 말해봐요!</div>`;
 }
-function next2(){i2++;r2()}
+function next2(){held=false;waitingMic=false;judging=false;noSoundFails=0;i2++;r2()}
 
-/* STAGE 3 */
+/* STAGE 3 : 일부 단어는 미리 채워져 있고, 빈칸만 학생이 채움 */
 const sb=[];
 function init3(){
   problems.forEach((p,i)=>{sb[i]={slots:p.ok.map(()=>null),bank:shuffle([...p.ok,...p.fake]),src:p.ok.map(()=>null),solved:false,msg:'',bad:false}});
@@ -450,8 +618,14 @@ function r3(){
   dots(3,problems.length,sb.filter(s=>s.solved).length,all);
   $('body-3').innerHTML=problems.map((p,i)=>{
     const s=sb[i];
+    const row=p.w.map((w,j)=>{
+      const k=p.b.indexOf(j);
+      if(k<0)return `<span>${w}</span>`;
+      const v=s.slots[k];
+      return `<span class="slot ${v?(s.bad?(v===p.ok[k]?'ok':'x'):'f'):''}" onclick="rm(${i},${k})">${v||'____'}</span>`;
+    }).join('');
     return `<div class="sb ${s.solved?'solved':''}"><div class="sbt">${i+1}. ${p.kr}</div>
-     <div class="row"><span>${p.pre}</span>${s.slots.map((w,k)=>`<span class="slot ${w?(s.bad?(w===p.ok[k]?'ok':'x'):'f'):''}" onclick="rm(${i},${k})">${w||'____'}</span>`).join('')}<span>${p.suf}</span></div>
+     <div class="row">${row}<span class="fx">${p.suf}</span></div>
      <div class="bank">${s.bank.map((w,k)=>`<button class="tile ${s.src.includes(k)?'used':''}" onclick="pick(${i},${k})">${w}</button>`).join('')}</div>
      <button class="reset" onclick="reset(${i})">🔄 다시하기</button>
      <div class="sbf ${s.bad?'hint':''}">${s.solved?'성공! 🎉':s.msg}</div></div>`;
@@ -464,7 +638,7 @@ function hintFor(i){
   const fk=s.slots.find(w=>p.fake.includes(w));
   if(fk)return '💡 '+p.h[fk]+' 빨간 칸을 눌러 바꿔봐요!';
   const n=s.slots.findIndex((w,k)=>w!==p.ok[k]);
-  return `💡 단어는 모두 맞아요! ${n+1}번째 칸부터 순서를 다시 생각해봐요. 빨간 칸을 눌러 바꿔봐요!`;
+  return `💡 단어는 모두 맞아요! 빈칸 ${n+1}번째부터 순서를 다시 생각해봐요. 빨간 칸을 눌러 바꿔봐요!`;
 }
 function pick(i,k){
   const s=sb[i],p=problems[i];
