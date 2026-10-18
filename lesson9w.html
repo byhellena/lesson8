@@ -105,4 +105,504 @@
     </main>
 
     <!-- 푸터 -->
-    <footer
+    <footer class="text-center text-slate-400 font-bold text-base py-2">
+        Classroom Interactive Learning Tool • Powered for Big TV Display
+    </footer>
+
+    <!-- 퀴즈 모달 팝업 -->
+    <div id="quiz-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
+        <div id="quiz-modal-box" class="bg-white w-full max-w-5xl rounded-3xl p-6 shadow-2xl border-4 border-purple-400 flex flex-col gap-6 relative transition-all duration-300">
+            
+            <!-- 닫기 버튼 -->
+            <button onclick="closeQuizModal()" class="absolute top-4 right-4 text-3xl font-black text-slate-400 hover:text-slate-700">✕</button>
+
+            <!-- 퀴즈 헤더 -->
+            <div class="flex items-center justify-between border-b pb-3">
+                <div class="flex items-center gap-3">
+                    <span class="text-4xl">🏆</span>
+                    <h2 id="quiz-title" class="text-3xl font-black text-purple-700 jua-font">1번 문제</h2>
+                </div>
+                <div class="text-xl font-bold text-slate-500" id="quiz-progress">문제 1 / 2</div>
+            </div>
+
+            <!-- 질문 텍스트 -->
+            <div id="quiz-question" class="text-3xl md:text-4xl font-black text-center text-slate-800 bg-purple-50 py-4 rounded-2xl border border-purple-200">
+                알렉스의 방은 무엇일까요?
+            </div>
+
+            <!-- 선택지 그림 카드 (2지 선다) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-2">
+                <!-- 보기 1 (왼쪽) -->
+                <div id="option-left" onclick="checkQuizAnswer(1)" class="cursor-pointer bg-slate-50 border-4 border-slate-200 hover:border-purple-500 hover:bg-purple-50 rounded-2xl p-6 flex flex-col items-center justify-center gap-4 transition transform hover:scale-105 shadow-md">
+                    <div id="quiz-img-left" class="w-full h-56 bg-white rounded-xl border-2 border-slate-300 flex items-center justify-center shadow-inner overflow-hidden">
+                        <!-- SVG 삽입 위치 -->
+                    </div>
+                    <span id="quiz-txt-left" class="text-2xl font-black text-slate-700">왼쪽 보기</span>
+                </div>
+
+                <!-- 보기 2 (오른쪽) -->
+                <div id="option-right" onclick="checkQuizAnswer(2)" class="cursor-pointer bg-slate-50 border-4 border-slate-200 hover:border-purple-500 hover:bg-purple-50 rounded-2xl p-6 flex flex-col items-center justify-center gap-4 transition transform hover:scale-105 shadow-md">
+                    <div id="quiz-img-right" class="w-full h-56 bg-white rounded-xl border-2 border-slate-300 flex items-center justify-center shadow-inner overflow-hidden">
+                        <!-- SVG 삽입 위치 -->
+                    </div>
+                    <span id="quiz-txt-right" class="text-2xl font-black text-slate-700">오른쪽 보기</span>
+                </div>
+            </div>
+
+            <!-- 피드백 메시지 영역 -->
+            <div id="quiz-feedback" class="text-center text-2xl font-black h-12 flex items-center justify-center"></div>
+
+            <!-- 다음 문제 / 완료 버튼 -->
+            <div class="flex justify-end gap-3 pt-2">
+                <button id="next-quiz-btn" onclick="nextQuizStep()" class="hidden px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-2xl rounded-xl shadow-lg transition">
+                    다음 문제 ➡
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 폭죽 효과 컨테이너 -->
+    <div id="fireworks-container" class="fixed inset-0 pointer-events-none z-50 overflow-hidden hidden"></div>
+
+    <script>
+        // 학습 데이터 원본 정의 (2, 3단계 빈칸 단어 지정 반영)
+        const sentencesData = [
+            { id: 1, en: "This is the living room.", ko: "이곳은 거실입니다.", blanks2: ["is"], blanks3: ["This", "is"] },
+            { id: 2, en: "Look! There are pictures on the table.", ko: "봐봐! 테이블 위에 사진들이 있어요.", blanks2: ["There"], blanks3: ["There", "pictures"] },
+            { id: 3, en: "They are Alex and Andrew.", ko: "그들은 알렉스와 앤드루입니다.", blanks2: ["Alex"], blanks3: ["Alex", "Andrew"] },
+            { id: 4, en: "Alex is twelve years old.", ko: "알렉스는 열두 살입니다.", blanks2: ["twelve"], blanks3: ["Alex", "twelve"] },
+            { id: 5, en: "Andrew is twelve years old, too.", ko: "앤드루도 열두 살입니다.", blanks2: ["too"], blanks3: ["twelve", "too"] },
+            { id: 6, en: "They are brothers.", ko: "그들은 형제입니다.", blanks2: ["brothers"], blanks3: ["are", "brothers"] },
+            { id: 7, en: "This is Alex's room.", ko: "이곳은 알렉스의 방입니다.", blanks2: ["Alex's"], blanks3: ["This", "Alex's"] },
+            { id: 8, en: "There are robots in the box.", ko: "상자 안에 로봇들이 있습니다.", blanks2: ["are"], blanks3: ["There", "are"] },
+            { id: 9, en: "Alex likes making robots.", ko: "알렉스는 로봇 만드는 것을 좋아합니다.", blanks2: ["making"], blanks3: ["likes", "making"] },
+            { id: 10, en: "This is Andrew's room.", ko: "이곳은 앤드루의 방입니다.", blanks2: ["Andrew's"], blanks3: ["This", "Andrew's"] },
+            { id: 11, en: "There is a guitar on the bed.", ko: "침대 위에 기타가 한 대 있습니다.", blanks2: ["guitar"], blanks3: ["is", "guitar"] },
+            { id: 12, en: "Andrew likes playing the guitar.", ko: "앤드루는 기타 연주하는 것을 좋아합니다.", blanks2: ["playing"], blanks3: ["likes", "playing"] },
+            { id: 13, en: "They look the same.", ko: "그들은 똑같이 생겼습니다.", blanks2: ["same"], blanks3: ["look", "same"] },
+            { id: 14, en: "But they are not the same.", ko: "하지만 그들은 똑같지 않습니다.", blanks2: ["not"], blanks3: ["are", "not"] }
+        ];
+
+        let currentLevel = 1;
+        let blankStates = {}; // 2,3단계 빈칸 상태 추적 (true면 정답 공개)
+
+        function initApp() {
+            renderSentences();
+        }
+
+        function changeLevel(level) {
+            currentLevel = level;
+            
+            // 탭 버튼 스타일 갱신
+            for(let i=1; i<=3; i++) {
+                const btn = document.getElementById(`btn-level-${i}`);
+                if(i === level) {
+                    btn.className = "px-5 py-2.5 rounded-lg text-xl font-black transition-all shadow-sm bg-emerald-600 text-white";
+                } else {
+                    btn.className = "px-5 py-2.5 rounded-lg text-xl font-black transition-all text-slate-600 hover:bg-emerald-200";
+                }
+            }
+
+            // 상단 안내 및 컨트롤 갱신
+            const desc = document.getElementById("level-desc");
+            const quizContainer = document.getElementById("quiz-btn-container");
+            const blankControls = document.getElementById("blank-controls");
+
+            if(level === 1) {
+                desc.innerHTML = `🔊 <span>1단계: 문장을 누르면 원어민 발음(TTS)이 재생됩니다!</span>`;
+                quizContainer.classList.remove("hidden");
+                blankControls.classList.add("hidden");
+            } else if(level === 2) {
+                desc.innerHTML = `✏️ <span>2단계: 빈칸 [ ? ]을 눌러 정답을 확인하세요! (음성 재생 없음)</span>`;
+                quizContainer.classList.add("hidden");
+                blankControls.classList.remove("hidden");
+            } else {
+                desc.innerHTML = `🔥 <span>3단계: 핵심 단어 빈칸 [ ? ]을 모두 채워보세요! (음성 재생 없음)</span>`;
+                quizContainer.classList.add("hidden");
+                blankControls.classList.remove("hidden");
+            }
+
+            renderSentences();
+        }
+
+        // 문장 렌더링 함수
+        function renderSentences() {
+            const container = document.getElementById("sentences-container");
+            container.innerHTML = "";
+
+            sentencesData.forEach((item, index) => {
+                const card = document.createElement("div");
+                card.className = "bg-white border-3 border-slate-200 rounded-2xl p-4 shadow-sm hover:border-yellow-500 hover:bg-yellow-200 transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-3 cursor-pointer group";
+                
+                // 클릭 이벤트 (1단계일 때만 발음 재생)
+                card.onclick = () => {
+                    if(currentLevel === 1) {
+                        playTTS(item.en);
+                    }
+                };
+
+                // 번호 표지
+                const numBadge = `<span class="bg-emerald-100 text-emerald-800 font-black text-xl px-3 py-1 rounded-xl shrink-0 group-hover:bg-yellow-300">${index + 1}</span>`;
+
+                let contentHtml = "";
+
+                if(currentLevel === 1) {
+                    // 1단계: 전체 텍스트 + 뜻
+                    contentHtml = `
+                        <div class="flex-1">
+                            <div class="text-3xl md:text-4xl font-black text-slate-800 tracking-wide">${item.en}</div>
+                            <div class="text-2xl font-bold text-slate-500 mt-1">(${item.ko})</div>
+                        </div>
+                        <div class="text-emerald-500 group-hover:text-amber-600 font-black text-2xl flex items-center gap-1 shrink-0">
+                            🔊 <span class="text-lg">듣기</span>
+                        </div>
+                    `;
+                } else {
+                    // 2단계 또는 3단계: 빈칸 처리
+                    const targetBlanks = currentLevel === 2 ? item.blanks2 : item.blanks3;
+                    const formattedEn = renderBlanksForSentence(item, targetBlanks);
+
+                    contentHtml = `
+                        <div class="flex-1">
+                            <div class="text-3xl md:text-4xl font-black text-slate-800 tracking-wide flex flex-wrap items-center gap-2">${formattedEn}</div>
+                            <div class="text-2xl font-bold text-slate-500 mt-1">(${item.ko})</div>
+                        </div>
+                        <div class="text-slate-400 font-bold text-lg shrink-0">
+                            👆 빈칸 클릭
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = numBadge + contentHtml;
+                container.appendChild(card);
+            });
+        }
+
+        // 빈칸 HTML 생성기
+        function renderBlanksForSentence(item, blanksToHide) {
+            let words = item.en.replace(/[.,!?]/g, "").split(" ");
+            let originalWords = item.en.split(" ");
+            
+            return originalWords.map((origWord, wIdx) => {
+                // 구두점 분리 보존
+                let cleanWord = origWord.replace(/[.,!?]/g, "");
+                let punct = origWord.replace(/[a-zA-Z's]/g, "");
+
+                let isTarget = blanksToHide.includes(cleanWord);
+                let stateKey = `${currentLevel}_${item.id}_${wIdx}`;
+                let isOpen = blankStates[stateKey] === true;
+
+                if(isTarget) {
+                    if(isOpen) {
+                        return `<span class="text-emerald-600 bg-emerald-100 px-3 py-1 rounded-lg border-2 border-emerald-400 font-black">${origWord}</span>`;
+                    } else {
+                        return `<button onclick="event.stopPropagation(); toggleBlank('${stateKey}')" class="bg-amber-400 hover:bg-amber-500 text-amber-950 px-4 py-1 rounded-xl border-2 border-amber-600 font-black text-2xl md:text-3xl shadow-md transition transform hover:scale-110">[ ? ]${punct}</button>`;
+                    }
+                } else {
+                    return `<span>${origWord}</span>`;
+                }
+            }).join(" ");
+        }
+
+        function toggleBlank(key) {
+            blankStates[key] = true;
+            renderSentences();
+        }
+
+        function revealAllBlanks() {
+            sentencesData.forEach((item) => {
+                let targetBlanks = currentLevel === 2 ? item.blanks2 : item.blanks3;
+                let originalWords = item.en.split(" ");
+                originalWords.forEach((origWord, wIdx) => {
+                    let cleanWord = origWord.replace(/[.,!?]/g, "");
+                    if(targetBlanks.includes(cleanWord)) {
+                        blankStates[`${currentLevel}_${item.id}_${wIdx}`] = true;
+                    }
+                });
+            });
+            renderSentences();
+        }
+
+        function resetBlanks() {
+            blankStates = {};
+            renderSentences();
+        }
+
+        // 고품질 자연어 TTS 발음 재생 함수
+        function playTTS(text) {
+            if (!('speechSynthesis' in window)) {
+                alert("이 브라우저는 음성 재생을 지원하지 않습니다.");
+                return;
+            }
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.9; // 또렷하게 읽도록 약간 느린 속도
+
+            const voices = window.speechSynthesis.getVoices();
+            // 자연스러운 프리미엄 보이스 우선 선택
+            const preferredVoice = voices.find(v => 
+                (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Samantha') || v.name.includes('Zira') || v.name.includes('David')) && v.lang.includes('en')
+            ) || voices.find(v => v.lang.includes('en-US')) || voices[0];
+
+            if (preferredVoice) {
+                utterance.voice = preferredVoice;
+            }
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // --- 웹 오디오 효과음 신시사이저 (외부 파일 없이 브라우저 자체 생성) ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioContext();
+            }
+        }
+
+        // 1번 정답용 빵빠레 나팔 소리
+        function playFanfareSound() {
+            initAudio();
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+
+            const notes = [523.25, 659.25, 783.99, 1046.50]; // 도, 미, 솔, 고음도
+            notes.forEach((freq, idx) => {
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                
+                osc.type = 'triangle';
+                osc.frequency.value = freq;
+                
+                let startTime = audioCtx.currentTime + (idx * 0.12);
+                let duration = idx === 3 ? 0.5 : 0.1;
+
+                gain.gain.setValueAtTime(0.3, startTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start(startTime);
+                osc.stop(startTime + duration);
+            });
+        }
+
+        // 2번 정답용 EDM 파티 비트 사운드
+        let edmInterval = null;
+        function playEDMPartySound() {
+            initAudio();
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+
+            let beatCount = 0;
+            edmInterval = setInterval(() => {
+                if(beatCount > 12) {
+                    stopEDMSound();
+                    return;
+                }
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+
+                osc.type = 'sawtooth';
+                // 쿵-짝 비트 주파수 변형
+                osc.frequency.setValueAtTime(beatCount % 2 === 0 ? 150 : 300, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.15);
+
+                gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.15);
+                beatCount++;
+            }, 180);
+        }
+
+        function stopEDMSound() {
+            if(edmInterval) {
+                clearInterval(edmInterval);
+                edmInterval = null;
+            }
+        }
+
+
+        // --- 퀴즈 모달 시스템 로직 ---
+        let currentQuizIndex = 1;
+
+        function openQuizModal() {
+            currentQuizIndex = 1;
+            loadQuizData(1);
+            document.getElementById("quiz-modal").classList.remove("hidden");
+            document.getElementById("quiz-feedback").innerHTML = "";
+            document.getElementById("next-quiz-btn").classList.add("hidden");
+            stopEDMSound();
+        }
+
+        function closeQuizModal() {
+            document.getElementById("quiz-modal").classList.add("hidden");
+            document.getElementById("fireworks-container").classList.add("hidden");
+            document.getElementById("quiz-modal-box").classList.remove("edm-mode");
+            stopEDMSound();
+        }
+
+        function loadQuizData(step) {
+            document.getElementById("quiz-feedback").innerHTML = "";
+            document.getElementById("next-quiz-btn").classList.add("hidden");
+            document.getElementById("quiz-modal-box").classList.remove("edm-mode");
+            stopEDMSound();
+
+            const title = document.getElementById("quiz-title");
+            const progress = document.getElementById("quiz-progress");
+            const question = document.getElementById("quiz-question");
+            const imgLeft = document.getElementById("quiz-img-left");
+            const imgRight = document.getElementById("quiz-img-right");
+            const txtLeft = document.getElementById("quiz-txt-left");
+            const txtRight = document.getElementById("quiz-txt-right");
+
+            if(step === 1) {
+                title.innerText = "1번 문제";
+                progress.innerText = "문제 1 / 2";
+                question.innerText = "알렉스의 방은 무엇일까요?";
+                txtLeft.innerText = "로봇이 가득한 방 (정답)";
+                txtRight.innerText = "책이 가득한 방";
+
+                // 알렉스 방 (로봇 방 SVG)
+                imgLeft.innerHTML = `
+                    <svg viewBox="0 0 200 150" class="w-full h-full">
+                        <rect width="200" height="150" fill="#e0f2fe"/>
+                        <rect x="50" y="80" width="100" height="50" fill="#0284c7" rx="5"/>
+                        <rect x="70" y="40" width="60" height="40" fill="#facc15" rx="5"/>
+                        <circle cx="100" cy="60" r="12" fill="#ef4444"/>
+                        <rect x="30" y="90" width="25" height="40" fill="#22c55e" rx="3"/>
+                        <rect x="145" y="90" width="25" height="40" fill="#a855f7" rx="3"/>
+                    </svg>
+                `;
+                // 책장 방 SVG
+                imgRight.innerHTML = `
+                    <svg viewBox="0 0 200 150" class="w-full h-full">
+                        <rect width="200" height="150" fill="#fef3c7"/>
+                        <rect x="40" y="20" width="120" height="110" fill="#b45309" rx="3"/>
+                        <line x1="40" y1="55" x2="160" y2="55" stroke="#78350f" stroke-width="4"/>
+                        <line x1="40" y1="90" x2="160" y2="90" stroke="#78350f" stroke-width="4"/>
+                        <rect x="50" y="28" width="15" height="25" fill="#ef4444"/>
+                        <rect x="70" y="25" width="20" height="28" fill="#3b82f6"/>
+                        <rect x="95" y="30" width="12" height="23" fill="#10b981"/>
+                        <rect x="50" y="63" width="18" height="24" fill="#ec4899"/>
+                        <rect x="75" y="60" width="25" height="27" fill="#8b5cf6"/>
+                    </svg>
+                `;
+            } else {
+                title.innerText = "2번 문제";
+                progress.innerText = "문제 2 / 2";
+                question.innerText = "앤드루의 방은 무엇일까요?";
+                txtLeft.innerText = "곰인형이 가득한 방";
+                txtRight.innerText = "기타가 종류별로 있는 방 (정답)";
+
+                // 인형 방 SVG
+                imgLeft.innerHTML = `
+                    <svg viewBox="0 0 200 150" class="w-full h-full">
+                        <rect width="200" height="150" fill="#fce7f3"/>
+                        <circle cx="70" cy="60" r="20" fill="#fbbf24"/>
+                        <circle cx="58" cy="50" r="8" fill="#d97706"/>
+                        <circle cx="82" cy="50" r="8" fill="#d97706"/>
+                        <circle cx="130" cy="80" r="25" fill="#f43f5e"/>
+                        <circle cx="115" cy="65" r="10" fill="#be123c"/>
+                        <circle cx="145" cy="65" r="10" fill="#be123c"/>
+                    </svg>
+                `;
+                // 기타 방 SVG (정답)
+                imgRight.innerHTML = `
+                    <svg viewBox="0 0 200 150" class="w-full h-full">
+                        <rect width="200" height="150" fill="#ede9fe"/>
+                        <!-- Guitar 1 -->
+                        <ellipse cx="60" cy="90" rx="18" ry="24" fill="#d97706" transform="rotate(-20 60 90)"/>
+                        <rect x="57" y="35" width="6" height="40" fill="#78350f" transform="rotate(-20 60 75)"/>
+                        <!-- Guitar 2 -->
+                        <ellipse cx="100" cy="85" rx="20" ry="26" fill="#b45309"/>
+                        <rect x="97" y="30" width="6" height="40" fill="#451a03"/>
+                        <!-- Guitar 3 -->
+                        <ellipse cx="140" cy="90" rx="18" ry="24" fill="#d97706" transform="rotate(20 140 90)"/>
+                        <rect x="137" y="35" width="6" height="40" fill="#78350f" transform="rotate(20 140 75)"/>
+                    </svg>
+                `;
+            }
+        }
+
+        function checkQuizAnswer(choice) {
+            const feedback = document.getElementById("quiz-feedback");
+            const nextBtn = document.getElementById("next-quiz-btn");
+            const modalBox = document.getElementById("quiz-modal-box");
+
+            if(currentQuizIndex === 1) {
+                if(choice === 1) {
+                    // 정답 (왼쪽)
+                    feedback.innerHTML = "🎉 <span class='text-emerald-600'>정답입니다! 알렉스는 로봇을 좋아해요!</span> 🎉";
+                    playFanfareSound();
+                    triggerFireworks();
+                    nextBtn.classList.remove("hidden");
+                } else {
+                    // 오답
+                    feedback.innerHTML = "❌ <span class='text-rose-500'>아쉽습니다! 다시 골라보세요.</span>";
+                }
+            } else if(currentQuizIndex === 2) {
+                if(choice === 2) {
+                    // 정답 (오른쪽) - EDM 파티 컨셉
+                    feedback.innerHTML = "🔥 <span class='text-fuchsia-600 font-black text-3xl'>YEAH! 앤드루는 기타를 좋아해요! EDM 파티 타임! 🎸✨</span>";
+                    playEDMPartySound();
+                    modalBox.classList.add("edm-mode");
+                    nextBtn.classList.remove("hidden");
+                    nextBtn.innerText = "퀴즈 완료 🏁";
+                } else {
+                    // 오답
+                    feedback.innerHTML = "❌ <span class='text-rose-500'>아쉽습니다! 다시 골라보세요.</span>";
+                }
+            }
+        }
+
+        function nextQuizStep() {
+            if(currentQuizIndex === 1) {
+                currentQuizIndex = 2;
+                loadQuizData(2);
+            } else {
+                closeQuizModal();
+            }
+        }
+
+        // 폭죽 파티클 애니메이션 함수 (6초간 지속)
+        function triggerFireworks() {
+            const container = document.getElementById("fireworks-container");
+            container.innerHTML = "";
+            container.classList.remove("hidden");
+
+            const colors = ['#ef4444', '#3b82f6', '#22c55e', '#facc15', '#a855f7', '#ec4899', '#ffffff'];
+
+            for(let i=0; i<60; i++) {
+                const particle = document.createElement("div");
+                particle.className = "firework-particle";
+                
+                // 화면 중앙에서 사방으로 뻗어나가기
+                const x = (window.innerWidth / 2) + (Math.random() * 600 - 300);
+                const y = (window.innerHeight / 2) + (Math.random() * 500 - 250);
+                
+                particle.style.left = `${window.innerWidth / 2}px`;
+                particle.style.top = `${window.innerHeight / 2}px`;
+                particle.style.setProperty('--x', `${x - window.innerWidth / 2}px`);
+                particle.style.setProperty('--y', `${y - window.innerHeight / 2}px`);
+                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.animationDuration = `${1 + Math.random() * 2}s`;
+
+                container.appendChild(particle);
+            }
+
+            setTimeout(() => {
+                container.classList.add("hidden");
+            }, 6000);
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
