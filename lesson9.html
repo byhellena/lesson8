@@ -168,10 +168,10 @@ button{touch-action:manipulation}
     <div class="title">
       <span class="mascot">🐰</span>
       <h1>9단원<b class="en">What's in the bedroom?</b></h1>
-      <p>단계를 차례로 완료하고 이수 확인증을 받아보세요!</p>
+      <p>원하는 단계를 선택해 학습해 보세요!</p>
     </div>
     <div class="stage-card" id="card-1" style="--c:var(--sky)" onclick="goStage(1)"><div class="num">1</div><div><h3>단어 학습</h3><p>그림과 뜻을 보고 영어 단어 고르기</p></div><div class="st" id="st-1">▶️</div></div>
-    <div class="stage-card locked" id="card-2" style="--c:var(--purple)" onclick="goStage(2)"><div class="num">2</div><div><h3>말하기 학습</h3><p>문장을 듣고 따라 말해보기</p></div><div class="st" id="st-2">🔒</div></div>
+    <div class="stage-card" id="card-2" style="--c:var(--purple)" onclick="goStage(2)"><div class="num">2</div><div><h3>말하기 학습</h3><p>문장을 듣고 따라 말해보기</p></div><div class="st" id="st-2">🔒</div></div>
     <div class="stage-card locked" id="card-3" style="--c:var(--orange)" onclick="goStage(3)"><div class="num">3</div><div><h3>문장 구성하기</h3><p>단어를 눌러 문장 완성하기</p></div><div class="st" id="st-3">🔒</div></div>
     <button class="cert-btn" id="cert-btn" onclick="showCert()">✨ 이수 확인증 제출하기 ✨</button>
   </div>
@@ -251,14 +251,14 @@ function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.re
 function goHome(){show('screen-home');refresh()}
 function refresh(){
   [1,2,3].forEach(n=>{
-    const locked=(n===2&&!state[1])||(n===3&&!state[2]);
+    const locked=(n===3&&!state[2]);
     $('card-'+n).classList.toggle('locked',locked&&!state[n]);
     $('st-'+n).textContent=state[n]?'✅':locked?'🔒':'▶️';
   });
   $('cert-btn').classList.toggle('ready',state[1]&&state[2]&&state[3]);
 }
 function goStage(n){
-  if((n===2&&!state[1])||(n===3&&!state[2]))return;
+  if(n===3&&!state[2])return;
   show('screen-'+n);
   if(n===1){i1=0;pos=makePos(words.length);r1()}if(n===2){i2=0;r2()}if(n===3)init3();
 }
@@ -363,45 +363,132 @@ function score(heard,target){
   });
   return sum/tot;
 }
+function speechDebugPanel(title, info, transcript){
+  const res=$('res');
+  const panel=document.createElement('div');
+  panel.className='msg low';
+  panel.style.cssText='margin-top:12px;text-align:left;white-space:normal;overflow-wrap:anywhere';
+  panel.textContent=title;
+  const pre=document.createElement('pre');
+  pre.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.45 monospace;background:#fff8e8;color:#493b28;padding:10px;border-radius:8px;margin:8px 0 0;max-height:220px;overflow:auto';
+  const details=[
+    '인식 API: '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'지원 객체 없음'),
+    '브라우저: '+navigator.userAgent,
+    '보안 연결(HTTPS/localhost): '+(window.isSecureContext?'예':'아니오'),
+    '온라인 상태: '+(navigator.onLine?'online':'offline'),
+    '현재 문항: '+(typeof i2==='number'?(i2+1)+' / '+sentences.length:'확인 불가'),
+    '목표 문장: '+(typeof i2==='number'&&sentences[i2]?sentences[i2].en:'확인 불가'),
+    '오류 코드: '+(info.error||'없음'),
+    '오류 메시지: '+(info.message||'없음'),
+    '이벤트 순서: '+(info.events&&info.events.length?info.events.join(' → '):'기록 없음'),
+    '인식 결과: '+(transcript&&transcript.trim()?transcript.trim():'(결과 없음)')
+  ];
+  pre.textContent=details.join('\n');
+  panel.appendChild(pre);
+  res.appendChild(panel);
+}
 function speak(){
   if(busy)return;
   const tag=$('lis'),res=$('res'),spk=$('spk');
   const target=sentences[i2].en;
   const R=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!R){
-    res.innerHTML=`<div class="msg low">이 기기에서는 말하기를 쓸 수 없어요 😥</div><button class="pbtn" style="margin-top:8px" onclick="next2()">다음으로 넘어가기</button>`;
+    tag.textContent='';
+    spk.disabled=false;
+    res.innerHTML='<div class="msg low">이 브라우저에서 음성 인식 API를 찾을 수 없습니다.</div>';
+    speechDebugPanel('진단 정보', {error:'unsupported',message:'SpeechRecognition / webkitSpeechRecognition 객체가 없습니다.',events:[]}, '');
     return;
   }
-  const rec=new R();
-  rec.lang='en-US';rec.interimResults=false;rec.maxAlternatives=1;
-  let got=false,timer=null,kill=null;const clr=()=>{clearTimeout(timer);clearTimeout(kill)};
-  spk.disabled=true;tag.textContent='🎧 듣는 중...';res.innerHTML='';
+  let rec;
+  try { rec=new R(); }
+  catch(e){
+    tag.textContent='';spk.disabled=false;
+    res.innerHTML='<div class="msg low">음성 인식 객체를 만들지 못했습니다.</div>';
+    speechDebugPanel('진단 정보', {error:e.name||'constructor-error',message:e.message||String(e),events:[]}, '');
+    return;
+  }
+  rec.lang='en-US';
+  rec.interimResults=false;
+  rec.maxAlternatives=1;
+  let got=false, finalized=false, errorCode='', errorMessage='';
+  const events=[];
+  const mark=name=>{events.push(name); if(events.length>30)events.shift();};
+  const finishUI=()=>{tag.textContent='';spk.disabled=false;};
+  const diagnostic=(title, code, message, transcript='')=>{
+    if(finalized)return;
+    finalized=true;
+    clearTimeout(watchdog);
+    finishUI();
+    speechDebugPanel(title,{error:code||errorCode,message:message||errorMessage,events:[...events]},transcript);
+  };
+  spk.disabled=true;
+  tag.textContent='🎧 듣는 중...';
+  res.innerHTML='';
+  mark('start() 호출');
+  rec.onstart=()=>{mark('start');tag.textContent='🎧 인식 시작됨. 영어 문장을 읽어 주세요.';};
+  rec.onaudiostart=()=>mark('audiostart');
+  rec.onsoundstart=()=>mark('soundstart');
+  rec.onspeechstart=()=>{mark('speechstart');tag.textContent='🗣️ 말소리 감지됨';};
+  rec.onspeechend=()=>mark('speechend');
+  rec.onsoundend=()=>mark('soundend');
+  rec.onaudioend=()=>mark('audioend');
+  rec.onnomatch=()=>mark('nomatch');
   rec.onresult=e=>{
-    clr();got=true;
-    const transcript=e.results[0][0].transcript;
-    if(!transcript.trim()){judge(0,true);return}
+    if(finalized)return;
+    got=true;
+    mark('result');
+    clearTimeout(watchdog);
+    const transcript=(e.results&&e.results[0]&&e.results[0][0])?e.results[0][0].transcript:'';
+    if(!transcript.trim()){
+      diagnostic('음성 인식 결과가 비어 있습니다. 다시 시도해 주세요.','empty-result','result 이벤트는 발생했지만 transcript가 비어 있습니다.',transcript);
+      return;
+    }
+    finalized=true;
+    finishUI();
     judge(score(transcript,target));
     const d=document.createElement('div');d.className='try';d.textContent='들린 소리: '+transcript.trim();res.appendChild(d);
+    speechDebugPanel('테스트 진단 정보', {error:'없음',message:'인식 결과를 받았습니다.',events:[...events]}, transcript);
   };
   rec.onerror=e=>{
-    clr();tag.textContent='';spk.disabled=false;
-    if(e.error==='not-allowed'||e.error==='service-not-allowed'){
-      got=true;res.innerHTML='<div class="msg low">마이크가 꺼져 있어요. 선생님께 알려주세요! 🙋</div>';return}
-    if(!got){got=true;judge(0,true)}
+    mark('error');
+    errorCode=e.error||'unknown-error';
+    errorMessage=e.message||'브라우저가 상세 메시지를 제공하지 않았습니다.';
+    if(finalized)return;
+    const guidance={
+      'no-speech':'말소리가 감지되지 않았습니다. 마이크 거리와 인식 시작 시점을 확인해 주세요.',
+      'audio-capture':'마이크 입력 장치를 사용할 수 없습니다. 다른 앱의 마이크 사용 여부와 권한을 확인해 주세요.',
+      'not-allowed':'마이크 또는 음성 인식 권한이 차단되었습니다. 사이트 권한을 확인해 주세요.',
+      'service-not-allowed':'브라우저 또는 기기에서 음성 인식 서비스를 허용하지 않았습니다.',
+      'network':'음성 인식 서비스와 통신하지 못했습니다. 인터넷 연결 또는 브라우저 음성 서비스 문제일 수 있습니다.',
+      'language-not-supported':'en-US 음성 인식 언어를 지원하지 않습니다.',
+      'aborted':'음성 인식이 중단되었습니다.'
+    };
+    diagnostic('음성 인식 오류: '+errorCode, errorCode, (guidance[errorCode]||'브라우저가 음성 인식 오류를 반환했습니다.')+' 상세: '+errorMessage);
   };
   rec.onend=()=>{
-    clr();tag.textContent='';spk.disabled=false;
-    if(!got){got=true;judge(0,true)}
+    mark('end');
+    if(finalized)return;
+    if(!got){
+      diagnostic('인식 세션이 결과 없이 종료되었습니다. 오답으로 처리하지 않았습니다. 다시 시도해 주세요.',
+        errorCode||'no-result-before-end',
+        errorMessage||'onend가 발생했지만 onresult는 발생하지 않았습니다. 말소리 감지 여부와 이벤트 순서를 확인해 주세요.');
+    }else{
+      finishUI();
+    }
   };
+  const watchdog=setTimeout(()=>{
+    if(finalized)return;
+    mark('timeout-15s');
+    diagnostic('15초 동안 인식 결과가 도착하지 않았습니다. 다시 시도해 주세요.',
+      'recognition-timeout','start 이후 15초 안에 최종 인식 결과가 도착하지 않았습니다.');
+    try{rec.abort()}catch(e){}
+  },15000);
   try{
     rec.start();
-    // 5초 동안 입력이 없으면 듣기를 멈춤 (말하던 중이면 거기까지 인식)
-    timer=setTimeout(()=>{
-      if(got)return;
-      try{rec.stop()}catch(e){}
-      kill=setTimeout(()=>{if(got)return;got=true;tag.textContent='';spk.disabled=false;judge(0,true)},1500);
-    },5000);
-  }catch(e){tag.textContent='';spk.disabled=false}
+  }catch(e){
+    mark('start-throw');
+    diagnostic('음성 인식을 시작하지 못했습니다.',e.name||'start-error',e.message||String(e));
+  }
 }
 let praiseN=0;
 const PRAISE=[['너무나 정확해요!! 😲🤩','🎉👏✨🌟🏆✨👏🎉'],['원어민이신가요?! 🤯🎉','🥳🌈💯🔥💯🌈🥳']];
