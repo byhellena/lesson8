@@ -199,7 +199,7 @@ button{touch-action:manipulation}
     </div>
     <div class="stage-card" id="card-1" style="--c:var(--sky)" onclick="goStage(1)"><div class="num">1</div><div><h3>단어 학습</h3><p>그림과 뜻을 보고 영어 단어 고르기</p></div><div class="st" id="st-1">▶️</div></div>
     <div class="stage-card" id="card-2" style="--c:var(--purple)" onclick="goStage(2)"><div class="num">2</div><div><h3>말하기 학습</h3><p>문장을 듣고 따라 말해보기</p></div><div class="st" id="st-2">🔒</div></div>
-    <div class="stage-card locked" id="card-3" style="--c:var(--orange)" onclick="goStage(3)"><div class="num">3</div><div><h3>문장 구성하기</h3><p>단어를 눌러 문장 완성하기</p></div><div class="st" id="st-3">🔒</div></div>
+    <div class="stage-card" id="card-3" style="--c:var(--orange)" onclick="goStage(3)"><div class="num">3</div><div><h3>문장 구성하기</h3><p>단어를 눌러 문장 완성하기</p></div><div class="st" id="st-3">▶️</div></div>
     <button class="cert-btn" id="cert-btn" onclick="showCert()">✨ 이수 확인증 제출하기 ✨</button>
   </div>
 
@@ -278,14 +278,13 @@ function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.re
 function goHome(){killPrev();show('screen-home');refresh()}
 function refresh(){
   [1,2,3].forEach(n=>{
-    const locked=(n===3&&!state[2]);
+    const locked=false; /* 3단계 잠금 해제 (되돌리려면: n===3&&!state[2]) */
     $('card-'+n).classList.toggle('locked',locked&&!state[n]);
     $('st-'+n).textContent=state[n]?'✅':locked?'🔒':'▶️';
   });
   $('cert-btn').classList.toggle('ready',state[1]&&state[2]&&state[3]);
 }
 function goStage(n){
-  if(n===3&&!state[2])return;
   show('screen-'+n);
   if(n===1){i1=0;pos=makePos(words.length);r1()}if(n===2){i2=0;r2()}if(n===3)init3();
 }
