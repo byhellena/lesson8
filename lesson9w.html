@@ -149,27 +149,27 @@
     <div id="fireworks-container" class="fixed inset-0 pointer-events-none z-50 overflow-hidden hidden"></div>
 
     <script>
-        // 학습 데이터 원본 정의 (2단계 Alex, too 수정 반영 완료)
+        // 학습 데이터 원본 정의 (2단계, 3단계 이름/고유명사 정답 제외 수정 반영 완료)
         const sentencesData = [
             { id: 1, en: "This is the living room.", ko: "이곳은 거실입니다.", blanks2: ["is"], blanks3: ["This", "is"] },
             { id: 2, en: "Look! There are pictures on the table.", ko: "봐봐! 테이블 위에 사진들이 있어요.", blanks2: ["There"], blanks3: ["There", "pictures"] },
-            { id: 3, en: "They are Alex and Andrew.", ko: "그들은 알렉스와 앤드루입니다.", blanks2: ["They"], blanks3: ["They", "Andrew"] },
+            { id: 3, en: "They are Alex and Andrew.", ko: "그들은 알렉스와 앤드루입니다.", blanks2: ["They"], blanks3: ["They", "are"] },
             { id: 4, en: "Alex is twelve years old.", ko: "알렉스는 열두 살입니다.", blanks2: ["years"], blanks3: ["twelve", "years"] },
             { id: 5, en: "Andrew is twelve years old, too.", ko: "앤드루도 열두 살입니다.", blanks2: ["twelve"], blanks3: ["twelve", "too"] },
             { id: 6, en: "They are brothers.", ko: "그들은 형제입니다.", blanks2: ["brothers"], blanks3: ["are", "brothers"] },
             { id: 7, en: "This is Alex's room.", ko: "이곳은 알렉스의 방입니다.", blanks2: ["room"], blanks3: ["This", "room"] },
             { id: 8, en: "There are robots in the box.", ko: "상자 안에 로봇들이 있습니다.", blanks2: ["are"], blanks3: ["There", "are"] },
             { id: 9, en: "Alex likes making robots.", ko: "알렉스는 로봇 만드는 것을 좋아합니다.", blanks2: ["robots"], blanks3: ["likes", "robots"] },
-            { id: 10, en: "This is Andrew's room.", ko: "이곳은 앤드루의 방입니다.", blanks2: ["Andrew's"], blanks3: ["This", "Andrew's"] },
+            { id: 10, en: "This is Andrew's room.", ko: "이곳은 앤드루의 방입니다.", blanks2: ["Andrew's"], blanks3: ["This", "room"] },
             { id: 11, en: "There is a guitar on the bed.", ko: "침대 위에 기타가 한 대 있습니다.", blanks2: ["guitar"], blanks3: ["is", "guitar"] },
-            { id: 12, en: "Andrew likes playing the guitar.", ko: "앤드루는 기타 연주하는 것을 좋아합니다.", blanks2: ["playing"], blanks3: ["likes", "playing"] },
+            { id: 12, en: "Andrew likes playing the guitar.", ko: "앤드루는 기타 연주하는 것을 좋아합니다.", blanks2: ["playing"], blanks3: ["likes", "guitar"] },
             { id: 13, en: "They look the same.", ko: "그들은 똑같이 생겼습니다.", blanks2: ["same"], blanks3: ["look", "same"] },
             { id: 14, en: "But they are not the same.", ko: "하지만 그들은 똑같지 않습니다.", blanks2: ["not"], blanks3: ["are", "not"] }
         ];
 
         let currentLevel = 1;
         let blankStates = {}; 
-        let currentStepIndex = -1; // 리모컨 순차 진행 인덱스
+        let currentStepIndex = -1;
 
         function initApp() {
             renderSentences();
@@ -210,7 +210,6 @@
             sentencesData.forEach((item, index) => {
                 const card = document.createElement("div");
                 
-                // 리모컨 순차 진행에 따른 노란색 하이라이트 적용
                 let isHighlighted = (currentLevel > 1 && currentStepIndex >= 0 && getStepOwner(currentStepIndex) === index);
                 
                 let baseClass = "border-3 rounded-2xl p-4 shadow-sm transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-3 cursor-pointer group";
@@ -253,7 +252,6 @@
                 container.appendChild(card);
             });
 
-            // 하이라이트된 카드로 자동 부드러운 스크롤
             if (currentLevel > 1 && currentStepIndex >= 0) {
                 const activeCard = container.children[getStepOwner(currentStepIndex)];
                 if (activeCard) {
@@ -262,7 +260,6 @@
             }
         }
 
-        // 전체 스텝 구조 계산 (2단계: 문장당 2스텝 [하이라이트 -> 빈칸오픈], 3단계: 문장당 1+빈칸개수 스텝)
         function getTotalSteps() {
             let total = 0;
             sentencesData.forEach(item => {
@@ -272,7 +269,6 @@
             return total;
         }
 
-        // 주어진 globalStepIndex가 어떤 문장(sentence index)에 속하는지 계산
         function getStepOwner(stepIdx) {
             let current = 0;
             for (let i = 0; i < sentencesData.length; i++) {
@@ -286,13 +282,10 @@
             return 0;
         }
 
-        // 리모컨 / 키보드 이벤트 리스너 (스페이스바 및 프레젠테이션 리모컨 페이지 키 연동)
         window.addEventListener('keydown', (e) => {
-            // 퀴즈 모달이 열려있으면 무시
             if (!document.getElementById("quiz-modal").classList.contains("hidden")) return;
 
             if (currentLevel === 1) {
-                // 1단계: 스페이스바나 다음 버튼 누르면 순서대로 읽기
                 if (e.code === 'Space' || e.key === 'PageDown' || e.key === 'ArrowRight' || e.key === 'ArrowDown') {
                     e.preventDefault();
                     currentStepIndex = (currentStepIndex + 1) % sentencesData.length;
@@ -305,7 +298,6 @@
                     playTTS(sentencesData[currentStepIndex].en);
                 }
             } else {
-                // 2, 3단계: 스페이스바 및 리모컨 키로 순차 하이라이트 및 빈칸 채우기
                 let maxSteps = getTotalSteps();
                 if (e.code === 'Space' || e.key === 'PageDown' || e.key === 'ArrowRight' || e.key === 'ArrowDown') {
                     e.preventDefault();
@@ -325,7 +317,6 @@
             }
         });
 
-        // 현재 stepIndex에 맞춰 blankStates 자동 설정
         function applyStepState() {
             blankStates = {};
             let runningStep = 0;
