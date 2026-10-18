@@ -374,26 +374,34 @@ function speak(){
   }
   const rec=new R();
   rec.lang='en-US';rec.interimResults=false;rec.maxAlternatives=1;
-  let got=false;
+  let got=false,timer=null,kill=null;const clr=()=>{clearTimeout(timer);clearTimeout(kill)};
   spk.disabled=true;tag.textContent='🎧 듣는 중...';res.innerHTML='';
   rec.onresult=e=>{
-    got=true;
+    clr();got=true;
     const transcript=e.results[0][0].transcript;
     if(!transcript.trim()){judge(0,true);return}
     judge(score(transcript,target));
     const d=document.createElement('div');d.className='try';d.textContent='들린 소리: '+transcript.trim();res.appendChild(d);
   };
   rec.onerror=e=>{
-    tag.textContent='';spk.disabled=false;
+    clr();tag.textContent='';spk.disabled=false;
     if(e.error==='not-allowed'||e.error==='service-not-allowed'){
       got=true;res.innerHTML='<div class="msg low">마이크가 꺼져 있어요. 선생님께 알려주세요! 🙋</div>';return}
     if(!got){got=true;judge(0,true)}
   };
   rec.onend=()=>{
-    tag.textContent='';spk.disabled=false;
+    clr();tag.textContent='';spk.disabled=false;
     if(!got){got=true;judge(0,true)}
   };
-  try{rec.start()}catch(e){tag.textContent='';spk.disabled=false}
+  try{
+    rec.start();
+    // 5초 동안 입력이 없으면 듣기를 멈춤 (말하던 중이면 거기까지 인식)
+    timer=setTimeout(()=>{
+      if(got)return;
+      try{rec.stop()}catch(e){}
+      kill=setTimeout(()=>{if(got)return;got=true;tag.textContent='';spk.disabled=false;judge(0,true)},1500);
+    },5000);
+  }catch(e){tag.textContent='';spk.disabled=false}
 }
 let praiseN=0;
 const PRAISE=[['너무나 정확해요!! 😲🤩','🎉👏✨🌟🏆✨👏🎉'],['원어민이신가요?! 🤯🎉','🥳🌈💯🔥💯🌈🥳']];
