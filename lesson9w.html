@@ -12,7 +12,6 @@
         body {
             font-family: 'Noto Sans KR', sans-serif;
             background-color: #f0fdf4;
-            user-select: none;
         }
         
         .jua-font {
@@ -45,14 +44,6 @@
         .edm-mode {
             animation: edmStrobe 0.25s infinite;
         }
-
-        /* 스페이스바 / 프리젠터 선택 강조 표시 */
-        .keyboard-active {
-            background-color: #fef08a !important; /* 노란색 배경 */
-            border-color: #eab308 !important; /* 진한 노란색 테두리 */
-            transform: scale(1.01);
-            box-shadow: 0 10px 25px rgba(234, 179, 8, 0.35) !important;
-        }
     </style>
 </head>
 <body class="min-h-screen text-slate-800 flex flex-col items-center justify-between p-2">
@@ -66,45 +57,53 @@
             </div>
         </div>
 
-        <!-- 단계 선택 탭 및 컨트롤 버튼 -->
-        <div class="flex items-center gap-3">
-            <div class="flex items-center gap-2 bg-emerald-50 p-2 rounded-xl border border-emerald-300">
-                <button onclick="changeLevel(1)" id="btn-level-1" class="px-5 py-2.5 rounded-lg text-xl font-black transition-all shadow-sm bg-emerald-600 text-white">
-                    1단계
-                </button>
-                <button onclick="changeLevel(2)" id="btn-level-2" class="px-5 py-2.5 rounded-lg text-xl font-black transition-all text-slate-600 hover:bg-emerald-200">
-                    2단계
-                </button>
-                <button onclick="changeLevel(3)" id="btn-level-3" class="px-5 py-2.5 rounded-lg text-xl font-black transition-all text-slate-600 hover:bg-emerald-200">
-                    3단계
-                </button>
-            </div>
-
-            <!-- 1단계 퀴즈 버튼 -->
-            <div id="quiz-btn-container" class="hidden">
-                <button onclick="openQuizModal()" class="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-black text-xl rounded-xl shadow-md transition transform hover:scale-105 flex items-center gap-2">
-                    🎮 Quiz
-                </button>
-            </div>
-
-            <!-- 2,3단계 정답 제어 버튼 -->
-            <div id="blank-controls" class="hidden flex items-center gap-2">
-                <button onclick="revealAllBlanks()" class="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-lg rounded-xl shadow">
-                    💡 정답 공개
-                </button>
-                <button onclick="resetBlanks()" class="px-4 py-2.5 bg-slate-500 hover:bg-slate-600 text-white font-bold text-lg rounded-xl shadow">
-                    🔄 초기화
-                </button>
-            </div>
+        <!-- 단계 선택 탭 버튼 -->
+        <div class="flex items-center gap-2 bg-emerald-50 p-2 rounded-xl border border-emerald-300">
+            <button onclick="changeLevel(1)" id="btn-level-1" class="px-5 py-2.5 rounded-lg text-xl font-black transition-all shadow-sm bg-emerald-600 text-white">
+                1단계
+            </button>
+            <button onclick="changeLevel(2)" id="btn-level-2" class="px-5 py-2.5 rounded-lg text-xl font-black transition-all text-slate-600 hover:bg-emerald-200">
+                2단계
+            </button>
+            <button onclick="changeLevel(3)" id="btn-level-3" class="px-5 py-2.5 rounded-lg text-xl font-black transition-all text-slate-600 hover:bg-emerald-200">
+                3단계
+            </button>
         </div>
     </header>
 
-    <!-- 메인 문장 카드 리스트 컨테이너 -->
+    <!-- 메인 컨텐츠 영역 -->
     <main class="w-full max-w-7xl mx-auto flex-1 flex flex-col gap-3 mb-4">
+        
+        <!-- 상단 컨트롤 바 -->
+        <div class="bg-amber-100 border-2 border-amber-300 rounded-xl px-6 py-3 flex items-center justify-end shadow-sm">
+            <div class="flex items-center gap-3">
+                <div id="quiz-btn-container" class="hidden">
+                    <button onclick="openQuizModal()" class="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white font-black text-xl rounded-xl shadow-md transition transform hover:scale-105 flex items-center gap-2">
+                        🎮 퀴즈 풀기
+                    </button>
+                </div>
+                <div id="blank-controls" class="hidden flex items-center gap-2">
+                    <button onclick="revealAllBlanks()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold text-lg rounded-lg shadow">
+                        전체 정답 보기
+                    </button>
+                    <button onclick="resetBlanks()" class="px-4 py-2 bg-slate-500 hover:bg-slate-600 text-white font-bold text-lg rounded-lg shadow">
+                        다시 초기화
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 문장 카드 리스트 컨테이너 -->
         <div id="sentences-container" class="grid grid-cols-1 gap-3">
             <!-- 자바스크립트로 동적 렌더링 -->
         </div>
+
     </main>
+
+    <!-- 푸터 -->
+    <footer class="text-center text-slate-400 font-bold text-base py-2">
+        Classroom Interactive Learning Tool
+    </footer>
 
     <!-- 퀴즈 모달 팝업 -->
     <div id="quiz-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
@@ -117,7 +116,7 @@
                     <span class="text-4xl">🏆</span>
                     <h2 id="quiz-title" class="text-3xl font-black text-purple-700 jua-font">1번 문제</h2>
                 </div>
-                <div class="text-xl font-bold text-slate-500" id="quiz-progress">1 / 2</div>
+                <div class="text-xl font-bold text-slate-500" id="quiz-progress">문제 1 / 2</div>
             </div>
 
             <div id="quiz-question" class="text-3xl md:text-4xl font-black text-center text-slate-800 bg-purple-50 py-4 rounded-2xl border border-purple-200">
@@ -127,12 +126,12 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-2">
                 <div id="option-left" onclick="checkQuizAnswer(1)" class="cursor-pointer bg-slate-50 border-4 border-slate-200 hover:border-purple-500 hover:bg-purple-50 rounded-2xl p-6 flex flex-col items-center justify-center gap-4 transition transform hover:scale-105 shadow-md">
                     <div id="quiz-img-left" class="w-full h-56 bg-white rounded-xl border-2 border-slate-300 flex items-center justify-center shadow-inner overflow-hidden"></div>
-                    <span id="quiz-txt-left" class="text-2xl font-black text-slate-700"></span>
+                    <span id="quiz-txt-left" class="text-2xl font-black text-slate-700">왼쪽 보기</span>
                 </div>
 
                 <div id="option-right" onclick="checkQuizAnswer(2)" class="cursor-pointer bg-slate-50 border-4 border-slate-200 hover:border-purple-500 hover:bg-purple-50 rounded-2xl p-6 flex flex-col items-center justify-center gap-4 transition transform hover:scale-105 shadow-md">
                     <div id="quiz-img-right" class="w-full h-56 bg-white rounded-xl border-2 border-slate-300 flex items-center justify-center shadow-inner overflow-hidden"></div>
-                    <span id="quiz-txt-right" class="text-2xl font-black text-slate-700"></span>
+                    <span id="quiz-txt-right" class="text-2xl font-black text-slate-700">오른쪽 보기</span>
                 </div>
             </div>
 
@@ -140,7 +139,7 @@
 
             <div class="flex justify-end gap-3 pt-2">
                 <button id="next-quiz-btn" onclick="nextQuizStep()" class="hidden px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-2xl rounded-xl shadow-lg transition">
-                    다음 ➡
+                    다음 문제 ➡
                 </button>
             </div>
         </div>
@@ -150,17 +149,17 @@
     <div id="fireworks-container" class="fixed inset-0 pointer-events-none z-50 overflow-hidden hidden"></div>
 
     <script>
-        // 학습 데이터 원본 정의
+        // 학습 데이터 원본 정의 (2단계 Alex, too 수정 반영 완료)
         const sentencesData = [
             { id: 1, en: "This is the living room.", ko: "이곳은 거실입니다.", blanks2: ["is"], blanks3: ["This", "is"] },
             { id: 2, en: "Look! There are pictures on the table.", ko: "봐봐! 테이블 위에 사진들이 있어요.", blanks2: ["There"], blanks3: ["There", "pictures"] },
-            { id: 3, en: "They are Alex and Andrew.", ko: "그들은 알렉스와 앤드루입니다.", blanks2: ["Alex"], blanks3: ["Alex", "Andrew"] },
-            { id: 4, en: "Alex is twelve years old.", ko: "알렉스는 열두 살입니다.", blanks2: ["twelve"], blanks3: ["Alex", "twelve"] },
-            { id: 5, en: "Andrew is twelve years old, too.", ko: "앤드루도 열두 살입니다.", blanks2: ["too"], blanks3: ["twelve", "too"] },
+            { id: 3, en: "They are Alex and Andrew.", ko: "그들은 알렉스와 앤드루입니다.", blanks2: ["They"], blanks3: ["They", "Andrew"] },
+            { id: 4, en: "Alex is twelve years old.", ko: "알렉스는 열두 살입니다.", blanks2: ["years"], blanks3: ["twelve", "years"] },
+            { id: 5, en: "Andrew is twelve years old, too.", ko: "앤드루도 열두 살입니다.", blanks2: ["twelve"], blanks3: ["twelve", "too"] },
             { id: 6, en: "They are brothers.", ko: "그들은 형제입니다.", blanks2: ["brothers"], blanks3: ["are", "brothers"] },
-            { id: 7, en: "This is Alex's room.", ko: "이곳은 알렉스의 방입니다.", blanks2: ["Alex's"], blanks3: ["This", "Alex's"] },
+            { id: 7, en: "This is Alex's room.", ko: "이곳은 알렉스의 방입니다.", blanks2: ["room"], blanks3: ["This", "room"] },
             { id: 8, en: "There are robots in the box.", ko: "상자 안에 로봇들이 있습니다.", blanks2: ["are"], blanks3: ["There", "are"] },
-            { id: 9, en: "Alex likes making robots.", ko: "알렉스는 로봇 만드는 것을 좋아합니다.", blanks2: ["making"], blanks3: ["likes", "making"] },
+            { id: 9, en: "Alex likes making robots.", ko: "알렉스는 로봇 만드는 것을 좋아합니다.", blanks2: ["robots"], blanks3: ["likes", "robots"] },
             { id: 10, en: "This is Andrew's room.", ko: "이곳은 앤드루의 방입니다.", blanks2: ["Andrew's"], blanks3: ["This", "Andrew's"] },
             { id: 11, en: "There is a guitar on the bed.", ko: "침대 위에 기타가 한 대 있습니다.", blanks2: ["guitar"], blanks3: ["is", "guitar"] },
             { id: 12, en: "Andrew likes playing the guitar.", ko: "앤드루는 기타 연주하는 것을 좋아합니다.", blanks2: ["playing"], blanks3: ["likes", "playing"] },
@@ -170,150 +169,16 @@
 
         let currentLevel = 1;
         let blankStates = {}; 
-        let activeSentenceIndex = -1; 
-        let activeBlankIndex = -1;    
+        let currentStepIndex = -1; // 리모컨 순차 진행 인덱스
 
         function initApp() {
             renderSentences();
-            
-            // 프리젠터 리모컨 및 키보드 입력 매핑
-            window.addEventListener('keydown', (e) => {
-                const isQuizOpen = !document.getElementById("quiz-modal").classList.contains("hidden");
-                if (isQuizOpen) return;
-
-                // 다음 슬라이드 / 다음 단계 키 연동 (Space, PageDown, DownArrow, RightArrow)
-                const nextKeys = ['Space', 'PageDown', 'ArrowDown', 'ArrowRight', ' '];
-                if (nextKeys.includes(e.key) || nextKeys.includes(e.code)) {
-                    if (currentLevel === 2 || currentLevel === 3) {
-                        e.preventDefault();
-                        handleForwardProgress();
-                    } else if (currentLevel === 1) {
-                        e.preventDefault();
-                        handleLevel1Forward();
-                    }
-                }
-
-                // 이전 슬라이드 / 이전 단계 키 연동 (PageUp, UpArrow, LeftArrow)
-                const prevKeys = ['PageUp', 'ArrowUp', 'ArrowLeft'];
-                if (prevKeys.includes(e.key) || prevKeys.includes(e.code)) {
-                    if (currentLevel === 2 || currentLevel === 3) {
-                        e.preventDefault();
-                        handleBackwardProgress();
-                    } else if (currentLevel === 1) {
-                        e.preventDefault();
-                        handleLevel1Backward();
-                    }
-                }
-            });
-        }
-
-        // 1단계 키보드/프리젠터 전진
-        function handleLevel1Forward() {
-            if (activeSentenceIndex < sentencesData.length - 1) {
-                activeSentenceIndex++;
-            } else {
-                activeSentenceIndex = 0;
-            }
-            renderSentences();
-            scrollToActiveSentence();
-            playTTS(sentencesData[activeSentenceIndex].en);
-        }
-
-        // 1단계 키보드/프리젠터 후진
-        function handleLevel1Backward() {
-            if (activeSentenceIndex > 0) {
-                activeSentenceIndex--;
-            } else {
-                activeSentenceIndex = sentencesData.length - 1;
-            }
-            renderSentences();
-            scrollToActiveSentence();
-            playTTS(sentencesData[activeSentenceIndex].en);
-        }
-
-        // 2,3단계 전진 로직 (프리젠터 다음 버튼 / 스페이스바)
-        function handleForwardProgress() {
-            if (activeSentenceIndex === -1) {
-                activeSentenceIndex = 0;
-                activeBlankIndex = 0;
-            } else {
-                const currentItem = sentencesData[activeSentenceIndex];
-                const targetBlanks = currentLevel === 2 ? currentItem.blanks2 : currentItem.blanks3;
-
-                if (activeBlankIndex < targetBlanks.length) {
-                    let originalWords = currentItem.en.split(" ");
-                    let blankCount = 0;
-
-                    for (let wIdx = 0; wIdx < originalWords.length; wIdx++) {
-                        let cleanWord = originalWords[wIdx].replace(/[.,!?]/g, "");
-                        if (targetBlanks.includes(cleanWord)) {
-                            if (blankCount === activeBlankIndex) {
-                                blankStates[`${currentLevel}_${currentItem.id}_${wIdx}`] = true;
-                                break;
-                            }
-                            blankCount++;
-                        }
-                    }
-                    activeBlankIndex++;
-                } else {
-                    activeSentenceIndex++;
-                    if (activeSentenceIndex >= sentencesData.length) {
-                        activeSentenceIndex = 0;
-                    }
-                    activeBlankIndex = 0;
-                }
-            }
-
-            renderSentences();
-            scrollToActiveSentence();
-        }
-
-        // 2,3단계 후진 로직 (프리젠터 이전 버튼)
-        function handleBackwardProgress() {
-            if (activeSentenceIndex <= 0 && activeBlankIndex <= 0) {
-                activeSentenceIndex = 0;
-                activeBlankIndex = 0;
-            } else if (activeBlankIndex > 0) {
-                activeBlankIndex--;
-                const currentItem = sentencesData[activeSentenceIndex];
-                const targetBlanks = currentLevel === 2 ? currentItem.blanks2 : currentItem.blanks3;
-                let originalWords = currentItem.en.split(" ");
-                let blankCount = 0;
-
-                for (let wIdx = 0; wIdx < originalWords.length; wIdx++) {
-                    let cleanWord = originalWords[wIdx].replace(/[.,!?]/g, "");
-                    if (targetBlanks.includes(cleanWord)) {
-                        if (blankCount === activeBlankIndex) {
-                            blankStates[`${currentLevel}_${currentItem.id}_${wIdx}`] = false;
-                            break;
-                        }
-                        blankCount++;
-                    }
-                }
-            } else {
-                activeSentenceIndex--;
-                const currentItem = sentencesData[activeSentenceIndex];
-                const targetBlanks = currentLevel === 2 ? currentItem.blanks2 : currentItem.blanks3;
-                activeBlankIndex = targetBlanks.length;
-            }
-
-            renderSentences();
-            scrollToActiveSentence();
-        }
-
-        function scrollToActiveSentence() {
-            if (activeSentenceIndex >= 0) {
-                const card = document.getElementById(`sentence-card-${activeSentenceIndex}`);
-                if (card) {
-                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }
         }
 
         function changeLevel(level) {
             currentLevel = level;
-            activeSentenceIndex = -1;
-            activeBlankIndex = -1;
+            currentStepIndex = -1;
+            blankStates = {};
             
             for(let i=1; i<=3; i++) {
                 const btn = document.getElementById(`btn-level-${i}`);
@@ -344,23 +209,24 @@
 
             sentencesData.forEach((item, index) => {
                 const card = document.createElement("div");
-                card.id = `sentence-card-${index}`;
-
-                const isHighlighted = (index === activeSentenceIndex);
-                const activeClass = isHighlighted ? "keyboard-active" : "";
-
-                card.className = `bg-white border-3 border-slate-200 rounded-2xl p-4 shadow-sm hover:border-yellow-500 hover:bg-yellow-200 transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-3 cursor-pointer group ${activeClass}`;
+                
+                // 리모컨 순차 진행에 따른 노란색 하이라이트 적용
+                let isHighlighted = (currentLevel > 1 && currentStepIndex >= 0 && getStepOwner(currentStepIndex) === index);
+                
+                let baseClass = "border-3 rounded-2xl p-4 shadow-sm transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-3 cursor-pointer group";
+                if (isHighlighted) {
+                    card.className = baseClass + " bg-yellow-300 border-yellow-600 shadow-lg scale-[1.01]";
+                } else {
+                    card.className = baseClass + " bg-white border-slate-200 hover:border-yellow-500 hover:bg-yellow-200";
+                }
                 
                 card.onclick = () => {
-                    activeSentenceIndex = index;
-                    activeBlankIndex = 0;
                     if(currentLevel === 1) {
                         playTTS(item.en);
                     }
-                    renderSentences();
                 };
 
-                const numBadge = `<span class="bg-emerald-100 text-emerald-800 font-black text-xl px-3 py-1 rounded-xl shrink-0 group-hover:bg-yellow-300 ${isHighlighted ? 'bg-yellow-400 text-amber-950' : ''}">${index + 1}</span>`;
+                const numBadge = `<span class="bg-emerald-100 text-emerald-800 font-black text-xl px-3 py-1 rounded-xl shrink-0">${index + 1}</span>`;
 
                 let contentHtml = "";
 
@@ -373,7 +239,7 @@
                     `;
                 } else {
                     const targetBlanks = currentLevel === 2 ? item.blanks2 : item.blanks3;
-                    const formattedEn = renderBlanksForSentence(item, targetBlanks);
+                    const formattedEn = renderBlanksForSentence(item, targetBlanks, index);
 
                     contentHtml = `
                         <div class="flex-1">
@@ -386,9 +252,106 @@
                 card.innerHTML = numBadge + contentHtml;
                 container.appendChild(card);
             });
+
+            // 하이라이트된 카드로 자동 부드러운 스크롤
+            if (currentLevel > 1 && currentStepIndex >= 0) {
+                const activeCard = container.children[getStepOwner(currentStepIndex)];
+                if (activeCard) {
+                    activeCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
         }
 
-        function renderBlanksForSentence(item, blanksToHide) {
+        // 전체 스텝 구조 계산 (2단계: 문장당 2스텝 [하이라이트 -> 빈칸오픈], 3단계: 문장당 1+빈칸개수 스텝)
+        function getTotalSteps() {
+            let total = 0;
+            sentencesData.forEach(item => {
+                let blanksCount = (currentLevel === 2 ? item.blanks2 : item.blanks3).length;
+                total += (1 + blanksCount); 
+            });
+            return total;
+        }
+
+        // 주어진 globalStepIndex가 어떤 문장(sentence index)에 속하는지 계산
+        function getStepOwner(stepIdx) {
+            let current = 0;
+            for (let i = 0; i < sentencesData.length; i++) {
+                let blanksCount = (currentLevel === 2 ? sentencesData[i].blanks2 : sentencesData[i].blanks3).length;
+                let itemSteps = 1 + blanksCount;
+                if (stepIdx >= current && stepIdx < current + itemSteps) {
+                    return i;
+                }
+                current += itemSteps;
+            }
+            return 0;
+        }
+
+        // 리모컨 / 키보드 이벤트 리스너 (스페이스바 및 프레젠테이션 리모컨 페이지 키 연동)
+        window.addEventListener('keydown', (e) => {
+            // 퀴즈 모달이 열려있으면 무시
+            if (!document.getElementById("quiz-modal").classList.contains("hidden")) return;
+
+            if (currentLevel === 1) {
+                // 1단계: 스페이스바나 다음 버튼 누르면 순서대로 읽기
+                if (e.code === 'Space' || e.key === 'PageDown' || e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    currentStepIndex = (currentStepIndex + 1) % sentencesData.length;
+                    renderSentences();
+                    playTTS(sentencesData[currentStepIndex].en);
+                } else if (e.key === 'PageUp' || e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    currentStepIndex = (currentStepIndex - 1 + sentencesData.length) % sentencesData.length;
+                    renderSentences();
+                    playTTS(sentencesData[currentStepIndex].en);
+                }
+            } else {
+                // 2, 3단계: 스페이스바 및 리모컨 키로 순차 하이라이트 및 빈칸 채우기
+                let maxSteps = getTotalSteps();
+                if (e.code === 'Space' || e.key === 'PageDown' || e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (currentStepIndex < maxSteps - 1) {
+                        currentStepIndex++;
+                        applyStepState();
+                        renderSentences();
+                    }
+                } else if (e.key === 'PageUp' || e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (currentStepIndex > 0) {
+                        currentStepIndex--;
+                        applyStepState();
+                        renderSentences();
+                    }
+                }
+            }
+        });
+
+        // 현재 stepIndex에 맞춰 blankStates 자동 설정
+        function applyStepState() {
+            blankStates = {};
+            let runningStep = 0;
+
+            sentencesData.forEach((item, sIdx) => {
+                let blanks = currentLevel === 2 ? item.blanks2 : item.blanks3;
+                let itemSteps = 1 + blanks.length;
+
+                if (currentStepIndex >= runningStep + 1) {
+                    let openedCount = currentStepIndex - runningStep;
+                    let matchedCount = 0;
+                    
+                    let originalWords = item.en.split(" ");
+                    originalWords.forEach((origWord, wIdx) => {
+                        let cleanWord = origWord.replace(/[.,!?]/g, "");
+                        if (blanks.includes(cleanWord) && matchedCount < openedCount) {
+                            blankStates[`${currentLevel}_${item.id}_${wIdx}`] = true;
+                            matchedCount++;
+                        }
+                    });
+                }
+                runningStep += itemSteps;
+            });
+        }
+
+        function renderBlanksForSentence(item, blanksToHide, sIdx) {
             let originalWords = item.en.split(" ");
             
             return originalWords.map((origWord, wIdx) => {
@@ -403,7 +366,7 @@
                     if(isOpen) {
                         return `<span class="text-emerald-600 bg-emerald-100 px-3 py-1 rounded-lg border-2 border-emerald-400 font-black">${origWord}</span>`;
                     } else {
-                        return `<button onclick="event.stopPropagation(); toggleBlank('${stateKey}', ${item.id - 1})" class="bg-amber-400 hover:bg-amber-500 text-amber-950 px-4 py-1 rounded-xl border-2 border-amber-600 font-black text-2xl md:text-3xl shadow-md transition transform hover:scale-110">[ ? ]${punct}</button>`;
+                        return `<button onclick="event.stopPropagation(); toggleBlank('${stateKey}')" class="bg-amber-400 hover:bg-amber-500 text-amber-950 px-4 py-1 rounded-xl border-2 border-amber-600 font-black text-2xl md:text-3xl shadow-md">[ ? ]${punct}</button>`;
                     }
                 } else {
                     return `<span>${origWord}</span>`;
@@ -411,9 +374,8 @@
             }).join(" ");
         }
 
-        function toggleBlank(key, itemIndex) {
+        function toggleBlank(key) {
             blankStates[key] = true;
-            activeSentenceIndex = itemIndex;
             renderSentences();
         }
 
@@ -433,8 +395,7 @@
 
         function resetBlanks() {
             blankStates = {};
-            activeSentenceIndex = -1;
-            activeBlankIndex = -1;
+            currentStepIndex = -1;
             renderSentences();
         }
 
@@ -447,47 +408,35 @@
 
             const voices = window.speechSynthesis.getVoices();
             const preferredVoice = voices.find(v => 
-                (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Samantha') || v.name.includes('Zira') || v.name.includes('David')) && v.lang.includes('en')
+                (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Samantha') || v.name.includes('Zira')) && v.lang.includes('en')
             ) || voices.find(v => v.lang.includes('en-US')) || voices[0];
 
-            if (preferredVoice) {
-                utterance.voice = preferredVoice;
-            }
-
+            if (preferredVoice) utterance.voice = preferredVoice;
             window.speechSynthesis.speak(utterance);
         }
 
-        // 오디오 효과음
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx = null;
 
         function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new AudioContext();
-            }
+            if (!audioCtx) audioCtx = new AudioContext();
         }
 
         function playFanfareSound() {
             initAudio();
             if(audioCtx.state === 'suspended') audioCtx.resume();
-
             const notes = [523.25, 659.25, 783.99, 1046.50];
             notes.forEach((freq, idx) => {
                 let osc = audioCtx.createOscillator();
                 let gain = audioCtx.createGain();
-                
                 osc.type = 'triangle';
                 osc.frequency.value = freq;
-                
                 let startTime = audioCtx.currentTime + (idx * 0.12);
                 let duration = idx === 3 ? 0.5 : 0.1;
-
                 gain.gain.setValueAtTime(0.3, startTime);
                 gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
-
                 osc.start(startTime);
                 osc.stop(startTime + duration);
             });
@@ -497,7 +446,6 @@
         function playEDMPartySound() {
             initAudio();
             if(audioCtx.state === 'suspended') audioCtx.resume();
-
             let beatCount = 0;
             edmInterval = setInterval(() => {
                 if(beatCount > 12) {
@@ -506,17 +454,13 @@
                 }
                 let osc = audioCtx.createOscillator();
                 let gain = audioCtx.createGain();
-
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(beatCount % 2 === 0 ? 150 : 300, audioCtx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.15);
-
                 gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
-
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
-
                 osc.start();
                 osc.stop(audioCtx.currentTime + 0.15);
                 beatCount++;
@@ -530,7 +474,6 @@
             }
         }
 
-        // 퀴즈 모달
         let currentQuizIndex = 1;
 
         function openQuizModal() {
@@ -565,9 +508,9 @@
 
             if(step === 1) {
                 title.innerText = "1번 문제";
-                progress.innerText = "1 / 2";
+                progress.innerText = "문제 1 / 2";
                 question.innerText = "알렉스의 방은 무엇일까요?";
-                txtLeft.innerText = "로봇이 가득한 방";
+                txtLeft.innerText = "로봇이 가득한 방 (정답)";
                 txtRight.innerText = "책이 가득한 방";
 
                 imgLeft.innerHTML = `
@@ -586,40 +529,28 @@
                         <rect x="40" y="20" width="120" height="110" fill="#b45309" rx="3"/>
                         <line x1="40" y1="55" x2="160" y2="55" stroke="#78350f" stroke-width="4"/>
                         <line x1="40" y1="90" x2="160" y2="90" stroke="#78350f" stroke-width="4"/>
-                        <rect x="50" y="28" width="15" height="25" fill="#ef4444"/>
-                        <rect x="70" y="25" width="20" height="28" fill="#3b82f6"/>
-                        <rect x="95" y="30" width="12" height="23" fill="#10b981"/>
-                        <rect x="50" y="63" width="18" height="24" fill="#ec4899"/>
-                        <rect x="75" y="60" width="25" height="27" fill="#8b5cf6"/>
                     </svg>
                 `;
             } else {
                 title.innerText = "2번 문제";
-                progress.innerText = "2 / 2";
+                progress.innerText = "문제 2 / 2";
                 question.innerText = "앤드루의 방은 무엇일까요?";
                 txtLeft.innerText = "곰인형이 가득한 방";
-                txtRight.innerText = "기타가 종류별로 있는 방";
+                txtRight.innerText = "기타가 종류별로 있는 방 (정답)";
 
                 imgLeft.innerHTML = `
                     <svg viewBox="0 0 200 150" class="w-full h-full">
                         <rect width="200" height="150" fill="#fce7f3"/>
                         <circle cx="70" cy="60" r="20" fill="#fbbf24"/>
-                        <circle cx="58" cy="50" r="8" fill="#d97706"/>
-                        <circle cx="82" cy="50" r="8" fill="#d97706"/>
                         <circle cx="130" cy="80" r="25" fill="#f43f5e"/>
-                        <circle cx="115" cy="65" r="10" fill="#be123c"/>
-                        <circle cx="145" cy="65" r="10" fill="#be123c"/>
                     </svg>
                 `;
                 imgRight.innerHTML = `
                     <svg viewBox="0 0 200 150" class="w-full h-full">
                         <rect width="200" height="150" fill="#ede9fe"/>
                         <ellipse cx="60" cy="90" rx="18" ry="24" fill="#d97706" transform="rotate(-20 60 90)"/>
-                        <rect x="57" y="35" width="6" height="40" fill="#78350f" transform="rotate(-20 60 75)"/>
                         <ellipse cx="100" cy="85" rx="20" ry="26" fill="#b45309"/>
-                        <rect x="97" y="30" width="6" height="40" fill="#451a03"/>
                         <ellipse cx="140" cy="90" rx="18" ry="24" fill="#d97706" transform="rotate(20 140 90)"/>
-                        <rect x="137" y="35" width="6" height="40" fill="#78350f" transform="rotate(20 140 75)"/>
                     </svg>
                 `;
             }
@@ -641,11 +572,11 @@
                 }
             } else if(currentQuizIndex === 2) {
                 if(choice === 2) {
-                    feedback.innerHTML = "🔥 <span class='text-fuchsia-600 font-black text-3xl'>정답입니다! 🎸✨</span>";
+                    feedback.innerHTML = "🔥 <span class='text-fuchsia-600 font-black text-3xl'>YEAH! EDM 파티 타임! 🎸✨</span>";
                     playEDMPartySound();
                     modalBox.classList.add("edm-mode");
                     nextBtn.classList.remove("hidden");
-                    nextBtn.innerText = "완료 🏁";
+                    nextBtn.innerText = "퀴즈 완료 🏁";
                 } else {
                     feedback.innerHTML = "❌ <span class='text-rose-500'>다시 골라보세요.</span>";
                 }
@@ -665,23 +596,19 @@
             const container = document.getElementById("fireworks-container");
             container.innerHTML = "";
             container.classList.remove("hidden");
-
             const colors = ['#ef4444', '#3b82f6', '#22c55e', '#facc15', '#a855f7', '#ec4899', '#ffffff'];
 
             for(let i=0; i<60; i++) {
                 const particle = document.createElement("div");
                 particle.className = "firework-particle";
-                
                 const x = (window.innerWidth / 2) + (Math.random() * 600 - 300);
                 const y = (window.innerHeight / 2) + (Math.random() * 500 - 250);
-                
                 particle.style.left = `${window.innerWidth / 2}px`;
                 particle.style.top = `${window.innerHeight / 2}px`;
                 particle.style.setProperty('--x', `${x - window.innerWidth / 2}px`);
                 particle.style.setProperty('--y', `${y - window.innerHeight / 2}px`);
                 particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
                 particle.style.animationDuration = `${1 + Math.random() * 2}s`;
-
                 container.appendChild(particle);
             }
 
