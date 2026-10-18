@@ -566,14 +566,14 @@ function pttFinish(){
   /* 아무것도 못 들음: 오답으로 세지 않음. 다음엔 새 세션으로 */
   srStale=true;
   noSoundFails++;
-  pttUI('idle','소리가 안 들렸어요 🙉 다시 꾹 눌러 말해요!');
-  speechDebugPanel('소리가 잘 안 들어왔어요. 마이크 가까이에서 한 번 더 말해 주세요.');
-  if(noSoundFails>=2){
-    const b=document.createElement('button');
-    b.className='rbtn';b.style.marginTop='12px';b.textContent='⏭️ 이 문제는 건너뛰기';
-    b.onclick=()=>{if(busy)return;busy=true;next2()};
-    res.appendChild(b);
+  if(noSoundFails>=2){           /* 두 번 다 소리가 안 들어옴: 오류 티 내지 않고 자연스럽게 다음 문제로 */
+    busy=true;
+    pttUI('idle');
+    res.innerHTML='<div class="msg mid">나날이 발전해요! 🌱</div>';
+    setTimeout(next2,1800);
+    return;
   }
+  pttUI('idle','마이크 위치를 확인하고 크게 이야기해 주세요 🎤');
 }
 function stopSR(cb){dropSR();cb&&cb()}
 function killPrev(){held=false;waitingMic=false;judging=false;noSoundFails=0;dropSR()}
@@ -603,7 +603,7 @@ function judge(ratio,miss){
     res.innerHTML=`<div class="msg mid">${m}</div>`;
     setTimeout(next2,1800);return;
   }
-  res.innerHTML=`${miss?'':`<div class="pct en">${pct}%</div>`}<div class="msg low">${miss?'소리가 잘 안 들렸어요 🙉':'조금만 더! 💪'}</div><div class="try">🎤 버튼을 꾹 누르고 다시 말해봐요!</div>`;
+  res.innerHTML=`${miss?'':`<div class="pct en">${pct}%</div>`}<div class="msg low">${miss?'마이크 위치를 확인하고 크게 이야기해 주세요 🎤':'조금만 더! 💪'}</div><div class="try">🎤 버튼을 꾹 누르고 다시 말해봐요!</div>`;
 }
 function next2(){held=false;waitingMic=false;judging=false;noSoundFails=0;i2++;r2()}
 
