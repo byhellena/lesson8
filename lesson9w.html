@@ -3,393 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>9단원 English Reading: Alex's and Andrew's Rooms</title>
+    <title>Alex's and Andrew's Rooms - 학습 웹앱</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@700;900&family=Fredoka:wght@700;800&display=swap" rel="stylesheet">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700;900&display=swap');
+        
         body {
-            font-family: 'Fredoka', 'Noto Sans KR', sans-serif;
-            background-color: #ecfdf5;
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f0fdf4;
         }
-        /* Extra large clickable blank buttons */
-        .blank-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 140px;
-            padding: 2px 16px;
-            margin: 0 6px;
-            border-bottom: 6px solid #2563eb;
-            background-color: #dbeafe;
-            color: #1e40af;
-            font-weight: 900;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.08);
-            line-height: 1.2;
+        
+        .jua-font {
+            font-family: 'Jua', sans-serif;
         }
-        .blank-btn:hover {
-            background-color: #bfdbfe;
-            transform: translateY(-2px);
+
+        /* 퀴즈 폭죽 애니메이션 */
+        @keyframes firework {
+            0% { transform: translate(0, 0); opacity: 1; }
+            50% { opacity: 1; }
+            100% { transform: translate(var(--x), var(--y)); opacity: 0; }
         }
-        .blank-btn.revealed {
-            background-color: #dcfce7;
-            border-bottom: 6px solid #16a34a;
-            color: #15803d;
-            animation: popIn 0.25s ease;
+        .firework-particle {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: firework 1s ease-out forwards;
         }
-        @keyframes popIn {
-            0% { transform: scale(0.92); }
-            50% { transform: scale(1.06); }
-            100% { transform: scale(1); }
+
+        /* EDM 스트로브 디스코 효과 */
+        @keyframes edmStrobe {
+            0% { background-color: #ff00ff; color: #ffff00; }
+            20% { background-color: #00ffff; color: #ff0000; }
+            40% { background-color: #ffff00; color: #0000ff; }
+            60% { background-color: #ff0000; color: #00ff00; }
+            80% { background-color: #00ff00; color: #ff00ff; }
+            100% { background-color: #1e1b4b; color: #ffffff; }
         }
-        .sentence-card {
-            transition: all 0.15s ease;
-        }
-        .sentence-card:hover {
-            border-color: #0d9488 !important;
-        }
-        .playing {
-            border-color: #2563eb !important;
-            background-color: #eff6ff !important;
-            box-shadow: 0 0 20px rgba(37, 99, 235, 0.35) !important;
+        .edm-mode {
+            animation: edmStrobe 0.25s infinite;
         }
     </style>
 </head>
-<body class="min-h-screen text-slate-900 flex flex-col p-2 md:p-4">
+<body class="min-h-screen text-slate-800 flex flex-col items-center justify-between p-2">
 
-    <!-- Header & Navigation Bar (Compact Layout) -->
-    <header class="max-w-[98%] w-full mx-auto mb-3 flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-2xl shadow-md border-2 border-teal-200">
+    <!-- 상단 헤더 & 탭 메뉴 -->
+    <header class="w-full max-w-7xl mx-auto bg-white shadow-md rounded-2xl p-4 mb-3 flex flex-col md:flex-row items-center justify-between gap-3 border-2 border-emerald-200">
         <div class="flex items-center gap-3">
-            <h1 class="text-3xl lg:text-4xl font-black text-teal-800 tracking-tight">
-                📖 Alex's and Andrew's Rooms
-            </h1>
-            <span class="bg-teal-100 text-teal-900 font-black px-3 py-1 rounded-xl text-lg hidden sm:inline-block">초등 9단원</span>
+            <span class="text-4xl">🏡</span>
+            <div>
+                <h1 class="text-3xl md:text-4xl font-black text-emerald-600 jua-font">Alex's and Andrew's Rooms</h1>
+                <p class="text-lg text-slate-500 font-bold">초등 영어 교실 학습 프로그램 (TV 화면 맞춤)</p>
+            </div>
         </div>
 
-        <!-- Navigation Tabs -->
-        <nav class="flex flex-wrap gap-2">
-            <button onclick="switchStep(1)" id="tab-1" class="tab-btn px-6 py-2.5 text-2xl font-black rounded-xl shadow-md transition-all flex items-center gap-2 bg-teal-600 text-white scale-105">
-                <span>🔊 1단계 (듣기·읽기)</span>
+        <!-- 단계 선택 탭 버튼 -->
+        <div class="flex items-center gap-2 bg-emerald-50 p-2 rounded-xl border border-emerald-300">
+            <button onclick="changeLevel(1)" id="btn-level-1" class="px-5 py-2.5 rounded-lg text-xl font-black transition-all shadow-sm bg-emerald-600 text-white">
+                1단계 (듣기·읽기)
             </button>
-            <button onclick="switchStep(2)" id="tab-2" class="tab-btn px-6 py-2.5 text-2xl font-black rounded-xl shadow-md transition-all flex items-center gap-2 bg-slate-100 text-slate-700 hover:bg-teal-50">
-                <span>✏️ 2단계 (기초 빈칸)</span>
+            <button onclick="changeLevel(2)" id="btn-level-2" class="px-5 py-2.5 rounded-lg text-xl font-black transition-all text-slate-600 hover:bg-emerald-200">
+                2단계 (기초 빈칸)
             </button>
-            <button onclick="switchStep(3)" id="tab-3" class="tab-btn px-6 py-2.5 text-2xl font-black rounded-xl shadow-md transition-all flex items-center gap-2 bg-slate-100 text-slate-700 hover:bg-teal-50">
-                <span>🔥 3단계 (심화 빈칸)</span>
+            <button onclick="changeLevel(3)" id="btn-level-3" class="px-5 py-2.5 rounded-lg text-xl font-black transition-all text-slate-600 hover:bg-emerald-200">
+                3단계 (심화 빈칸)
             </button>
-        </nav>
+        </div>
     </header>
 
-    <!-- Main Content Area with Max Width & Min Padding -->
-    <main class="max-w-[98%] w-full mx-auto flex-1 bg-white rounded-3xl p-3 md:p-5 shadow-xl border-4 border-teal-200 flex flex-col">
-
-        <!-- Controls Toolbar -->
-        <div id="controls-bar" class="mb-3 flex flex-wrap justify-between items-center gap-3 bg-emerald-50 px-5 py-2.5 rounded-2xl border-2 border-emerald-200">
-            <div id="step-description" class="text-2xl font-black text-emerald-900 flex items-center gap-2">
-                <span>💡</span> 문장을 누르면 미국식 영어 발음을 들을 수 있습니다.
+    <!-- 메인 컨텐츠 영역 -->
+    <main class="w-full max-w-7xl mx-auto flex-1 flex flex-col gap-3 mb-4">
+        
+        <!-- 단계별 설명 바 및 컨트롤 -->
+        <div class="bg-amber-100 border-2 border-amber-300 rounded-xl px-6 py-3 flex items-center justify-between shadow-sm">
+            <div id="level-desc" class="text-xl md:text-2xl font-black text-amber-900 flex items-center gap-2">
+                🔊 <span>1단계: 문장을 누르면 원어민 발음(TTS)이 재생됩니다!</span>
             </div>
-            <div class="flex gap-3">
-                <button id="reset-btn" onclick="resetCurrentStep()" class="hidden px-6 py-2 text-2xl font-black bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-md transition-all active:scale-95">
-                    🔄 다시 풀기
-                </button>
-                <button id="show-all-btn" onclick="revealAllBlanks()" class="hidden px-6 py-2 text-2xl font-black bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md transition-all active:scale-95">
-                    👁️ 전체 정답 보기
-                </button>
+            <div class="flex items-center gap-3">
+                <div id="quiz-btn-container" class="hidden">
+                    <button onclick="openQuizModal()" class="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white font-black text-xl rounded-xl shadow-md transition transform hover:scale-105 flex items-center gap-2">
+                        🎮 퀴즈 풀어보기
+                    </button>
+                </div>
+                <div id="blank-controls" class="hidden flex items-center gap-2">
+                    <button onclick="revealAllBlanks()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold text-lg rounded-lg shadow">
+                        💡 전체 정답 보기
+                    </button>
+                    <button onclick="resetBlanks()" class="px-4 py-2 bg-slate-500 hover:bg-slate-600 text-white font-bold text-lg rounded-lg shadow">
+                        🔄 다시 풀기
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- Sentences Container -->
-        <div id="sentences-list" class="space-y-2.5 flex-1">
-            <!-- Dynamic Content Injected via JS -->
+        <!-- 문장 카드 리스트 컨테이너 -->
+        <div id="sentences-container" class="grid grid-cols-1 gap-3">
+            <!-- 자바스크립트로 동적 렌더링 -->
         </div>
+
     </main>
 
-    <!-- JavaScript Logic -->
-    <script>
-        // Data Structure for Sentences and Blank Configurations
-        const storyData = [
-            {
-                id: 1,
-                english: "This is the living room.",
-                korean: "이곳은 거실입니다.",
-                s2Blanks: [{ start: 12, word: "living room" }],
-                s3Blanks: [{ start: 0, word: "This" }, { start: 12, word: "living room" }]
-            },
-            {
-                id: 2,
-                english: "Look! There are pictures on the table.",
-                korean: "봐! 탁자 위에 사진들이 있어.",
-                s2Blanks: [{ start: 16, word: "pictures" }],
-                s3Blanks: [{ start: 16, word: "pictures" }, { start: 31, word: "table" }]
-            },
-            {
-                id: 3,
-                english: "They are Alex and Andrew.",
-                korean: "그들은 알렉스와 앤드루야.",
-                s2Blanks: [{ start: 9, word: "Alex" }],
-                s3Blanks: [{ start: 9, word: "Alex" }, { start: 18, word: "Andrew" }]
-            },
-            {
-                id: 4,
-                english: "Alex is twelve years old.",
-                korean: "알렉스는 12살이야.",
-                s2Blanks: [{ start: 8, word: "twelve" }],
-                s3Blanks: [{ start: 8, word: "twelve" }, { start: 15, word: "years" }]
-            },
-            {
-                id: 5,
-                english: "Andrew is twelve years old, too.",
-                korean: "앤드루도 12살이야.",
-                s2Blanks: [{ start: 10, word: "twelve" }],
-                s3Blanks: [{ start: 0, word: "Andrew" }, { start: 10, word: "twelve" }]
-            },
-            {
-                id: 6,
-                english: "They are brothers.",
-                korean: "그들은 형제야.",
-                s2Blanks: [{ start: 9, word: "brothers" }],
-                s3Blanks: [{ start: 0, word: "They" }, { start: 9, word: "brothers" }]
-            },
-            {
-                id: 7,
-                english: "This is Alex's room.",
-                korean: "이곳은 알렉스의 방이야.",
-                s2Blanks: [{ start: 15, word: "room" }],
-                s3Blanks: [{ start: 8, word: "Alex's" }, { start: 15, word: "room" }]
-            },
-            {
-                id: 8,
-                english: "There are robots in the box.",
-                korean: "상자 안에 로봇들이 있어.",
-                s2Blanks: [{ start: 10, word: "robots" }],
-                s3Blanks: [{ start: 10, word: "robots" }, { start: 24, word: "box" }]
-            },
-            {
-                id: 9,
-                english: "Alex likes making robots.",
-                korean: "알렉스는 로봇 만드는 것을 좋아해.",
-                s2Blanks: [{ start: 11, word: "making" }],
-                s3Blanks: [{ start: 11, word: "making" }, { start: 18, word: "robots" }]
-            },
-            {
-                id: 10,
-                english: "This is Andrew's room.",
-                korean: "이곳은 앤드루의 방이야.",
-                s2Blanks: [{ start: 8, word: "Andrew's" }],
-                s3Blanks: [{ start: 8, word: "Andrew's" }, { start: 17, word: "room" }]
-            },
-            {
-                id: 11,
-                english: "There is a guitar on the bed.",
-                korean: "침대 위에 기타가 있어.",
-                s2Blanks: [{ start: 11, word: "guitar" }],
-                s3Blanks: [{ start: 11, word: "guitar" }, { start: 25, word: "bed" }]
-            },
-            {
-                id: 12,
-                english: "Andrew likes playing the guitar.",
-                korean: "앤드루는 기타 치는 것을 좋아해.",
-                s2Blanks: [{ start: 13, word: "playing" }],
-                s3Blanks: [{ start: 13, word: "playing" }, { start: 25, word: "guitar" }]
-            },
-            {
-                id: 13,
-                english: "They look the same.",
-                korean: "그들은 똑같아 보여.",
-                s2Blanks: [{ start: 14, word: "same" }],
-                s3Blanks: [{ start: 5, word: "look" }, { start: 14, word: "same" }]
-            },
-            {
-                id: 14,
-                english: "But they are not the same.",
-                korean: "하지만 그들은 같지 않아.",
-                s2Blanks: [{ start: 20, word: "same" }],
-                s3Blanks: [{ start: 0, word: "But" }, { start: 20, word: "same" }]
-            }
-        ];
-
-        let currentStep = 1;
-        let ttsSynth = window.speechSynthesis;
-        let selectedVoice = null;
-
-        // Select the most natural sounding US Voice
-        function initVoices() {
-            if (!ttsSynth) return;
-            const voices = ttsSynth.getVoices();
-            selectedVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Samantha') || v.name.includes('Jenny') || v.name.includes('US'))) ||
-                            voices.find(v => v.lang.startsWith('en')) || null;
-        }
-
-        if (speechSynthesis.onvoiceschanged !== undefined) {
-            speechSynthesis.onvoiceschanged = initVoices;
-        }
-
-        // Speech Synthesis function (Used ONLY in Step 1)
-        function speakSentence(text, cardElement = null) {
-            if (currentStep !== 1) return; // Audio ONLY in Step 1
-
-            if (!('speechSynthesis' in window)) {
-                return;
-            }
-
-            ttsSynth.cancel();
-
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'en-US';
-            utterance.rate = 0.85;
-
-            if (!selectedVoice) initVoices();
-            if (selectedVoice) utterance.voice = selectedVoice;
-
-            if (cardElement) {
-                cardElement.classList.add('playing');
-                utterance.onend = () => cardElement.classList.remove('playing');
-                utterance.onerror = () => cardElement.classList.remove('playing');
-            }
-
-            ttsSynth.speak(utterance);
-        }
-
-        // Switch Step Navigation
-        function switchStep(step) {
-            currentStep = step;
-            if (ttsSynth) ttsSynth.cancel();
-
-            // Update Tab UI
-            [1, 2, 3].forEach(i => {
-                const tab = document.getElementById(`tab-${i}`);
-                if (i === step) {
-                    tab.className = "tab-btn px-6 py-2.5 text-2xl font-black rounded-xl shadow-md transition-all flex items-center gap-2 bg-teal-600 text-white scale-105 border-2 border-teal-700";
-                } else {
-                    tab.className = "tab-btn px-6 py-2.5 text-2xl font-black rounded-xl shadow-md transition-all flex items-center gap-2 bg-slate-100 text-slate-700 hover:bg-teal-50";
-                }
-            });
-
-            // Update Toolbar Controls
-            const stepDesc = document.getElementById('step-description');
-            const showAllBtn = document.getElementById('show-all-btn');
-            const resetBtn = document.getElementById('reset-btn');
-
-            if (step === 1) {
-                stepDesc.innerHTML = '<span>🔊</span> <b>1단계:</b> 문장을 눌러 명확한 영어 발음을 들으며 읽어보세요.';
-                showAllBtn.classList.add('hidden');
-                resetBtn.classList.add('hidden');
-            } else if (step === 2) {
-                stepDesc.innerHTML = '<span>✏️</span> <b>2단계:</b> 빈칸( [ ? ] )을 누르면 정답 단어가 나타납니다.';
-                showAllBtn.classList.remove('hidden');
-                resetBtn.classList.remove('hidden');
-            } else if (step === 3) {
-                stepDesc.innerHTML = '<span>🔥</span> <b>3단계:</b> 빈칸( [ ? ] )을 누르면 정답 단어가 나타납니다.';
-                showAllBtn.classList.remove('hidden');
-                resetBtn.classList.remove('hidden');
-            }
-
-            renderSentences();
-        }
-
-        // Helper to build sentence with clickable interactive blanks
-        function buildBlankSentenceHTML(item, blanks) {
-            const eng = item.english;
-            let result = '';
-            let lastIdx = 0;
-
-            const sortedBlanks = [...blanks].sort((a, b) => a.start - b.start);
-
-            sortedBlanks.forEach((b) => {
-                result += eng.substring(lastIdx, b.start);
-                result += `<button class="blank-btn text-3xl md:text-4xl lg:text-5xl" data-answer="${b.word}" onclick="revealBlank(this, event)">[ ? ]</button>`;
-                lastIdx = b.start + b.word.length;
-            });
-
-            result += eng.substring(lastIdx);
-            return result;
-        }
-
-        // Reveal individual blank (No audio)
-        function revealBlank(btn, event) {
-            event.stopPropagation();
-            if (btn.classList.contains('revealed')) return;
-
-            const answer = btn.getAttribute('data-answer');
-            btn.textContent = answer;
-            btn.classList.add('revealed');
-        }
-
-        // Reveal all blanks on current screen
-        function revealAllBlanks() {
-            const blanks = document.querySelectorAll('.blank-btn');
-            blanks.forEach(btn => {
-                if (!btn.classList.contains('revealed')) {
-                    const answer = btn.getAttribute('data-answer');
-                    btn.textContent = answer;
-                    btn.classList.add('revealed');
-                }
-            });
-        }
-
-        // Reset all blanks
-        function resetCurrentStep() {
-            renderSentences();
-        }
-
-        // Render sentences list with extra large font size
-        function renderSentences() {
-            const container = document.getElementById('sentences-list');
-            container.innerHTML = '';
-
-            storyData.forEach((item, index) => {
-                const card = document.createElement('div');
-                const cursorStyle = currentStep === 1 ? 'cursor-pointer hover:bg-teal-50' : 'cursor-default';
-                card.className = `sentence-card px-4 py-3 bg-slate-50 border-3 border-slate-200 rounded-2xl shadow-sm flex items-center justify-between gap-4 transition-all ${cursorStyle}`;
-
-                let englishHTML = '';
-
-                if (currentStep === 1) {
-                    englishHTML = `<span class="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 tracking-wide leading-tight">${item.english}</span>`;
-                } else if (currentStep === 2) {
-                    englishHTML = `<span class="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 tracking-wide leading-tight">${buildBlankSentenceHTML(item, item.s2Blanks)}</span>`;
-                } else if (currentStep === 3) {
-                    englishHTML = `<span class="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 tracking-wide leading-tight">${buildBlankSentenceHTML(item, item.s3Blanks)}</span>`;
-                }
-
-                card.innerHTML = `
-                    <div class="flex items-center gap-4 w-full">
-                        <span class="flex-shrink-0 w-12 h-12 bg-teal-600 text-white rounded-2xl flex items-center justify-center font-black text-2xl shadow-sm">
-                            ${index + 1}
-                        </span>
-                        <div class="flex-1 flex flex-wrap items-baseline gap-x-4 gap-y-1">
-                            <div>${englishHTML}</div>
-                            <div class="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-500">(${item.korean})</div>
-                        </div>
-                        ${currentStep === 1 ? `
-                        <button class="flex-shrink-0 p-3 bg-teal-500 hover:bg-teal-600 text-white rounded-2xl shadow-md transition-all active:scale-90" title="듣기">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                            </svg>
-                        </button>
-                        ` : ''}
-                    </div>
-                `;
-
-                // Add card click to speak ONLY in Step 1
-                if (currentStep === 1) {
-                    card.addEventListener('click', () => {
-                        speakSentence(item.english, card);
-                    });
-                }
-
-                container.appendChild(card);
-            });
-        }
-
-        // Initialize application
-        window.onload = () => {
-            initVoices();
-            switchStep(1);
-        };
-    </script>
-</body>
-</html>
+    <!-- 푸터 -->
+    <footer
