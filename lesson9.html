@@ -160,6 +160,33 @@ button{touch-action:manipulation}
   .sk{font-size:26px!important;padding:1px 3px!important}.tb{padding:5px 10px!important;font-size:13px!important}.sw{width:28px!important;height:28px!important}
   .tools .trow{margin-bottom:4px!important}
 }
+
+.ptt-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;margin:14px 0 4px}
+.ptt{position:relative;width:170px;height:170px;border-radius:50%;border:0;cursor:pointer;
+  background:#ee7fa6;box-shadow:0 8px 0 #b94a73;color:#fff;font-size:72px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;
+  touch-action:none;transition:transform .08s,box-shadow .08s,background .15s}
+.ptt *{pointer-events:none}
+.ptt-ico{position:relative;z-index:2}
+.ptt-ring{position:absolute;inset:0;border-radius:50%;border:6px solid #ff3b5c;opacity:0;pointer-events:none}
+.ptt.rec{background:#ff3b5c;box-shadow:0 2px 0 #a8142f;transform:translateY(6px) scale(1.04)}
+.ptt.rec .ptt-ring{animation:pttPulse 1.2s ease-out infinite}
+.ptt.rec .ptt-ring.r2{animation-delay:.6s}
+.ptt.wait{background:#9a8cff;box-shadow:0 4px 0 #6c5ccf}
+.ptt:disabled{opacity:.45;cursor:not-allowed}
+@keyframes pttPulse{0%{transform:scale(1);opacity:.9}100%{transform:scale(1.7);opacity:0}}
+.ptt-label{font-weight:800;font-size:19px;color:#5b4a73;min-height:28px;text-align:center}
+.ptt-label.rec{color:#ff3b5c;font-size:22px;animation:pttBlink 1s ease-in-out infinite}
+@keyframes pttBlink{50%{opacity:.55}}
+.ptt-bars{display:flex;gap:6px;height:34px;align-items:center;visibility:hidden}
+.ptt-bars.on{visibility:visible}
+.ptt-bars i{display:block;width:8px;height:10px;border-radius:4px;background:#ff3b5c;animation:pttBar .7s ease-in-out infinite}
+.ptt-bars i:nth-child(2){animation-delay:.1s}.ptt-bars i:nth-child(3){animation-delay:.2s}
+.ptt-bars i:nth-child(4){animation-delay:.3s}.ptt-bars i:nth-child(5){animation-delay:.15s}
+.ptt-bars i:nth-child(6){animation-delay:.25s}.ptt-bars i:nth-child(7){animation-delay:.05s}
+@keyframes pttBar{50%{height:32px}}
+.listen{font-size:17px;font-weight:700;color:#5b4a73;min-height:24px;text-align:center}
 </style>
 </head>
 <body>
@@ -326,8 +353,17 @@ function r2(){
   b.innerHTML=`<div class="qcard" style="--a:#a58bff"><div class="qcount">${i2+1} / ${sentences.length}</div>
    <div class="qimg" style="font-size:70px">${s.e}</div>
    <div class="sent en">${s.en}</div><div class="kr">${s.kr}</div>
-   <div class="btns"><button class="rbtn" onclick="say()">🔊 듣기</button><button class="rbtn mic" id="spk" onclick="speak(0)">🎤 말하기</button></div>
+   <div class="btns"><button class="rbtn" onclick="say()">🔊 듣기</button></div>
+   <div class="ptt-wrap">
+     <button class="ptt" id="spk" type="button" aria-label="누르고 있는 동안 말하기">
+       <span class="ptt-ring"></span><span class="ptt-ring r2"></span>
+       <span class="ptt-ico" id="ptt-ico">🎤</span>
+     </button>
+     <div class="ptt-label" id="ptt-label">꾹 누르고 말하세요</div>
+     <div class="ptt-bars" id="ptt-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+   </div>
    <div class="listen" id="lis"></div><div class="res" id="res"></div></div>`;
+  setupPTT();
 }
 function say(){
   try{const u=new SpeechSynthesisUtterance(sentences[i2].en);u.lang='en-US';u.rate=.9;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}
@@ -387,15 +423,17 @@ function speechDebugPanel(title, info, transcript){
   panel.appendChild(pre);
   res.appendChild(panel);
 }
-/* iOS Safari: 인식 객체를 한 번만 만들어 계속 재사용 (새로 만들면 2번째부터 소리가 안 들어옴) */
+/* ===== 누르고 있는 동안만 듣는 방식 (Push-to-talk) ===== */
 let SR=null, srRunning=false, srEndWaiters=[];
-function getSR(){
+let held=false, pressAt=0, sess=null;
+function getSR(fresh){
+  if(fresh)SR=null;
   if(SR)return SR;
   const R=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!R)return null;
   SR=new R();
   SR.lang='en-US';
-  SR.continuous=false;
+  SR.continuous=true;
   SR.interimResults=true;
   SR.maxAlternatives=1;
   return SR;
@@ -406,105 +444,143 @@ function stopSR(cb){
   let done=false;
   const fin=()=>{if(done)return;done=true;cb&&cb()};
   srEndWaiters.push(fin);
-  setTimeout(()=>{srRunning=false;fin()},1500);
+  setTimeout(()=>{srRunning=false;fin()},1200);
   try{SR.abort()}catch(e){}
 }
-function killPrev(){stopSR()}
-function speak(attempt){
-  if(busy)return;
-  attempt=(typeof attempt==='number')?attempt:0;
-  const tag=$('lis'),res=$('res'),spk=$('spk');
-  if(!tag||!spk)return;
-  const target=sentences[i2].en;
-  if(!(window.SpeechRecognition||window.webkitSpeechRecognition)){
-    tag.textContent='';spk.disabled=false;
-    res.innerHTML='<div class="msg low">이 브라우저에서 음성 인식 API를 찾을 수 없습니다.</div>';
+function killPrev(){held=false;sess=null;stopSR()}
+
+function pttUI(state,text){
+  const b=$('spk'),l=$('ptt-label'),bars=$('ptt-bars'),ico=$('ptt-ico');
+  if(!b)return;
+  b.classList.toggle('rec',state==='rec');
+  b.classList.toggle('wait',state==='wait');
+  l.className='ptt-label'+(state==='rec'?' rec':'');
+  bars.classList.toggle('on',state==='rec');
+  ico.textContent=state==='rec'?'🔴':state==='wait'?'⏳':'🎤';
+  l.textContent=text||(state==='rec'?'🔴 듣는 중! 손을 떼면 끝나요':state==='wait'?'확인하는 중...':'꾹 누르고 말하세요');
+}
+
+function setupPTT(){
+  const b=$('spk');
+  if(!b)return;
+  pttUI('idle');
+  const down=e=>{
+    e.preventDefault();
+    if(busy||held)return;
+    pressStart();
+  };
+  const up=e=>{e.preventDefault();if(held)pressEnd()};
+  b.addEventListener('pointerdown',down);
+  b.addEventListener('pointerup',up);
+  b.addEventListener('pointercancel',up);
+  b.addEventListener('pointerleave',e=>{if(held&&e.pointerType==='mouse')up(e)});
+  b.addEventListener('contextmenu',e=>e.preventDefault());
+  b.addEventListener('selectstart',e=>e.preventDefault());
+  /* 손가락이 버튼 밖으로 나가도 끝나게 */
+  if(!window.__pttDoc){
+    window.__pttDoc=true;
+    document.addEventListener('pointerup',()=>{if(held)pressEnd()});
+    document.addEventListener('touchend',()=>{if(held)pressEnd()});
+  }
+}
+
+function pressStart(){
+  const res=$('res'),tag=$('lis');
+  const R=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!R){
+    res.innerHTML='<div class="msg low">이 브라우저에서 음성 인식을 쓸 수 없어요.</div>';
     speechDebugPanel('진단 정보',{error:'unsupported',message:'SpeechRecognition 객체가 없습니다.',events:[]},'');
     return;
   }
-  spk.disabled=true;
-  tag.textContent='🎧 준비 중...';
-  res.innerHTML='';
-  stopSR(()=>setTimeout(()=>startSession(attempt,target),300));
+  held=true;pressAt=Date.now();
+  res.innerHTML='';tag.textContent='';
+  try{speechSynthesis.cancel()}catch(e){}
+  pttUI('rec');
+  const target=sentences[i2].en;
+  const me={target,events:[],text:'',finished:false,startedAt:Date.now(),errorCode:'',errorMessage:'',ended:false,gotAudio:false};
+  sess=me;
+  const mark=n=>{me.events.push(n);if(me.events.length>30)me.events.shift()};
+  mark('눌림');
+
+  const launch=()=>{
+    if(sess!==me||me.finished)return;
+    let rec;
+    try{rec=getSR(me.fresh)}catch(e){fail('constructor-error',e.message||String(e));return}
+    rec.onstart=()=>{srRunning=true;mark('start')};
+    rec.onaudiostart=()=>{me.gotAudio=true;mark('audiostart')};
+    rec.onsoundstart=()=>mark('soundstart');
+    rec.onspeechstart=()=>mark('speechstart');
+    rec.onspeechend=()=>mark('speechend');
+    rec.onaudioend=()=>mark('audioend');
+    rec.onnomatch=()=>mark('nomatch');
+    rec.onresult=e=>{
+      if(sess!==me)return;
+      mark('result');
+      let t='';
+      for(let k=0;k<e.results.length;k++)t+=e.results[k][0].transcript+' ';
+      me.text=t.trim();
+      if(me.text&&held){const l=$('ptt-label');if(l)l.textContent='🔴 '+me.text}
+    };
+    rec.onerror=e=>{mark('error:'+(e.error||'?'));me.errorCode=e.error||'unknown-error';me.errorMessage=e.message||''};
+    rec.onend=()=>{
+      mark('end');srRunning=false;me.ended=true;
+      srEndWaiters.splice(0).forEach(f=>f());
+      if(sess!==me||me.finished)return;
+      if(!held)finish();            /* 손을 뗀 뒤 정상 종료 */
+      /* 누르는 중에 끊기면: 손을 뗄 때 지금까지 들린 것으로 처리 */
+    };
+    try{rec.start()}catch(e){mark('start-throw');fail(e.name||'start-error',e.message||String(e))}
+  };
+  /* 이전 세션이 아직 끝나는 중이면 잠깐 기다렸다가 시작 */
+  if(srRunning)stopSR(()=>setTimeout(launch,120));else launch();
 }
-function startSession(attempt,target){
-  const tag=$('lis'),res=$('res'),spk=$('spk');
-  if(!tag||!spk)return;
-  let rec;
-  try{rec=getSR()}catch(e){
-    tag.textContent='';spk.disabled=false;
-    res.innerHTML='<div class="msg low">음성 인식 객체를 만들지 못했습니다.</div>';
-    speechDebugPanel('진단 정보',{error:e.name||'constructor-error',message:e.message||String(e),events:[]},'');
+
+function pressEnd(){
+  if(!held)return;
+  held=false;
+  const me=sess;
+  if(!me||me.finished)return;
+  me.events.push('뗌');
+  const heldMs=Date.now()-pressAt;
+  if(heldMs<500&&!me.text){
+    me.finished=true;sess=null;
+    try{SR&&SR.abort()}catch(e){}
+    pttUI('idle','조금 더 오래 꾹 눌러 주세요 👆');
     return;
   }
-  let finalized=false, errorCode='', errorMessage='', heard=false, lastText='', gotFinal=false;
-  let overallTimer=null;
-  const events=[];
-  const mark=n=>{events.push(n);if(events.length>30)events.shift()};
-  const finishUI=()=>{tag.textContent='';spk.disabled=false};
-  const clearAll=()=>clearTimeout(overallTimer);
-  const diagnostic=(title,code,message,transcript='')=>{
-    if(finalized)return;
-    finalized=true;clearAll();
-    if(attempt<1 && ['aborted','no-result-before-end','audio-capture','no-speech','no-sound-timeout'].includes(code||errorCode) && !lastText){
-      tag.textContent='🔄 다시 듣는 중...';
-      stopSR(()=>setTimeout(()=>{spk.disabled=false;speak(attempt+1)},500));
-      return;
-    }
-    finishUI();
-    speechDebugPanel(title,{error:code||errorCode,message:message||errorMessage,events:[...events]},transcript);
-  };
-  const accept=(transcript)=>{
-    if(finalized)return;
-    finalized=true;clearAll();
-    finishUI();
-    judge(score(transcript,target));
-    const d=document.createElement('div');d.className='try';d.textContent='들린 소리: '+transcript.trim();res.appendChild(d);
-  };
-  mark('start() 호출');
-  rec.onstart=()=>{srRunning=true;mark('start');tag.textContent='🎧 듣는 중... 영어 문장을 읽어 주세요.'};
-  rec.onaudiostart=()=>mark('audiostart');
-  rec.onsoundstart=()=>mark('soundstart');
-  rec.onspeechstart=()=>{heard=true;mark('speechstart');tag.textContent='🗣️ 말소리 감지됨...'};
-  rec.onspeechend=()=>mark('speechend');
-  rec.onsoundend=()=>mark('soundend');
-  rec.onaudioend=()=>mark('audioend');
-  rec.onnomatch=()=>mark('nomatch');
-  rec.onresult=e=>{
-    if(finalized)return;
-    mark('result');
-    let t='',fin=false;
-    for(let k=0;k<e.results.length;k++){t+=e.results[k][0].transcript+' ';if(e.results[k].isFinal)fin=true}
-    lastText=t.trim();
-    if(lastText)tag.textContent='🗣️ '+lastText;
-    if(fin&&lastText){gotFinal=true;try{rec.stop()}catch(x){};accept(lastText)}
-  };
-  rec.onerror=e=>{
-    mark('error');
-    errorCode=e.error||'unknown-error';
-    errorMessage=e.message||'상세 메시지 없음';
-  };
-  rec.onend=()=>{
-    mark('end');srRunning=false;
-    const w=srEndWaiters.splice(0);w.forEach(f=>f());
-    if(finalized)return;
-    if(lastText){accept(lastText);return}
-    const guidance={'no-speech':'말소리가 감지되지 않았습니다.','not-allowed':'마이크/음성 인식 권한이 차단되었습니다.','service-not-allowed':'음성 인식 서비스가 허용되지 않았습니다.','network':'음성 인식 서비스와 통신하지 못했습니다.','audio-capture':'마이크를 사용할 수 없습니다.'};
-    diagnostic('인식 세션이 결과 없이 종료되었습니다. 오답으로 처리하지 않았습니다. 다시 시도해 주세요.',
-      errorCode||'no-result-before-end',(guidance[errorCode]||'')+' '+(errorMessage||'onend가 발생했지만 결과가 없었습니다.'));
-  };
-  /* 말소리가 감지되기 전에 끊지 않음: 전체 12초 안에 아무 결과가 없을 때만 종료 */
-  overallTimer=setTimeout(()=>{
-    if(finalized)return;
-    mark('timeout-12s');
-    if(lastText){try{rec.stop()}catch(x){};accept(lastText);return}
-    diagnostic('12초 동안 인식 결과가 없어 종료했습니다. 다시 시도해 주세요.','no-sound-timeout','12초 안에 인식 결과가 도착하지 않았습니다.');
-  },12000);
-  try{rec.start()}catch(e){
-    mark('start-throw');
-    diagnostic('음성 인식을 시작하지 못했습니다.',e.name||'start-error',e.message||String(e));
-  }
+  pttUI('wait');
+  try{SR&&SR.stop()}catch(e){}
+  /* 최종 결과가 늦게 와도 기다림. 최대 3초 */
+  setTimeout(()=>{if(sess===me&&!me.finished)finish()},3000);
+  if(me.ended)finish();
 }
+
+function fail(code,message){
+  const me=sess;if(!me||me.finished)return;
+  me.finished=true;held=false;sess=null;SR=null;
+  pttUI('idle');
+  speechDebugPanel('음성 인식을 시작하지 못했어요: '+code,{error:code,message:message,events:[...me.events]},'');
+}
+
+function finish(){
+  const me=sess;if(!me||me.finished)return;
+  me.finished=true;sess=null;
+  const res=$('res');
+  const text=(me.text||'').trim();
+  try{SR&&SR.abort()}catch(e){}
+  if(text){
+    pttUI('idle');
+    judge(score(text,me.target));
+    const d=document.createElement('div');d.className='try';d.textContent='들린 소리: '+text;res.appendChild(d);
+    return;
+  }
+  /* 아무것도 못 들음: 오답으로 세지 않고 다시 시도 */
+  SR=null; /* 다음엔 새 인식 객체로 */
+  pttUI('idle','소리가 안 들렸어요 🙉 다시 꾹 눌러 말해요!');
+  const info=me.errorCode?('오류 코드: '+me.errorCode):'들린 소리 없음';
+  speechDebugPanel('소리가 잘 안 들어왔어요. 마이크 가까이에서 한 번 더 말해 주세요.',{error:me.errorCode||'no-result',message:me.errorMessage||info,events:[...me.events]},'');
+}
+
 let praiseN=0;
 const PRAISE=[['너무나 정확해요!! 😲🤩','🎉👏✨🌟🏆✨👏🎉'],['원어민이신가요?! 🤯🎉','🥳🌈💯🔥💯🌈🥳']];
 function judge(ratio,miss){
@@ -530,7 +606,7 @@ function judge(ratio,miss){
     res.innerHTML=`<div class="msg mid">${m}</div>`;
     setTimeout(next2,1800);return;
   }
-  res.innerHTML=`${miss?'':`<div class="pct en">${pct}%</div>`}<div class="msg low">${miss?'소리가 잘 안 들렸어요 🙉':'조금만 더! 💪'}</div><div class="try">다시 🎤 버튼을 눌러 말해봐요!</div>`;
+  res.innerHTML=`${miss?'':`<div class="pct en">${pct}%</div>`}<div class="msg low">${miss?'소리가 잘 안 들렸어요 🙉':'조금만 더! 💪'}</div><div class="try">🎤 버튼을 꾹 누르고 다시 말해봐요!</div>`;
 }
 function next2(){killPrev();i2++;r2()}
 
@@ -665,3 +741,4 @@ refresh();
 </script>
 </body>
 </html>
+
