@@ -326,7 +326,7 @@ function r2(){
   b.innerHTML=`<div class="qcard" style="--a:#a58bff"><div class="qcount">${i2+1} / ${sentences.length}</div>
    <div class="qimg" style="font-size:70px">${s.e}</div>
    <div class="sent en">${s.en}</div><div class="kr">${s.kr}</div>
-   <div class="btns"><button class="rbtn" onclick="say()">🔊 듣기</button><button class="rbtn mic" id="spk" onclick="speak()">🎤 말하기</button></div>
+   <div class="btns"><button class="rbtn" onclick="say()">🔊 듣기</button><button class="rbtn mic" id="spk" onclick="speak(0)">🎤 말하기</button></div>
    <div class="listen" id="lis"></div><div class="res" id="res"></div></div>`;
 }
 function say(){
@@ -387,9 +387,20 @@ function speechDebugPanel(title, info, transcript){
   panel.appendChild(pre);
   res.appendChild(panel);
 }
-function speak(){
+let curRec=null;
+function killPrev(){
+  try{speechSynthesis.cancel()}catch(e){}
+  if(curRec){
+    const o=curRec;curRec=null;
+    o.onstart=o.onaudiostart=o.onsoundstart=o.onspeechstart=o.onspeechend=o.onsoundend=o.onaudioend=o.onnomatch=o.onresult=o.onerror=o.onend=null;
+    try{o.abort()}catch(e){}
+  }
+}
+function speak(attempt){
   if(busy)return;
+  attempt=(typeof attempt==='number')?attempt:0;
   const tag=$('lis'),res=$('res'),spk=$('spk');
+  if(!tag||!spk)return;
   const target=sentences[i2].en;
   const R=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!R){
@@ -399,8 +410,9 @@ function speak(){
     speechDebugPanel('진단 정보', {error:'unsupported',message:'SpeechRecognition / webkitSpeechRecognition 객체가 없습니다.',events:[]}, '');
     return;
   }
+  killPrev();
   let rec;
-  try { rec=new R(); }
+  try { rec=new R(); curRec=rec; }
   catch(e){
     tag.textContent='';spk.disabled=false;
     res.innerHTML='<div class="msg low">음성 인식 객체를 만들지 못했습니다.</div>';
@@ -420,6 +432,14 @@ function speak(){
     finalized=true;
     clearTimeout(silenceWatchdog);
     clearTimeout(resultWatchdog);
+    if(attempt<1 && ['aborted','no-result-before-end','audio-capture','network','no-speech','no-sound-timeout'].includes(code||errorCode) && !soundDetected){
+      const mine=rec;
+      try{rec.abort()}catch(e){}
+      if(curRec===mine)curRec=null;
+      tag.textContent='🔄 다시 듣는 중...';
+      setTimeout(()=>{spk.disabled=false;speak(attempt+1)},700);
+      return;
+    }
     finishUI();
     speechDebugPanel(title,{error:code||errorCode,message:message||errorMessage,events:[...events]},transcript);
   };
@@ -462,6 +482,7 @@ function speak(){
     }
     finalized=true;
     finishUI();
+    try{rec.stop()}catch(e){}
     judge(score(transcript,target));
     const d=document.createElement('div');d.className='try';d.textContent='들린 소리: '+transcript.trim();res.appendChild(d);
     speechDebugPanel('테스트 진단 정보', {error:'없음',message:'인식 결과를 받았습니다.',events:[...events]}, transcript);
@@ -500,12 +521,15 @@ function speak(){
       'no-sound-timeout','인식 시작 후 6초 동안 soundstart 또는 speechstart 이벤트가 발생하지 않았습니다.');
     try{rec.abort()}catch(e){}
   },6000);
-  try{
-    rec.start();
-  }catch(e){
-    mark('start-throw');
-    diagnostic('음성 인식을 시작하지 못했습니다.',e.name||'start-error',e.message||String(e));
-  }
+  setTimeout(()=>{
+    if(finalized||curRec!==rec)return;
+    try{
+      rec.start();
+    }catch(e){
+      mark('start-throw');
+      diagnostic('음성 인식을 시작하지 못했습니다.',e.name||'start-error',e.message||String(e));
+    }
+  },350);
 }
 let praiseN=0;
 const PRAISE=[['너무나 정확해요!! 😲🤩','🎉👏✨🌟🏆✨👏🎉'],['원어민이신가요?! 🤯🎉','🥳🌈💯🔥💯🌈🥳']];
@@ -534,7 +558,7 @@ function judge(ratio,miss){
   }
   res.innerHTML=`${miss?'':`<div class="pct en">${pct}%</div>`}<div class="msg low">${miss?'소리가 잘 안 들렸어요 🙉':'조금만 더! 💪'}</div><div class="try">다시 🎤 버튼을 눌러 말해봐요!</div>`;
 }
-function next2(){i2++;r2()}
+function next2(){killPrev();i2++;r2()}
 
 /* STAGE 3 */
 const sb=[];
