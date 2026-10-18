@@ -30,7 +30,8 @@ background:radial-gradient(circle at 1px 1px,#ffd9e6 2px,transparent 2.5px) 0 0/
 .num{width:54px;height:54px;min-width:54px;border-radius:50%;background:var(--c);color:#fff;font-size:28px;display:flex;align-items:center;justify-content:center}
 .stage-card h3{margin:0 0 3px;font-size:19px;font-weight:400}
 .stage-card p{margin:0;font-size:14px;color:var(--soft)}
-.stage-card .st{margin-left:auto;font-size:28px}
+.stage-card .st{margin-left:auto;font-size:17px;font-weight:700;white-space:nowrap;padding:6px 12px;border-radius:999px;background:#eceaf3;color:#7d7a8c}
+.stage-card .st.ok{background:#fff1b8;color:#c2570a}
 .cert-btn{width:100%;padding:18px;border:0;border-radius:100px;font:400 18px 'Jua';background:var(--lock);color:#fff}
 .cert-btn.ready{background:linear-gradient(90deg,#ffd23f,#ff9640,#ff6f91,#ffd23f);background-size:300% 100%;animation:shine 2.4s linear infinite;box-shadow:0 5px 0 #c9602a}
 @keyframes shine{to{background-position:300% 0}}
@@ -197,9 +198,9 @@ button{touch-action:manipulation}
       <h1>9단원<b class="en">What's in the bedroom?</b></h1>
       <p>원하는 단계를 선택해 학습해 보세요!</p>
     </div>
-    <div class="stage-card" id="card-1" style="--c:var(--sky)" onclick="goStage(1)"><div class="num">1</div><div><h3>단어 학습</h3><p>그림과 뜻을 보고 영어 단어 고르기</p></div><div class="st" id="st-1">▶️</div></div>
-    <div class="stage-card" id="card-2" style="--c:var(--purple)" onclick="goStage(2)"><div class="num">2</div><div><h3>말하기 학습</h3><p>문장을 듣고 따라 말해보기</p></div><div class="st" id="st-2">🔒</div></div>
-    <div class="stage-card" id="card-3" style="--c:var(--orange)" onclick="goStage(3)"><div class="num">3</div><div><h3>문장 구성하기</h3><p>단어를 눌러 문장 완성하기</p></div><div class="st" id="st-3">▶️</div></div>
+    <div class="stage-card" id="card-1" style="--c:var(--sky)" onclick="goStage(1)"><div class="num">1</div><div><h3>단어 학습</h3><p>그림과 뜻을 보고 영어 단어 고르기</p></div><div class="st" id="st-1">도전 전</div></div>
+    <div class="stage-card" id="card-2" style="--c:var(--purple)" onclick="goStage(2)"><div class="num">2</div><div><h3>말하기 학습</h3><p>문장을 듣고 따라 말해보기</p></div><div class="st" id="st-2">도전 전</div></div>
+    <div class="stage-card" id="card-3" style="--c:var(--orange)" onclick="goStage(3)"><div class="num">3</div><div><h3>문장 구성하기</h3><p>단어를 눌러 문장 완성하기</p></div><div class="st" id="st-3">도전 전</div></div>
     <button class="cert-btn" id="cert-btn" onclick="showCert()">✨ 이수 확인증 제출하기 ✨</button>
   </div>
 
@@ -280,7 +281,8 @@ function refresh(){
   [1,2,3].forEach(n=>{
     const locked=false; /* 3단계 잠금 해제 (되돌리려면: n===3&&!state[2]) */
     $('card-'+n).classList.toggle('locked',locked&&!state[n]);
-    $('st-'+n).textContent=state[n]?'✅':locked?'🔒':'▶️';
+    $('st-'+n).textContent=state[n]?'성공 🎆':'도전 전';
+    $('st-'+n).classList.toggle('ok',!!state[n]);
   });
   $('cert-btn').classList.toggle('ready',state[1]&&state[2]&&state[3]);
 }
@@ -399,28 +401,12 @@ function score(heard,target){
   });
   return sum/tot;
 }
-function speechDebugPanel(title, info, transcript){
+function speechDebugPanel(title){
   const res=$('res');
   const panel=document.createElement('div');
   panel.className='msg low';
-  panel.style.cssText='margin-top:12px;text-align:left;white-space:normal;overflow-wrap:anywhere';
+  panel.style.cssText='margin-top:12px;text-align:center;white-space:normal;overflow-wrap:anywhere';
   panel.textContent=title;
-  const pre=document.createElement('pre');
-  pre.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.45 monospace;background:#fff8e8;color:#493b28;padding:10px;border-radius:8px;margin:8px 0 0;max-height:220px;overflow:auto';
-  const details=[
-    '인식 API: '+(window.SpeechRecognition?'SpeechRecognition':window.webkitSpeechRecognition?'webkitSpeechRecognition':'지원 객체 없음'),
-    '브라우저: '+navigator.userAgent,
-    '보안 연결(HTTPS/localhost): '+(window.isSecureContext?'예':'아니오'),
-    '온라인 상태: '+(navigator.onLine?'online':'offline'),
-    '현재 문항: '+(typeof i2==='number'?(i2+1)+' / '+sentences.length:'확인 불가'),
-    '목표 문장: '+(typeof i2==='number'&&sentences[i2]?sentences[i2].en:'확인 불가'),
-    '오류 코드: '+(info.error||'없음'),
-    '오류 메시지: '+(info.message||'없음'),
-    '이벤트 순서: '+(info.events&&info.events.length?info.events.join(' → '):'기록 없음'),
-    '인식 결과: '+(transcript&&transcript.trim()?transcript.trim():'(결과 없음)')
-  ];
-  pre.textContent=details.join('\n');
-  panel.appendChild(pre);
   res.appendChild(panel);
 }
 /* ===== 누르고 있는 동안만 듣는 방식 (Push-to-talk) =====
@@ -518,7 +504,7 @@ function pressStart(){
   const R=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!R){
     res.innerHTML='<div class="msg low">이 브라우저에서 음성 인식을 쓸 수 없어요.</div>';
-    speechDebugPanel('진단 정보',{error:'unsupported',message:'SpeechRecognition 객체가 없습니다.',events:[]},'');
+    
     return;
   }
   held=true;pressAt=Date.now();
@@ -533,7 +519,7 @@ function pressStart(){
     try{openSR()}catch(e){
       held=false;waitingMic=false;dropSR();
       pttUI('idle');
-      speechDebugPanel('음성 인식을 시작하지 못했어요: '+(e.name||'start-error'),{error:e.name||'start-error',message:e.message||String(e),events:[...srEvents]},'');
+      speechDebugPanel('음성 인식을 시작하지 못했어요. 다시 꾹 눌러 주세요.');
     }
   }
 }
@@ -572,7 +558,7 @@ function pttFinish(){
   srStale=true;
   noSoundFails++;
   pttUI('idle','소리가 안 들렸어요 🙉 다시 꾹 눌러 말해요!');
-  speechDebugPanel('소리가 잘 안 들어왔어요. 마이크 가까이에서 한 번 더 말해 주세요.',{error:srErr||'no-result',message:srMsg||'들린 소리 없음',events:[...srEvents]},'');
+  speechDebugPanel('소리가 잘 안 들어왔어요. 마이크 가까이에서 한 번 더 말해 주세요.');
   if(noSoundFails>=2){
     const b=document.createElement('button');
     b.className='rbtn';b.style.marginTop='12px';b.textContent='⏭️ 이 문제는 건너뛰기';
