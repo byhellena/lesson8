@@ -1,1 +1,389 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>9단원 English Reading: Alex's and Andrew's Rooms</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@500;700;900&family=Fredoka:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Fredoka', 'Noto Sans KR', sans-serif;
+            background-color: #f0fdf4;
+        }
+        /* Custom styling for TV display readability */
+        .blank-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 120px;
+            padding: 2px 16px;
+            margin: 0 4px;
+            border-bottom: 4px solid #3b82f6;
+            background-color: #eff6ff;
+            color: #1e40af;
+            font-weight: 800;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .blank-btn:hover {
+            background-color: #dbeafe;
+            transform: translateY(-2px);
+        }
+        .blank-btn.revealed {
+            background-color: #dcfce7;
+            border-bottom: 4px solid #22c55e;
+            color: #15803d;
+            animation: popIn 0.3s ease;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.9); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .sentence-card {
+            transition: all 0.2s ease;
+        }
+        .sentence-card:hover {
+            transform: translateY(-2px);
+        }
+        .playing {
+            border-color: #3b82f6 !important;
+            background-color: #f0f9ff !important;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3) !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col p-4 md:p-8">
 
+    <!-- Header Section -->
+    <header class="max-w-6xl w-full mx-auto mb-6 text-center">
+        <h1 class="text-4xl md:text-5xl font-extrabold text-teal-700 tracking-tight mb-2">
+            📖 Alex's and Andrew's Rooms
+        </h1>
+        <p class="text-xl text-emerald-600 font-bold">초등 영어 9단원 본문 학습 프로그램</p>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="max-w-6xl w-full mx-auto mb-8 flex flex-wrap justify-center gap-4">
+        <button onclick="switchStep(1)" id="tab-1" class="tab-btn px-8 py-4 text-2xl font-black rounded-2xl shadow-lg transition-all flex items-center gap-3 bg-teal-600 text-white scale-105">
+            <span>🔊 1단계</span>
+            <span class="text-lg opacity-90">(듣기 & 읽기)</span>
+        </button>
+        <button onclick="switchStep(2)" id="tab-2" class="tab-btn px-8 py-4 text-2xl font-black rounded-2xl shadow-lg transition-all flex items-center gap-3 bg-white text-slate-600 hover:bg-emerald-50">
+            <span>✏️ 2단계</span>
+            <span class="text-lg opacity-80">(기초 빈칸)</span>
+        </button>
+        <button onclick="switchStep(3)" id="tab-3" class="tab-btn px-8 py-4 text-2xl font-black rounded-2xl shadow-lg transition-all flex items-center gap-3 bg-white text-slate-600 hover:bg-emerald-50">
+            <span>🔥 3단계</span>
+            <span class="text-lg opacity-80">(심화 빈칸)</span>
+        </button>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="max-w-6xl w-full mx-auto flex-1 bg-white/90 backdrop-blur-sm rounded-3xl p-6 md:p-10 shadow-xl border-4 border-teal-100">
+
+        <!-- Controls Toolbar -->
+        <div id="controls-bar" class="mb-6 flex flex-wrap justify-between items-center gap-4 bg-teal-50 p-4 rounded-2xl border-2 border-teal-200">
+            <div id="step-description" class="text-2xl font-extrabold text-teal-800 flex items-center gap-2">
+                <span>💡</span> 문장을 누르면 미국식 영어 발음을 들을 수 있습니다.
+            </div>
+            <div class="flex gap-3">
+                <button id="reset-btn" onclick="resetCurrentStep()" class="hidden px-6 py-2.5 text-xl font-extrabold bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-md transition-all active:scale-95">
+                    🔄 다시 풀기
+                </button>
+                <button id="show-all-btn" onclick="revealAllBlanks()" class="hidden px-6 py-2.5 text-xl font-extrabold bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md transition-all active:scale-95">
+                    👁️ 전체 정답 보기
+                </button>
+            </div>
+        </div>
+
+        <!-- Sentences Container -->
+        <div id="sentences-list" class="space-y-4">
+            <!-- Dynamic Content Injected via JS -->
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="max-w-6xl w-full mx-auto mt-6 text-center text-slate-500 text-lg font-bold">
+        📺 교실 TV 수업용 인터랙티브 학습 자료
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Data Structure for Sentences and Blank Configurations
+        const storyData = [
+            {
+                id: 1,
+                english: "This is the living room.",
+                korean: "이곳은 거실입니다.",
+                s2Blanks: [{ start: 12, word: "living room" }],
+                s3Blanks: [{ start: 0, word: "This" }, { start: 12, word: "living room" }]
+            },
+            {
+                id: 2,
+                english: "Look! There are pictures on the table.",
+                korean: "봐! 탁자 위에 사진들이 있어.",
+                s2Blanks: [{ start: 16, word: "pictures" }],
+                s3Blanks: [{ start: 16, word: "pictures" }, { start: 31, word: "table" }]
+            },
+            {
+                id: 3,
+                english: "They are Alex and Andrew.",
+                korean: "그들은 알렉스와 앤드루야.",
+                s2Blanks: [{ start: 9, word: "Alex" }],
+                s3Blanks: [{ start: 9, word: "Alex" }, { start: 18, word: "Andrew" }]
+            },
+            {
+                id: 4,
+                english: "Alex is twelve years old.",
+                korean: "알렉스는 12살이야.",
+                s2Blanks: [{ start: 8, word: "twelve" }],
+                s3Blanks: [{ start: 8, word: "twelve" }, { start: 15, word: "years" }]
+            },
+            {
+                id: 5,
+                english: "Andrew is twelve years old, too.",
+                korean: "앤드루도 12살이야.",
+                s2Blanks: [{ start: 10, word: "twelve" }],
+                s3Blanks: [{ start: 0, word: "Andrew" }, { start: 10, word: "twelve" }]
+            },
+            {
+                id: 6,
+                english: "They are brothers.",
+                korean: "그들은 형제야.",
+                s2Blanks: [{ start: 9, word: "brothers" }],
+                s3Blanks: [{ start: 0, word: "They" }, { start: 9, word: "brothers" }]
+            },
+            {
+                id: 7,
+                english: "This is Alex's room.",
+                korean: "이곳은 알렉스의 방이야.",
+                s2Blanks: [{ start: 15, word: "room" }],
+                s3Blanks: [{ start: 8, word: "Alex's" }, { start: 15, word: "room" }]
+            },
+            {
+                id: 8,
+                english: "There are robots in the box.",
+                korean: "상자 안에 로봇들이 있어.",
+                s2Blanks: [{ start: 10, word: "robots" }],
+                s3Blanks: [{ start: 10, word: "robots" }, { start: 24, word: "box" }]
+            },
+            {
+                id: 9,
+                english: "Alex likes making robots.",
+                korean: "알렉스는 로봇 만드는 것을 좋아해.",
+                s2Blanks: [{ start: 11, word: "making" }],
+                s3Blanks: [{ start: 11, word: "making" }, { start: 18, word: "robots" }]
+            },
+            {
+                id: 10,
+                english: "This is Andrew's room.",
+                korean: "이곳은 앤드루의 방이야.",
+                s2Blanks: [{ start: 8, word: "Andrew's" }],
+                s3Blanks: [{ start: 8, word: "Andrew's" }, { start: 17, word: "room" }]
+            },
+            {
+                id: 11,
+                english: "There is a guitar on the bed.",
+                korean: "침대 위에 기타가 있어.",
+                s2Blanks: [{ start: 11, word: "guitar" }],
+                s3Blanks: [{ start: 11, word: "guitar" }, { start: 25, word: "bed" }]
+            },
+            {
+                id: 12,
+                english: "Andrew likes playing the guitar.",
+                korean: "앤드루는 기타 치는 것을 좋아해.",
+                s2Blanks: [{ start: 13, word: "playing" }],
+                s3Blanks: [{ start: 13, word: "playing" }, { start: 25, word: "guitar" }]
+            },
+            {
+                id: 13,
+                english: "They look the same.",
+                korean: "그들은 똑같아 보여.",
+                s2Blanks: [{ start: 14, word: "same" }],
+                s3Blanks: [{ start: 5, word: "look" }, { start: 14, word: "same" }]
+            },
+            {
+                id: 14,
+                english: "But they are not the same.",
+                korean: "하지만 그들은 같지 않아.",
+                s2Blanks: [{ start: 20, word: "same" }],
+                s3Blanks: [{ start: 0, word: "But" }, { start: 20, word: "same" }]
+            }
+        ];
+
+        let currentStep = 1;
+        let ttsSynth = window.speechSynthesis;
+
+        // Speech Synthesis function
+        function speakSentence(text, cardElement = null) {
+            if (!('speechSynthesis' in window)) {
+                alert('이 브라우저는 음성 합성을 지원하지 않습니다.');
+                return;
+            }
+
+            ttsSynth.cancel(); // Cancel any ongoing speech
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.85; // Slightly slower for primary students
+
+            if (cardElement) {
+                cardElement.classList.add('playing');
+                utterance.onend = () => cardElement.classList.remove('playing');
+                utterance.onerror = () => cardElement.classList.remove('playing');
+            }
+
+            ttsSynth.speak(utterance);
+        }
+
+        // Switch Step Navigation
+        function switchStep(step) {
+            currentStep = step;
+
+            // Update Tab UI
+            [1, 2, 3].forEach(i => {
+                const tab = document.getElementById(`tab-${i}`);
+                if (i === step) {
+                    tab.className = "tab-btn px-8 py-4 text-2xl font-black rounded-2xl shadow-lg transition-all flex items-center gap-3 bg-teal-600 text-white scale-105";
+                } else {
+                    tab.className = "tab-btn px-8 py-4 text-2xl font-black rounded-2xl shadow-lg transition-all flex items-center gap-3 bg-white text-slate-600 hover:bg-emerald-50";
+                }
+            });
+
+            // Update Toolbar Controls
+            const stepDesc = document.getElementById('step-description');
+            const showAllBtn = document.getElementById('show-all-btn');
+            const resetBtn = document.getElementById('reset-btn');
+
+            if (step === 1) {
+                stepDesc.innerHTML = '<span>💡</span> 문장 카드 어디든 클릭하면 영어 발음을 크게 들을 수 있습니다.';
+                showAllBtn.classList.add('hidden');
+                resetBtn.classList.add('hidden');
+            } else if (step === 2) {
+                stepDesc.innerHTML = '<span>✏️</span> 빈칸( [ ? ] )을 누르면 정답이 완성되고 음성이 들립니다. (주요 단어 1개)';
+                showAllBtn.classList.remove('hidden');
+                resetBtn.classList.remove('hidden');
+            } else if (step === 3) {
+                stepDesc.innerHTML = '<span>🔥</span> 빈칸( [ ? ] )을 누르면 정답이 완성되고 음성이 들립니다. (주요 단어 1~2개)';
+                showAllBtn.classList.remove('hidden');
+                resetBtn.classList.remove('hidden');
+            }
+
+            renderSentences();
+        }
+
+        // Helper to build sentence with clickable interactive blanks
+        function buildBlankSentenceHTML(item, blanks) {
+            const eng = item.english;
+            let result = '';
+            let lastIdx = 0;
+
+            // Sort blanks by start position
+            const sortedBlanks = [...blanks].sort((a, b) => a.start - b.start);
+
+            sortedBlanks.forEach((b, bIdx) => {
+                // Add text before blank
+                result += eng.substring(lastIdx, b.start);
+                
+                // Add blank button
+                result += `<button class="blank-btn" data-answer="${b.word}" onclick="revealBlank(this, '${item.english.replace(/'/g, "\\'")}', event)">[ ? ]</button>`;
+                
+                lastIdx = b.start + b.word.length;
+            });
+
+            // Add remaining text
+            result += eng.substring(lastIdx);
+            return result;
+        }
+
+        // Reveal individual blank
+        function revealBlank(btn, fullText, event) {
+            event.stopPropagation(); // Stop parent click event
+            if (btn.classList.contains('revealed')) return;
+
+            const answer = btn.getAttribute('data-answer');
+            btn.textContent = answer;
+            btn.classList.add('revealed');
+
+            // Play full sentence audio
+            const parentCard = btn.closest('.sentence-card');
+            speakSentence(fullText, parentCard);
+        }
+
+        // Reveal all blanks on current screen
+        function revealAllBlanks() {
+            const blanks = document.querySelectorAll('.blank-btn');
+            blanks.forEach(btn => {
+                if (!btn.classList.contains('revealed')) {
+                    const answer = btn.getAttribute('data-answer');
+                    btn.textContent = answer;
+                    btn.classList.add('revealed');
+                }
+            });
+        }
+
+        // Reset all blanks
+        function resetCurrentStep() {
+            renderSentences();
+        }
+
+        // Render sentences list based on active step
+        function renderSentences() {
+            const container = document.getElementById('sentences-list');
+            container.innerHTML = '';
+
+            storyData.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = "sentence-card p-5 md:p-6 bg-slate-50 border-3 border-slate-200 hover:border-teal-400 rounded-2xl cursor-pointer shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all";
+
+                let englishHTML = '';
+
+                if (currentStep === 1) {
+                    englishHTML = `<span class="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-wide">${item.english}</span>`;
+                } else if (currentStep === 2) {
+                    englishHTML = `<span class="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-wide">${buildBlankSentenceHTML(item, item.s2Blanks)}</span>`;
+                } else if (currentStep === 3) {
+                    englishHTML = `<span class="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-wide">${buildBlankSentenceHTML(item, item.s3Blanks)}</span>`;
+                }
+
+                card.innerHTML = `
+                    <div class="flex items-start md:items-center gap-4 w-full">
+                        <span class="flex-shrink-0 w-10 h-10 bg-teal-100 text-teal-800 rounded-full flex items-center justify-center font-black text-xl">
+                            ${index + 1}
+                        </span>
+                        <div class="flex-1">
+                            <div class="mb-1">${englishHTML}</div>
+                            <div class="text-xl md:text-2xl font-bold text-slate-500">(${item.korean})</div>
+                        </div>
+                        <button class="flex-shrink-0 p-3 bg-teal-500 hover:bg-teal-600 text-white rounded-2xl shadow-md transition-all active:scale-90" title="듣기">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                            </svg>
+                        </button>
+                    </div>
+                `;
+
+                // Add card click to speak
+                card.addEventListener('click', (e) => {
+                    // Don't trigger if clicked on blank button directly
+                    if (e.target.tagName.toLowerCase() !== 'button' && !e.target.classList.contains('blank-btn')) {
+                        speakSentence(item.english, card);
+                    }
+                });
+
+                container.appendChild(card);
+            });
+        }
+
+        // Initialize application
+        window.onload = () => {
+            switchStep(1);
+        };
+    </script>
+</body>
+</html>
