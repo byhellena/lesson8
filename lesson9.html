@@ -275,7 +275,7 @@ const state={1:false,2:false,3:false};
 const $=id=>document.getElementById(id);
 const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active');window.scrollTo(0,0)}
-function goHome(){show('screen-home');refresh()}
+function goHome(){killPrev();show('screen-home');refresh()}
 function refresh(){
   [1,2,3].forEach(n=>{
     const locked=(n===3&&!state[2]);
@@ -366,6 +366,7 @@ function r2(){
   setupPTT();
 }
 function say(){
+  dropSR();held=false;waitingMic=false;
   try{const u=new SpeechSynthesisUtterance(sentences[i2].en);u.lang='en-US';u.rate=.9;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}
 }
 const NUM={'1':'one','2':'two','3':'three','4':'four','5':'five'};
@@ -423,60 +424,89 @@ function speechDebugPanel(title, info, transcript){
   panel.appendChild(pre);
   res.appendChild(panel);
 }
-/* ===== 누르고 있는 동안만 듣는 방식 (Push-to-talk) ===== */
-let SR=null, srRunning=false, srEndWaiters=[];
-let held=false, pressAt=0, sess=null;
-function getSR(fresh){
-  if(fresh)SR=null;
-  if(SR)return SR;
+/* ===== 누르고 있는 동안만 듣는 방식 (Push-to-talk) =====
+   아이폰 사파리는 인식 세션을 여러 번 새로 시작하면 2번째부터 소리가 안 들어오는 문제가 있어서,
+   세션을 한 번 열어 두고 계속 유지하면서, 버튼을 누르고 있는 동안 들린 소리만 사용합니다. */
+let SR=null, srRunning=false, srReady=false, srStale=false, lastRes=null, srErr='', srMsg='', srEvents=[];
+let held=false, waitingMic=false, pressAt=0, base=0, judging=false, noSoundFails=0;
+const evt=n=>{srEvents.push(n);if(srEvents.length>40)srEvents.shift()};
+function dropSR(){
+  if(SR){
+    const o=SR;SR=null;
+    ['onstart','onaudiostart','onsoundstart','onspeechstart','onspeechend','onsoundend','onaudioend','onnomatch','onresult','onerror','onend'].forEach(k=>o[k]=null);
+    try{o.abort()}catch(e){}
+  }
+  srRunning=false;srReady=false;lastRes=null;
+}
+function textFrom(from){
+  if(!lastRes)return '';
+  let t='';
+  for(let k=from;k<lastRes.length;k++)t+=lastRes[k][0].transcript+' ';
+  return t.trim();
+}
+function beginListen(){
+  waitingMic=false;
+  base=lastRes?lastRes.length:0;
+  pressAt=Date.now();
+  pttUI('rec');
+}
+function openSR(){            /* 반드시 버튼을 누른 순간(사용자 동작) 안에서 호출 */
+  dropSR();
+  srStale=false;srErr='';srMsg='';srEvents=[];evt('새 세션');
   const R=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!R)return null;
-  SR=new R();
-  SR.lang='en-US';
-  SR.continuous=true;
-  SR.interimResults=true;
-  SR.maxAlternatives=1;
-  return SR;
+  const rec=new R();
+  rec.lang='en-US';rec.continuous=true;rec.interimResults=true;rec.maxAlternatives=1;
+  rec.onstart=()=>{if(SR!==rec)return;srRunning=true;evt('start')};
+  rec.onaudiostart=()=>{
+    if(SR!==rec)return;
+    srReady=true;evt('audiostart');
+    if(held&&waitingMic)beginListen();
+  };
+  rec.onsoundstart=()=>{if(SR===rec)evt('soundstart')};
+  rec.onspeechstart=()=>{if(SR===rec)evt('speechstart')};
+  rec.onspeechend=()=>{if(SR===rec)evt('speechend')};
+  rec.onaudioend=()=>{if(SR===rec)evt('audioend')};
+  rec.onnomatch=()=>{if(SR===rec)evt('nomatch')};
+  rec.onresult=e=>{
+    if(SR!==rec)return;
+    evt('result');
+    lastRes=e.results;
+    if(held&&!waitingMic){
+      const t=textFrom(base);
+      const l=$('ptt-label');
+      if(t&&l)l.textContent='🔴 '+t;
+    }
+  };
+  rec.onerror=e=>{if(SR!==rec)return;srErr=e.error||'unknown-error';srMsg=e.message||'';evt('error:'+srErr)};
+  rec.onend=()=>{
+    if(SR!==rec)return;
+    evt('end');srRunning=false;srReady=false;
+  };
+  SR=rec;
+  rec.start();
 }
-function stopSR(cb){
-  try{speechSynthesis.cancel()}catch(e){}
-  if(!SR||!srRunning){cb&&cb();return}
-  let done=false;
-  const fin=()=>{if(done)return;done=true;cb&&cb()};
-  srEndWaiters.push(fin);
-  setTimeout(()=>{srRunning=false;fin()},1200);
-  try{SR.abort()}catch(e){}
-}
-function killPrev(){held=false;sess=null;stopSR()}
 
 function pttUI(state,text){
   const b=$('spk'),l=$('ptt-label'),bars=$('ptt-bars'),ico=$('ptt-ico');
   if(!b)return;
   b.classList.toggle('rec',state==='rec');
-  b.classList.toggle('wait',state==='wait');
+  b.classList.toggle('wait',state==='wait'||state==='warm');
   l.className='ptt-label'+(state==='rec'?' rec':'');
   bars.classList.toggle('on',state==='rec');
-  ico.textContent=state==='rec'?'🔴':state==='wait'?'⏳':'🎤';
-  l.textContent=text||(state==='rec'?'🔴 듣는 중! 손을 떼면 끝나요':state==='wait'?'확인하는 중...':'꾹 누르고 말하세요');
+  ico.textContent=state==='rec'?'🔴':(state==='wait'||state==='warm')?'⏳':'🎤';
+  l.textContent=text||(state==='rec'?'🔴 듣는 중! 손을 떼면 끝나요':state==='warm'?'마이크 켜는 중... 계속 누르고 있어요':state==='wait'?'확인하는 중...':'꾹 누르고 말하세요');
 }
 
 function setupPTT(){
   const b=$('spk');
   if(!b)return;
   pttUI('idle');
-  const down=e=>{
-    e.preventDefault();
-    if(busy||held)return;
-    pressStart();
-  };
-  const up=e=>{e.preventDefault();if(held)pressEnd()};
-  b.addEventListener('pointerdown',down);
-  b.addEventListener('pointerup',up);
-  b.addEventListener('pointercancel',up);
-  b.addEventListener('pointerleave',e=>{if(held&&e.pointerType==='mouse')up(e)});
+  b.addEventListener('pointerdown',e=>{e.preventDefault();if(busy||held||judging)return;pressStart()});
+  b.addEventListener('pointerup',e=>{e.preventDefault();if(held)pressEnd()});
+  b.addEventListener('pointercancel',()=>{if(held)pressEnd()});
+  b.addEventListener('pointerleave',e=>{if(held&&e.pointerType==='mouse')pressEnd()});
   b.addEventListener('contextmenu',e=>e.preventDefault());
   b.addEventListener('selectstart',e=>e.preventDefault());
-  /* 손가락이 버튼 밖으로 나가도 끝나게 */
   if(!window.__pttDoc){
     window.__pttDoc=true;
     document.addEventListener('pointerup',()=>{if(held)pressEnd()});
@@ -495,91 +525,64 @@ function pressStart(){
   held=true;pressAt=Date.now();
   res.innerHTML='';tag.textContent='';
   try{speechSynthesis.cancel()}catch(e){}
-  pttUI('rec');
-  const target=sentences[i2].en;
-  const me={target,events:[],text:'',finished:false,startedAt:Date.now(),errorCode:'',errorMessage:'',ended:false,gotAudio:false};
-  sess=me;
-  const mark=n=>{me.events.push(n);if(me.events.length>30)me.events.shift()};
-  mark('눌림');
-
-  const launch=()=>{
-    if(sess!==me||me.finished)return;
-    let rec;
-    try{rec=getSR(me.fresh)}catch(e){fail('constructor-error',e.message||String(e));return}
-    rec.onstart=()=>{srRunning=true;mark('start')};
-    rec.onaudiostart=()=>{me.gotAudio=true;mark('audiostart')};
-    rec.onsoundstart=()=>mark('soundstart');
-    rec.onspeechstart=()=>mark('speechstart');
-    rec.onspeechend=()=>mark('speechend');
-    rec.onaudioend=()=>mark('audioend');
-    rec.onnomatch=()=>mark('nomatch');
-    rec.onresult=e=>{
-      if(sess!==me)return;
-      mark('result');
-      let t='';
-      for(let k=0;k<e.results.length;k++)t+=e.results[k][0].transcript+' ';
-      me.text=t.trim();
-      if(me.text&&held){const l=$('ptt-label');if(l)l.textContent='🔴 '+me.text}
-    };
-    rec.onerror=e=>{mark('error:'+(e.error||'?'));me.errorCode=e.error||'unknown-error';me.errorMessage=e.message||''};
-    rec.onend=()=>{
-      mark('end');srRunning=false;me.ended=true;
-      srEndWaiters.splice(0).forEach(f=>f());
-      if(sess!==me||me.finished)return;
-      if(!held)finish();            /* 손을 뗀 뒤 정상 종료 */
-      /* 누르는 중에 끊기면: 손을 뗄 때 지금까지 들린 것으로 처리 */
-    };
-    try{rec.start()}catch(e){mark('start-throw');fail(e.name||'start-error',e.message||String(e))}
-  };
-  /* 이전 세션이 아직 끝나는 중이면 잠깐 기다렸다가 시작 */
-  if(srRunning)stopSR(()=>setTimeout(launch,120));else launch();
+  evt('눌림');
+  if(SR&&srRunning&&srReady&&!srStale){
+    beginListen();               /* 이미 켜져 있는 세션 그대로 사용 */
+  }else{
+    waitingMic=true;
+    pttUI('warm');
+    try{openSR()}catch(e){
+      held=false;waitingMic=false;dropSR();
+      pttUI('idle');
+      speechDebugPanel('음성 인식을 시작하지 못했어요: '+(e.name||'start-error'),{error:e.name||'start-error',message:e.message||String(e),events:[...srEvents]},'');
+    }
+  }
 }
 
 function pressEnd(){
   if(!held)return;
   held=false;
-  const me=sess;
-  if(!me||me.finished)return;
-  me.events.push('뗌');
-  const heldMs=Date.now()-pressAt;
-  if(heldMs<500&&!me.text){
-    me.finished=true;sess=null;
-    try{SR&&SR.abort()}catch(e){}
+  evt('뗌');
+  if(waitingMic){                /* 마이크가 켜지기 전에 손을 뗌: 세션은 유지 */
+    waitingMic=false;
+    pttUI('idle','마이크가 켜지는 중이었어요. 잠시 뒤 다시 꾹 눌러요 🙂');
+    return;
+  }
+  if(Date.now()-pressAt<500){
     pttUI('idle','조금 더 오래 꾹 눌러 주세요 👆');
     return;
   }
+  judging=true;
   pttUI('wait');
-  try{SR&&SR.stop()}catch(e){}
-  /* 최종 결과가 늦게 와도 기다림. 최대 3초 */
-  setTimeout(()=>{if(sess===me&&!me.finished)finish()},3000);
-  if(me.ended)finish();
+  setTimeout(pttFinish,1200);    /* 마지막 단어의 최종 결과를 기다림 */
 }
 
-function fail(code,message){
-  const me=sess;if(!me||me.finished)return;
-  me.finished=true;held=false;sess=null;SR=null;
-  pttUI('idle');
-  speechDebugPanel('음성 인식을 시작하지 못했어요: '+code,{error:code,message:message,events:[...me.events]},'');
-}
-
-function finish(){
-  const me=sess;if(!me||me.finished)return;
-  me.finished=true;sess=null;
+function pttFinish(){
+  judging=false;
   const res=$('res');
-  const text=(me.text||'').trim();
-  try{SR&&SR.abort()}catch(e){}
+  if(!res)return;
+  const text=textFrom(base);
   if(text){
+    noSoundFails=0;
     pttUI('idle');
-    judge(score(text,me.target));
+    judge(score(text,sentences[i2].en));
     const d=document.createElement('div');d.className='try';d.textContent='들린 소리: '+text;res.appendChild(d);
     return;
   }
-  /* 아무것도 못 들음: 오답으로 세지 않고 다시 시도 */
-  SR=null; /* 다음엔 새 인식 객체로 */
+  /* 아무것도 못 들음: 오답으로 세지 않음. 다음엔 새 세션으로 */
+  srStale=true;
+  noSoundFails++;
   pttUI('idle','소리가 안 들렸어요 🙉 다시 꾹 눌러 말해요!');
-  const info=me.errorCode?('오류 코드: '+me.errorCode):'들린 소리 없음';
-  speechDebugPanel('소리가 잘 안 들어왔어요. 마이크 가까이에서 한 번 더 말해 주세요.',{error:me.errorCode||'no-result',message:me.errorMessage||info,events:[...me.events]},'');
+  speechDebugPanel('소리가 잘 안 들어왔어요. 마이크 가까이에서 한 번 더 말해 주세요.',{error:srErr||'no-result',message:srMsg||'들린 소리 없음',events:[...srEvents]},'');
+  if(noSoundFails>=2){
+    const b=document.createElement('button');
+    b.className='rbtn';b.style.marginTop='12px';b.textContent='⏭️ 이 문제는 건너뛰기';
+    b.onclick=()=>{if(busy)return;busy=true;next2()};
+    res.appendChild(b);
+  }
 }
+function stopSR(cb){dropSR();cb&&cb()}
+function killPrev(){held=false;waitingMic=false;judging=false;noSoundFails=0;dropSR()}
 
 let praiseN=0;
 const PRAISE=[['너무나 정확해요!! 😲🤩','🎉👏✨🌟🏆✨👏🎉'],['원어민이신가요?! 🤯🎉','🥳🌈💯🔥💯🌈🥳']];
@@ -608,7 +611,7 @@ function judge(ratio,miss){
   }
   res.innerHTML=`${miss?'':`<div class="pct en">${pct}%</div>`}<div class="msg low">${miss?'소리가 잘 안 들렸어요 🙉':'조금만 더! 💪'}</div><div class="try">🎤 버튼을 꾹 누르고 다시 말해봐요!</div>`;
 }
-function next2(){killPrev();i2++;r2()}
+function next2(){held=false;waitingMic=false;judging=false;noSoundFails=0;i2++;r2()}
 
 /* STAGE 3 */
 const sb=[];
@@ -741,4 +744,3 @@ refresh();
 </script>
 </body>
 </html>
-
