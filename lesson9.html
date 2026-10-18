@@ -410,14 +410,16 @@ function speak(){
   rec.lang='en-US';
   rec.interimResults=false;
   rec.maxAlternatives=1;
-  let got=false, finalized=false, errorCode='', errorMessage='';
+  let got=false, finalized=false, errorCode='', errorMessage='', soundDetected=false;
+  let silenceWatchdog=null, resultWatchdog=null;
   const events=[];
   const mark=name=>{events.push(name); if(events.length>30)events.shift();};
   const finishUI=()=>{tag.textContent='';spk.disabled=false;};
   const diagnostic=(title, code, message, transcript='')=>{
     if(finalized)return;
     finalized=true;
-    clearTimeout(watchdog);
+    clearTimeout(silenceWatchdog);
+    clearTimeout(resultWatchdog);
     finishUI();
     speechDebugPanel(title,{error:code||errorCode,message:message||errorMessage,events:[...events]},transcript);
   };
@@ -427,8 +429,22 @@ function speak(){
   mark('start() 호출');
   rec.onstart=()=>{mark('start');tag.textContent='🎧 인식 시작됨. 영어 문장을 읽어 주세요.';};
   rec.onaudiostart=()=>mark('audiostart');
-  rec.onsoundstart=()=>mark('soundstart');
-  rec.onspeechstart=()=>{mark('speechstart');tag.textContent='🗣️ 말소리 감지됨';};
+  const noteSoundDetected=(eventName)=>{
+    mark(eventName);
+    if(soundDetected || finalized)return;
+    soundDetected=true;
+    clearTimeout(silenceWatchdog);
+    tag.textContent='🗣️ 소리 감지됨. 인식 결과를 기다립니다...';
+    resultWatchdog=setTimeout(()=>{
+      if(finalized)return;
+      mark('timeout-15s-after-sound');
+      diagnostic('소리가 감지되었지만 15초 안에 인식 결과가 도착하지 않았습니다. 다시 시도해 주세요.',
+        'recognition-result-timeout','소리 감지 후 15초 안에 최종 인식 결과가 도착하지 않았습니다.');
+      try{rec.abort()}catch(e){}
+    },15000);
+  };
+  rec.onsoundstart=()=>noteSoundDetected('soundstart');
+  rec.onspeechstart=()=>{noteSoundDetected('speechstart');tag.textContent='🗣️ 말소리 감지됨. 인식 중...';};
   rec.onspeechend=()=>mark('speechend');
   rec.onsoundend=()=>mark('soundend');
   rec.onaudioend=()=>mark('audioend');
@@ -437,7 +453,8 @@ function speak(){
     if(finalized)return;
     got=true;
     mark('result');
-    clearTimeout(watchdog);
+    clearTimeout(silenceWatchdog);
+    clearTimeout(resultWatchdog);
     const transcript=(e.results&&e.results[0]&&e.results[0][0])?e.results[0][0].transcript:'';
     if(!transcript.trim()){
       diagnostic('음성 인식 결과가 비어 있습니다. 다시 시도해 주세요.','empty-result','result 이벤트는 발생했지만 transcript가 비어 있습니다.',transcript);
@@ -476,13 +493,13 @@ function speak(){
       finishUI();
     }
   };
-  const watchdog=setTimeout(()=>{
-    if(finalized)return;
-    mark('timeout-15s');
-    diagnostic('15초 동안 인식 결과가 도착하지 않았습니다. 다시 시도해 주세요.',
-      'recognition-timeout','start 이후 15초 안에 최종 인식 결과가 도착하지 않았습니다.');
+  silenceWatchdog=setTimeout(()=>{
+    if(finalized || soundDetected)return;
+    mark('timeout-6s-no-sound');
+    diagnostic('6초 동안 소리가 감지되지 않아 세션을 종료했습니다. 다시 시도해 주세요.',
+      'no-sound-timeout','인식 시작 후 6초 동안 soundstart 또는 speechstart 이벤트가 발생하지 않았습니다.');
     try{rec.abort()}catch(e){}
-  },15000);
+  },6000);
   try{
     rec.start();
   }catch(e){
