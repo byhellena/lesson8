@@ -1,701 +1,814 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alex's and Andrew's Rooms - 학습 웹앱</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700;900&display=swap');
-        
-        body {
-            font-family: 'Noto Sans KR', sans-serif;
-            background-color: #f0fdf4;
-        }
-        
-        .jua-font {
-            font-family: 'Jua', sans-serif;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
+<meta name="theme-color" content="#fff0f6">
+<title>9단원 What's in the bedroom?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#4a3b52;--soft:#8a7b92;--card:#fff;--pink:#ff7aa8;--pink-d:#c93f72;--sky:#4fb0ff;--sky-d:#1f6fbf;--mint:#3ec99a;--mint-d:#1c8a66;--purple:#a58bff;--purple-d:#5b3fc4;--orange:#ffa23e;--orange-d:#b86100;--lock:#d3cdd8;color-scheme:light}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{font-family:'Jua',sans-serif;color:var(--ink);min-height:100vh;overflow-x:hidden;
+background:radial-gradient(circle at 1px 1px,#ffd9e6 2px,transparent 2.5px) 0 0/28px 28px,linear-gradient(180deg,#fff0f6,#eaf6ff)}
+.en{font-family:'Baloo 2',sans-serif;font-weight:800}
+.wrap{max-width:560px;margin:0 auto;padding:18px 16px 60px;position:relative}
+.screen{display:none}.screen.active{display:block;animation:pop .3s ease}
+@keyframes pop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+.title{text-align:center;margin:4px 0 20px}
+.mascot{font-size:64px;display:inline-block;animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px) rotate(-4deg)}}
+.title h1{margin:4px 0;font-size:22px;color:var(--pink-d);line-height:1.35;font-weight:400}
+.title h1 b{display:block;font-size:30px;font-weight:400}
+.title p{margin:0;color:var(--soft);font-size:15px}
+.stage-card{display:flex;align-items:center;gap:14px;background:var(--card);border:4px solid var(--c);border-radius:30px;box-shadow:0 6px 0 var(--c);padding:16px;margin-bottom:20px;cursor:pointer}
+.stage-card:active{transform:translateY(4px);box-shadow:0 2px 0 var(--c)}
+.stage-card.locked{opacity:.55;filter:grayscale(.5);--c:var(--lock);cursor:default}
+.num{width:54px;height:54px;min-width:54px;border-radius:50%;background:var(--c);color:#fff;font-size:28px;display:flex;align-items:center;justify-content:center}
+.stage-card h3{margin:0 0 3px;font-size:19px;font-weight:400}
+.stage-card p{margin:0;font-size:14px;color:var(--soft)}
+.stage-card .st{margin-left:auto;font-size:17px;font-weight:700;white-space:nowrap;padding:6px 12px;border-radius:999px;background:#eceaf3;color:#7d7a8c}
+.stage-card .st.ok{background:#fff1b8;color:#c2570a}
+.cert-btn{width:100%;padding:18px;border:0;border-radius:100px;font:400 18px 'Jua';background:var(--lock);color:#fff}
+.cert-btn.ready{background:linear-gradient(90deg,#ffd23f,#ff9640,#ff6f91,#ffd23f);background-size:300% 100%;animation:shine 2.4s linear infinite;box-shadow:0 5px 0 #c9602a}
+@keyframes shine{to{background-position:300% 0}}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.home-btn{background:#fff;border:3px solid var(--sky);color:var(--sky-d);font:400 15px 'Jua';padding:8px 16px;border-radius:100px;box-shadow:0 3px 0 var(--sky)}
+.dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;max-width:55%}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--lock)}.dot.done{background:var(--mint)}.dot.now{background:#ffc93c;transform:scale(1.25)}
+.sh{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.badge{width:44px;height:44px;border-radius:50%;color:#fff;font-size:21px;display:flex;align-items:center;justify-content:center}
+.sh h2{margin:0;font-size:20px;font-weight:400}.sh p{margin:2px 0 0;font-size:13px;color:var(--soft)}
+.qcard{background:var(--card);border:4px dashed var(--a);border-radius:30px;padding:20px 16px;text-align:center;margin-bottom:16px}
+.qcount{color:var(--a);font-size:14px;margin-bottom:6px}
+.qimg{font-size:92px;line-height:1.1}
+.qkr{display:inline-block;margin:6px 0 16px;padding:6px 20px;background:#fff3c4;border-radius:100px;font-size:26px;color:#8a5a00}
+.choices{display:grid;gap:10px}
+.choice{font:800 21px 'Baloo 2';padding:13px;border-radius:20px;border:3px solid var(--sky);background:#fff;color:var(--sky-d);box-shadow:0 4px 0 var(--sky)}
+.choice:active{transform:translateY(3px);box-shadow:0 1px 0 var(--sky)}
+.choice.ok{background:var(--mint);border-color:var(--mint-d);color:#fff;box-shadow:0 4px 0 var(--mint-d)}
+.choice.no{animation:shake .3s;background:#ffe3e3;border-color:#ff7a7a;color:#c93f3f}
+@keyframes shake{25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.fb{min-height:28px;margin-top:12px;font-size:19px;color:var(--soft)}.fb.good{color:var(--mint-d)}.fb.bad{color:#d65a5a}
+.sent{font-size:27px;line-height:1.3;margin:6px 0}.sent b{color:var(--pink-d);font-weight:800}
+.kr{font-size:19px;color:var(--soft);margin-bottom:16px}
+.btns{display:flex;gap:12px;justify-content:center}
+.rbtn{flex:1;max-width:190px;padding:15px 8px;border:0;border-radius:100px;font:400 19px 'Jua';color:#fff;background:var(--sky);box-shadow:0 5px 0 var(--sky-d)}
+.rbtn.mic{background:var(--pink);box-shadow:0 5px 0 var(--pink-d)}
+.rbtn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.3)}.rbtn:disabled{opacity:.6}
+.listen{min-height:26px;margin-top:12px;color:var(--pink-d);font-size:17px}
+.res{min-height:70px}.pct{font-size:44px;color:var(--purple-d)}
+.msg{font-size:20px;margin-top:4px}.msg.low{color:var(--orange-d)}.msg.mid{color:var(--sky-d)}.msg.high{color:var(--mint-d)}
+.wow{font-size:27px;line-height:1.35;color:var(--pink-d);margin-top:6px;animation:wowp .7s ease-in-out infinite alternate}.wow2{font-size:30px;margin-top:6px;animation:bob 1.2s ease-in-out infinite}
+@keyframes wowp{from{transform:scale(1) rotate(-2deg)}to{transform:scale(1.12) rotate(2deg)}}
+.try{font-size:14px;color:var(--soft);margin-top:8px}
+.sb{background:#fff;border:4px solid var(--orange);border-radius:26px;padding:16px;margin-bottom:16px;box-shadow:0 5px 0 var(--orange)}
+.sb.solved{border-color:var(--mint);box-shadow:0 5px 0 var(--mint);background:#f2fff9}
+.sbt{font-size:18px;margin-bottom:10px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px;font:800 21px 'Baloo 2'}
+.slot{min-width:64px;padding:6px 10px;text-align:center;border-bottom:4px dashed var(--orange);border-radius:10px;color:#ccc}
+.slot.f{color:var(--orange-d);background:#fff3e0;border-bottom-color:var(--orange)}
+.bank{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:10px}
+.slot.ok{background:#e6fff4;border-bottom-color:var(--mint);color:var(--mint-d)}.slot.x{background:#ffe3ec;border-bottom-color:var(--pink);color:var(--pink-d);animation:shake .3s}
+.sbf.hint{color:var(--orange-d);line-height:1.4}
+.tile{font:800 19px 'Baloo 2';padding:9px 15px;border-radius:16px;border:3px solid var(--purple);background:#fff;color:var(--purple-d);box-shadow:0 4px 0 var(--purple)}
+.tile.used{opacity:.25;box-shadow:none}
+.reset{background:#fff;border:2px solid var(--lock);border-radius:100px;padding:5px 14px;font:400 14px 'Jua';color:var(--soft)}
+.sbf{min-height:24px;margin-top:6px;font-size:17px;color:var(--mint-d)}.sbf.bad{color:#d65a5a}
+.done{background:#fff;border:4px solid var(--mint);border-radius:30px;box-shadow:0 6px 0 var(--mint);padding:30px 16px;text-align:center}
+.done .big{font-size:76px}.done h3{margin:6px 0;font-size:24px;font-weight:400}.done p{color:var(--soft);margin:0 0 16px}
+.pbtn{padding:14px 30px;border:0;border-radius:100px;background:var(--mint);color:#fff;font:400 18px 'Jua';box-shadow:0 5px 0 var(--mint-d)}
+.bottom-home{width:100%;padding:16px;border:0;border-radius:100px;background:var(--lock);color:#fff;font:400 18px 'Jua'}
+.bottom-home.glow{background:var(--mint);box-shadow:0 5px 0 var(--mint-d);animation:bob 1.6s infinite}
+.overlay{position:fixed;inset:0;background:rgba(74,59,82,.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:20}
+.overlay.active{display:flex}
+.cert,.mic-box{background:#fffdf3;border:6px double #ffb53e;border-radius:30px;padding:26px 20px;text-align:center;max-width:380px;width:100%}
+.cert h2{font-size:36px;margin:6px 0;color:var(--pink-d);font-weight:400;letter-spacing:6px}
+.cert .body{font-size:20px;line-height:1.7}.signoff{color:var(--orange-d);margin:12px 0}
+.mic-box{border:5px solid var(--pink);background:#fff}.mic-box .big{font-size:70px}.mic-box h2{margin:4px 0;font-weight:400;font-size:24px;color:var(--pink-d)}
+.mic-box p{color:var(--soft);font-size:16px;line-height:1.5;margin:6px 0 16px}
+#cert-overlay{background:rgba(255,236,246,.97);align-items:flex-start;overflow-y:auto;padding:10px}
+.cwrap{width:100%;max-width:860px;margin:0 auto}
+#cert-overlay .cert{position:relative;overflow:hidden;max-width:none;width:100%;min-height:min(66vh,620px);display:flex;flex-direction:column;justify-content:center;padding:28px 18px;border-width:10px;background:var(--cb,#fffdf3);transition:background .4s}
+.cst{font-size:clamp(30px,7vw,60px)}
+#cert-overlay .cert h2{font-size:clamp(46px,12vw,96px);letter-spacing:.12em;margin:6px 0}
+#cert-overlay .cert .body{font-size:clamp(22px,5vw,40px);line-height:1.6;margin:8px 0}
+#cert-overlay .signoff{font-size:clamp(18px,4vw,30px)}
+.cert.dk{color:#fff}.cert.dk h2{color:#ffb3d1}
+#draw,#fx,#stk{position:absolute;inset:0;width:100%;height:100%}
+#draw{touch-action:none;cursor:crosshair}#fx,#stk{pointer-events:none}
+.stk{position:absolute;font-size:clamp(40px,9vw,76px);line-height:1;touch-action:none;user-select:none;-webkit-user-select:none;pointer-events:auto;transform:translate(-50%,-50%);cursor:grab}
+.tools{background:#fff;border:4px solid var(--purple);border-radius:26px;padding:12px;margin:12px 0 30px;text-align:center}
+.trow{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;margin-bottom:10px}
+.tb{font:400 16px 'Jua';padding:9px 14px;border:3px solid var(--purple);background:#fff;color:var(--purple-d);border-radius:100px}
+.tb.on{background:var(--purple);color:#fff}
+.sw{width:38px;height:38px;border-radius:50%;border:4px solid #fff;box-shadow:0 0 0 2px #ccc}.sw.on{box-shadow:0 0 0 4px var(--ink);transform:scale(1.15)}
+.sk{font-size:34px;background:#fff6;border:0;padding:4px}
+.fxr b{color:var(--pink-d);font-weight:400}
+.cert.neon{animation:ne .9s steps(1) infinite}.cert.neon h2,.cert.neon .body{animation:nt .9s steps(1) infinite}
+@keyframes ne{0%{border-color:#ff2bd6;box-shadow:0 0 14px 4px #ff2bd6,inset 0 0 30px #ff2bd6}34%{border-color:#19e6ff;box-shadow:0 0 14px 4px #19e6ff,inset 0 0 30px #19e6ff}67%{border-color:#fff700;box-shadow:0 0 14px 4px #fff700,inset 0 0 30px #fff700}}
+@keyframes nt{0%{text-shadow:0 0 8px #ff2bd6,0 0 22px #ff2bd6}34%{text-shadow:0 0 8px #19e6ff,0 0 22px #19e6ff}67%{text-shadow:0 0 8px #fff700,0 0 22px #fff700}}
+/* 한 화면 맞춤 */
+#cert-overlay{overflow:hidden;padding:8px;align-items:stretch}
+.cwrap{max-width:1100px;height:100%;display:flex;flex-direction:column;gap:8px;margin:0 auto}
+#cert-overlay .cert{flex:1;min-height:28vh;container-type:size;padding:8px 10px;border-width:7px;border-radius:24px}
+.cst{font-size:clamp(16px,6vw,34px);font-size:clamp(16px,6cqmin,34px)}
+#cert-overlay .cert h2{font-size:clamp(26px,8vw,54px);font-size:clamp(26px,9cqmin,54px);margin:2px 0}
+#cert-overlay .cert .body{font-size:clamp(14px,3.6vw,26px);font-size:clamp(14px,4.8cqmin,26px);line-height:1.5;margin:4px 0}
+#cert-overlay .signoff{font-size:clamp(12px,3vw,20px);font-size:clamp(12px,3.8cqmin,20px);margin:4px 0}
+.tools{flex:none;margin:0;padding:8px;border-width:3px;border-radius:20px;overflow-y:auto;max-height:55vh}
+.trow{gap:5px;margin-bottom:6px}
+.tb{font-size:14px;padding:6px 11px;border-width:2px}
+.sw{width:30px;height:30px;border-width:3px}
+.sk{font-size:26px;padding:1px 3px}
+#psize{width:90px}
+.tools .pbtn{padding:8px 26px;font-size:16px;box-shadow:0 3px 0 var(--mint-d)}
+@media (orientation:landscape) and (min-width:700px){
+  .cwrap{flex-direction:row}
+  .tools{width:min(42%,400px);max-height:none;display:flex;flex-direction:column;justify-content:space-evenly}
+  .tools .trow{margin-bottom:0}.sk{font-size:34px;padding:3px 5px}.tb{font-size:15px;padding:8px 13px}.sw{width:34px;height:34px}
+}
+/* 갤럭시 탭 최적화 */
+html,body{overscroll-behavior:none}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
+button{touch-action:manipulation}
+@media (min-width:760px){
+  .wrap{max-width:880px;padding-top:22px}
+  .title h1 b{font-size:38px}.title h1{font-size:26px}.mascot{font-size:78px}
+  .stage-card{padding:20px}.stage-card h3{font-size:23px}.stage-card p{font-size:16px}.num{width:62px;height:62px;min-width:62px;font-size:32px}
+  .choices{grid-template-columns:repeat(3,1fr);gap:14px}
+  .choice{font-size:28px;padding:18px 8px}
+  .qimg{font-size:112px}.qkr{font-size:30px}
+  .sent{font-size:38px}.kr{font-size:23px}
+  .rbtn{font-size:22px;padding:17px 8px;max-width:230px}
+  .pct{font-size:52px}.msg{font-size:24px}.wow{font-size:34px}.fb{font-size:22px}
+  .sbt{font-size:21px}.row{font-size:25px}.tile{font-size:23px;padding:10px 18px}.slot{min-width:80px}
+}
+@media (min-width:900px){#body-3{display:grid;grid-template-columns:1fr 1fr;gap:16px}#body-3 .sb{margin-bottom:0}#body-3 .done{grid-column:1/-1}}
+@media (max-height:760px) and (orientation:landscape){
+  .mascot{font-size:52px}.title{margin:0 0 10px}.title h1 b{font-size:30px}.stage-card{margin-bottom:12px;padding:12px}.cert-btn{padding:14px}.wrap{padding-top:12px}
+}
+@media (max-height:620px) and (orientation:landscape){
+  .wrap{padding:10px 16px 20px}.mascot{font-size:44px}.title{margin:0 0 8px}.title h1{font-size:18px}.title h1 b{font-size:26px}.title p,.sh p{display:none}
+  .stage-card{margin-bottom:10px;padding:10px}.cert-btn{padding:12px}.sh{margin-bottom:6px}.topbar{margin-bottom:6px}
+  .qcard{padding:12px;margin-bottom:8px}.qimg{font-size:72px}.qkr{margin:2px 0 8px}.choice{padding:10px 8px;font-size:24px}
+  .fb{min-height:20px;margin-top:6px}.res{min-height:50px}.kr{margin-bottom:8px}.sent{font-size:30px}
+}
+@media (max-height:640px) and (orientation:landscape){
+  .sk{font-size:26px!important;padding:1px 3px!important}.tb{padding:5px 10px!important;font-size:13px!important}.sw{width:28px!important;height:28px!important}
+  .tools .trow{margin-bottom:4px!important}
+}
 
-        /* 퀴즈 폭죽 애니메이션 */
-        @keyframes firework {
-            0% { transform: translate(0, 0); opacity: 1; }
-            50% { opacity: 1; }
-            100% { transform: translate(var(--x), var(--y)); opacity: 0; }
-        }
-        .firework-particle {
-            position: absolute;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            animation: firework 1s ease-out forwards;
-        }
+.ptt-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;margin:14px 0 4px}
+.ptt{position:relative;width:170px;height:170px;border-radius:50%;border:0;cursor:pointer;
+  background:#ee7fa6;box-shadow:0 8px 0 #b94a73;color:#fff;font-size:72px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;
+  touch-action:none;transition:transform .08s,box-shadow .08s,background .15s}
+.ptt *{pointer-events:none}
+.ptt-ico{position:relative;z-index:2}
+.ptt-ring{position:absolute;inset:0;border-radius:50%;border:6px solid #ff3b5c;opacity:0;pointer-events:none}
+.ptt.rec{background:#ff3b5c;box-shadow:0 2px 0 #a8142f;transform:translateY(6px) scale(1.04)}
+.ptt.rec .ptt-ring{animation:pttPulse 1.2s ease-out infinite}
+.ptt.rec .ptt-ring.r2{animation-delay:.6s}
+.ptt.wait{background:#9a8cff;box-shadow:0 4px 0 #6c5ccf}
+.ptt:disabled{opacity:.45;cursor:not-allowed}
+@keyframes pttPulse{0%{transform:scale(1);opacity:.9}100%{transform:scale(1.7);opacity:0}}
+.ptt-label{font-weight:800;font-size:19px;color:#5b4a73;min-height:28px;text-align:center}
+.ptt-label.rec{color:#ff3b5c;font-size:22px;animation:pttBlink 1s ease-in-out infinite}
+@keyframes pttBlink{50%{opacity:.55}}
+.ptt-bars{display:flex;gap:6px;height:34px;align-items:center;visibility:hidden}
+.ptt-bars.on{visibility:visible}
+.ptt-bars i{display:block;width:8px;height:10px;border-radius:4px;background:#ff3b5c;animation:pttBar .7s ease-in-out infinite}
+.ptt-bars i:nth-child(2){animation-delay:.1s}.ptt-bars i:nth-child(3){animation-delay:.2s}
+.ptt-bars i:nth-child(4){animation-delay:.3s}.ptt-bars i:nth-child(5){animation-delay:.15s}
+.ptt-bars i:nth-child(6){animation-delay:.25s}.ptt-bars i:nth-child(7){animation-delay:.05s}
+@keyframes pttBar{50%{height:32px}}
+.listen{font-size:17px;font-weight:700;color:#5b4a73;min-height:24px;text-align:center}
 
-        /* EDM 스트로브 디스코 효과 */
-        @keyframes edmStrobe {
-            0% { background-color: #ff00ff; color: #ffff00; }
-            20% { background-color: #00ffff; color: #ff0000; }
-            40% { background-color: #ffff00; color: #0000ff; }
-            60% { background-color: #ff0000; color: #00ff00; }
-            80% { background-color: #00ff00; color: #ff00ff; }
-            100% { background-color: #1e1b4b; color: #ffffff; }
-        }
-        .edm-mode {
-            animation: edmStrobe 0.25s infinite;
-        }
-    </style>
+/* ===== 아이패드 최적화 ===== */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overscroll-behavior-y:none}
+body{min-height:100vh;min-height:100dvh;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+button,.stage-card,.choice,.tile,.slot,.tb,.sw,.rbtn,.pbtn,.home-btn,.reset{touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-appearance:none;appearance:none;cursor:pointer}
+button{min-height:44px}
+.wrap{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right));padding-top:max(18px,env(safe-area-inset-top));padding-bottom:max(60px,calc(env(safe-area-inset-bottom) + 40px))}
+.overlay{padding-left:max(20px,env(safe-area-inset-left));padding-right:max(20px,env(safe-area-inset-right));padding-bottom:max(20px,env(safe-area-inset-bottom));padding-top:max(20px,env(safe-area-inset-top))}
+#mic-overlay{z-index:50}
+.mic-box{max-height:100%;overflow-y:auto}
+#user-select-ok,#mic-box [onclick]{-webkit-user-select:text;user-select:text}
+@media (min-width:700px){
+  .wrap{max-width:860px;padding-top:max(28px,env(safe-area-inset-top));padding-bottom:max(80px,calc(env(safe-area-inset-bottom) + 50px))}
+  .mascot{font-size:84px}
+  .title h1{font-size:30px}.title h1 b{font-size:42px}.title p{font-size:19px}
+  .stage-card{padding:22px 26px;gap:20px;border-radius:36px;margin-bottom:26px}
+  .num{width:72px;height:72px;min-width:72px;font-size:38px}
+  .stage-card h3{font-size:26px}.stage-card p{font-size:18px}.stage-card .st{font-size:21px;padding:8px 16px}
+  .cert-btn{font-size:24px;padding:24px}
+  .home-btn{font-size:19px;padding:12px 24px;min-height:48px}
+  .dot{width:16px;height:16px}
+  .badge{width:56px;height:56px;font-size:27px}.sh h2{font-size:26px}.sh p{font-size:16px}
+  .qcard{padding:30px 26px;border-radius:38px}
+  .qcount{font-size:18px}.qimg{font-size:130px}.qkr{font-size:34px;padding:8px 28px;margin:10px 0 22px}
+  .choices{grid-template-columns:1fr 1fr;gap:16px}
+  .choice{font-size:28px;padding:20px;border-radius:26px;min-height:68px}
+  .fb{font-size:24px;min-height:36px}
+  .sent{font-size:36px}.kr{font-size:24px}
+  .rbtn{font-size:24px;padding:20px 10px;max-width:260px;min-height:64px}
+  .ptt{width:210px;height:210px}.ptt-label{font-size:24px}.ptt-label.rec{font-size:28px}
+  .pct{font-size:58px}.msg{font-size:26px}.wow{font-size:34px}.wow2{font-size:38px}.try{font-size:18px}.listen{font-size:21px}
+  .sb{padding:24px;border-radius:32px}.sbt{font-size:23px;margin-bottom:14px}
+  .row{font-size:28px;gap:12px}.slot{min-width:84px;padding:8px 14px}
+  .bank{gap:14px}.tile{font-size:25px;padding:13px 22px;border-radius:20px;min-height:56px}
+  .reset{font-size:18px;padding:9px 20px;min-height:44px}.sbf{font-size:21px}
+  .done{padding:44px 26px}.done .big{font-size:100px}.done h3{font-size:32px}.done p{font-size:20px}
+  .pbtn{font-size:23px;padding:18px 40px;min-height:56px}
+  .bottom-home{font-size:23px;padding:22px}
+  .mic-box{max-width:520px;padding:36px 30px}.mic-box .big{font-size:90px}.mic-box h2{font-size:32px}.mic-box p{font-size:21px}
+  .tb{font-size:18px;padding:11px 18px;min-height:46px}.sw{width:46px;height:46px}.sk{font-size:40px}
+}
+@media (min-width:1000px){.wrap{max-width:980px}}
+</style>
 </head>
-<body class="min-h-screen text-slate-800 flex flex-col items-center justify-between p-2">
-
-    <!-- 상단 헤더 & 탭 메뉴 -->
-    <header class="w-full max-w-7xl mx-auto bg-white shadow-md rounded-2xl p-4 mb-3 flex flex-col md:flex-row items-center justify-between gap-3 border-2 border-emerald-200">
-        <div class="flex items-center gap-3">
-            <span class="text-4xl">🏡</span>
-            <div>
-                <h1 class="text-3xl md:text-4xl font-black text-emerald-600 jua-font">Alex's and Andrew's Rooms</h1>
-            </div>
-        </div>
-
-        <!-- 단계 선택 탭 버튼 -->
-        <div class="flex items-center gap-2 bg-emerald-50 p-2 rounded-xl border border-emerald-300">
-            <button onclick="changeLevel(1)" id="btn-level-1" class="px-5 py-2.5 rounded-lg text-xl font-black transition-all shadow-sm bg-emerald-600 text-white">
-                1단계
-            </button>
-            <button onclick="changeLevel(2)" id="btn-level-2" class="px-5 py-2.5 rounded-lg text-xl font-black transition-all text-slate-600 hover:bg-emerald-200">
-                2단계
-            </button>
-            <button onclick="changeLevel(3)" id="btn-level-3" class="px-5 py-2.5 rounded-lg text-xl font-black transition-all text-slate-600 hover:bg-emerald-200">
-                3단계
-            </button>
-        </div>
-    </header>
-
-    <!-- 메인 컨텐츠 영역 -->
-    <main class="w-full max-w-7xl mx-auto flex-1 flex flex-col gap-3 mb-4">
-        
-        <!-- 상단 컨트롤 바 -->
-        <div class="bg-amber-100 border-2 border-amber-300 rounded-xl px-6 py-3 flex items-center justify-end shadow-sm">
-            <div class="flex items-center gap-3">
-                <div id="quiz-btn-container" class="hidden">
-                    <button onclick="openQuizModal()" class="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white font-black text-xl rounded-xl shadow-md transition transform hover:scale-105 flex items-center gap-2">
-                        🎮 퀴즈 풀기
-                    </button>
-                </div>
-                <div id="blank-controls" class="hidden flex items-center gap-2">
-                    <button onclick="revealAllBlanks()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold text-lg rounded-lg shadow">
-                        전체 정답 보기
-                    </button>
-                    <button onclick="resetBlanks()" class="px-4 py-2 bg-slate-500 hover:bg-slate-600 text-white font-bold text-lg rounded-lg shadow">
-                        다시 초기화
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 문장 카드 리스트 컨테이너 -->
-        <div id="sentences-container" class="grid grid-cols-1 gap-3">
-            <!-- 자바스크립트로 동적 렌더링 -->
-        </div>
-
-    </main>
-
-    <!-- 푸터 -->
-    <footer class="text-center text-slate-400 font-bold text-base py-2">
-        Classroom Interactive Learning Tool
-    </footer>
-
-    <!-- 퀴즈 모달 팝업 -->
-    <div id="quiz-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
-        <div id="quiz-modal-box" class="bg-white w-full max-w-5xl rounded-3xl p-6 shadow-2xl border-4 border-purple-400 flex flex-col gap-6 relative transition-all duration-300">
-            
-            <button onclick="closeQuizModal()" class="absolute top-4 right-4 text-3xl font-black text-slate-400 hover:text-slate-700">✕</button>
-
-            <div class="flex items-center justify-between border-b pb-3">
-                <div class="flex items-center gap-3">
-                    <span class="text-4xl">🏆</span>
-                    <h2 id="quiz-title" class="text-3xl font-black text-purple-700 jua-font">1번 문제</h2>
-                </div>
-                <div class="text-xl font-bold text-slate-500" id="quiz-progress">문제 1 / 2</div>
-            </div>
-
-            <div id="quiz-question" class="text-3xl md:text-4xl font-black text-center text-slate-800 bg-purple-50 py-4 rounded-2xl border border-purple-200">
-                알렉스의 방은 무엇일까요?
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-2">
-                <div id="option-left" onclick="checkQuizAnswer(1)" class="cursor-pointer bg-slate-50 border-4 border-slate-200 hover:border-purple-500 hover:bg-purple-50 rounded-2xl p-6 flex flex-col items-center justify-center gap-4 transition transform hover:scale-105 shadow-md">
-                    <div id="quiz-img-left" class="w-full h-56 bg-white rounded-xl border-2 border-slate-300 flex items-center justify-center shadow-inner overflow-hidden"></div>
-                    <span id="quiz-txt-left" class="text-2xl font-black text-slate-700">왼쪽 보기</span>
-                </div>
-
-                <div id="option-right" onclick="checkQuizAnswer(2)" class="cursor-pointer bg-slate-50 border-4 border-slate-200 hover:border-purple-500 hover:bg-purple-50 rounded-2xl p-6 flex flex-col items-center justify-center gap-4 transition transform hover:scale-105 shadow-md">
-                    <div id="quiz-img-right" class="w-full h-56 bg-white rounded-xl border-2 border-slate-300 flex items-center justify-center shadow-inner overflow-hidden"></div>
-                    <span id="quiz-txt-right" class="text-2xl font-black text-slate-700">오른쪽 보기</span>
-                </div>
-            </div>
-
-            <div id="quiz-feedback" class="text-center text-2xl font-black h-12 flex items-center justify-center"></div>
-
-            <div class="flex justify-end gap-3 pt-2">
-                <button id="next-quiz-btn" onclick="nextQuizStep()" class="hidden px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-2xl rounded-xl shadow-lg transition">
-                    다음 문제 ➡
-                </button>
-            </div>
-        </div>
+<body>
+<div class="wrap">
+  <div class="screen active" id="screen-home">
+    <div class="title">
+      <span class="mascot">🐰</span>
+      <h1>9단원<b class="en">What's in the bedroom?</b></h1>
+      <p>원하는 단계를 선택해 학습해 보세요!</p>
     </div>
+    <div class="stage-card" id="card-1" style="--c:var(--sky)" onclick="goStage(1)"><div class="num">1</div><div><h3>단어 학습</h3><p>그림과 뜻을 보고 영어 단어 고르기</p></div><div class="st" id="st-1">도전 전</div></div>
+    <div class="stage-card" id="card-2" style="--c:var(--purple)" onclick="goStage(2)"><div class="num">2</div><div><h3>말하기 학습</h3><p>문장을 듣고 따라 말해보기</p></div><div class="st" id="st-2">도전 전</div></div>
+    <div class="stage-card" id="card-3" style="--c:var(--orange)" onclick="goStage(3)"><div class="num">3</div><div><h3>문장 구성하기</h3><p>단어를 눌러 문장 완성하기</p></div><div class="st" id="st-3">도전 전</div></div>
+    <button class="cert-btn" id="cert-btn" onclick="showCert()">✨ 이수 확인증 제출하기 ✨</button>
+  </div>
 
-    <!-- 폭죽 효과 컨테이너 -->
-    <div id="fireworks-container" class="fixed inset-0 pointer-events-none z-50 overflow-hidden hidden"></div>
+  <div class="screen" id="screen-1">
+    <div class="topbar"><button class="home-btn" onclick="goHome()">🏠 처음으로</button><div class="dots" id="dots-1"></div></div>
+    <div class="sh"><div class="badge" style="background:var(--sky)">1</div><div><h2>단어 학습</h2><p>그림과 뜻에 알맞은 영어 단어를 골라요</p></div></div>
+    <div id="body-1"></div>
+  </div>
 
-    <script>
-        // 학습 데이터 원본 정의
-        const sentencesData = [
-            { id: 1, en: "This is the living room.", ko: "이곳은 거실입니다.", blanks2: ["is"], blanks3: ["This", "is"] },
-            { id: 2, en: "Look! There are pictures on the table.", ko: "봐봐! 테이블 위에 사진들이 있어요.", blanks2: ["There"], blanks3: ["There", "pictures"] },
-            { id: 3, en: "They are Alex and Andrew.", ko: "그들은 알렉스와 앤드루입니다.", blanks2: ["They"], blanks3: ["They", "are"] },
-            { id: 4, en: "Alex is twelve years old.", ko: "알렉스는 열두 살입니다.", blanks2: ["years"], blanks3: ["twelve", "years"] },
-            { id: 5, en: "Andrew is twelve years old, too.", ko: "앤드루도 열두 살입니다.", blanks2: ["twelve"], blanks3: ["twelve", "too"] },
-            { id: 6, en: "They are brothers.", ko: "그들은 형제입니다.", blanks2: ["brothers"], blanks3: ["are", "brothers"] },
-            { id: 7, en: "This is Alex's room.", ko: "이곳은 알렉스의 방입니다.", blanks2: ["room"], blanks3: ["This", "room"] },
-            { id: 8, en: "There are robots in the box.", ko: "상자 안에 로봇들이 있습니다.", blanks2: ["are"], blanks3: ["There", "are"] },
-            { id: 9, en: "Alex likes making robots.", ko: "알렉스는 로봇 만드는 것을 좋아합니다.", blanks2: ["robots"], blanks3: ["likes", "robots"] },
-            { id: 10, en: "This is Andrew's room.", ko: "이곳은 앤드루의 방입니다.", blanks2: ["room"], blanks3: ["This", "room"] },
-            { id: 11, en: "There is a guitar on the bed.", ko: "침대 위에 기타가 한 대 있습니다.", blanks2: ["guitar"], blanks3: ["is", "guitar"] },
-            { id: 12, en: "Andrew likes playing the guitar.", ko: "앤드루는 기타 연주하는 것을 좋아합니다.", blanks2: ["playing"], blanks3: ["likes", "guitar"] },
-            { id: 13, en: "They look the same.", ko: "그들은 똑같이 생겼습니다.", blanks2: ["same"], blanks3: ["look", "same"] },
-            { id: 14, en: "But they are not the same.", ko: "하지만 그들은 똑같지 않습니다.", blanks2: ["not"], blanks3: ["are", "not"] }
-        ];
+  <div class="screen" id="screen-2">
+    <div class="topbar"><button class="home-btn" onclick="goHome()">🏠 처음으로</button><div class="dots" id="dots-2"></div></div>
+    <div class="sh"><div class="badge" style="background:var(--purple)">2</div><div><h2>말하기 학습</h2><p>문장을 듣고, 따라 말해보세요</p></div></div>
+    <div id="body-2"></div>
+  </div>
 
-        let currentLevel = 1;
-        let blankStates = {}; 
-        let currentStepIndex = -1;
+  <div class="screen" id="screen-3">
+    <div class="topbar"><button class="home-btn" onclick="goHome()">🏠 처음으로</button><div class="dots" id="dots-3"></div></div>
+    <div class="sh"><div class="badge" style="background:var(--orange)">3</div><div><h2>문장 구성하기</h2><p>단어를 순서대로 눌러 문장을 완성해요</p></div></div>
+    <div id="body-3"></div>
+    <button class="bottom-home" id="bottom-home" onclick="goHome()">🏠 첫 화면으로</button>
+  </div>
+</div>
 
-        function initApp() {
-            renderSentences();
-        }
+<div class="overlay active" id="mic-overlay">
+  <div class="mic-box" id="mic-box">
+    <div class="big">🎤</div>
+    <h2>마이크를 켜도 될까요?</h2>
+    <p id="sam-tip" style="display:none;color:#c93f72;font-size:14px;margin:0 0 8px">💡 삼성 인터넷에서는 말하기가 잘 안 될 수 있어요. 크롬으로 열어주세요!</p>
+    <p id="mic-text">말하기 연습을 하려면 마이크가 필요해요.<br>아래 버튼을 누른 뒤 <b>'허용'</b>을 눌러주세요!</p>
+    <button class="pbtn" id="mic-btn" onclick="askMic()">좋아요! 시작하기</button>
+  </div>
+</div>
 
-        function changeLevel(level) {
-            currentLevel = level;
-            currentStepIndex = -1;
-            blankStates = {};
-            
-            for(let i=1; i<=3; i++) {
-                const btn = document.getElementById(`btn-level-${i}`);
-                if(i === level) {
-                    btn.className = "px-5 py-2.5 rounded-lg text-xl font-black transition-all shadow-sm bg-emerald-600 text-white";
-                } else {
-                    btn.className = "px-5 py-2.5 rounded-lg text-xl font-black transition-all text-slate-600 hover:bg-emerald-200";
-                }
-            }
+<div class="overlay" id="cert-overlay">
+  <div class="cwrap">
+    <div class="cert" id="cert">
+      <div class="cst">⭐️⭐️⭐️⭐️⭐️</div>
+      <h2>이 수 증</h2>
+      <p class="body">위 학생은<br>9단원 What's in the bedroom?<br>영어로 말하기를<br>멋지게 이수했습니다.</p>
+      <div class="signoff">선생님께 보여드리세요! 🌟</div>
+      <canvas id="draw"></canvas><div id="stk"></div><canvas id="fx"></canvas>
+    </div>
+    <div class="tools">
+      <div class="trow" id="colors"></div>
+      <div class="trow"><button class="tb on" id="b-pen" onclick="setMode('pen')">✏️ 펜</button><button class="tb" id="b-eraser" onclick="setMode('eraser')">🧽 지우개</button><input type="range" id="psize" min="3" max="26" value="9"><button class="tb" onclick="undo()">↩️ 되돌리기</button><button class="tb" onclick="clearAll()">🗑️ 모두 지우기</button></div>
+      <div class="trow" id="stickers"></div>
+      <div class="trow fxr"><b>✨ 특수효과</b><button class="tb" onclick="nextBg()">🎨 배경색</button><button class="tb" id="fx-sakura" onclick="toggleFx('sakura')">🌸 벚꽃</button><button class="tb" id="fx-snow" onclick="toggleFx('snow')">❄️ 눈</button><button class="tb" id="fx-neon" onclick="toggleFx('neon')">💡 네온</button><button class="tb" id="fx-fire" onclick="toggleFx('fire')">🎆 폭죽</button></div>
+      <button class="pbtn" onclick="closeCert()">닫기</button>
+    </div>
+  </div>
+</div>
 
-            const quizContainer = document.getElementById("quiz-btn-container");
-            const blankControls = document.getElementById("blank-controls");
+<script>
+const words=[
+ {en:'bedroom',kr:'침실',e:'🛏️'},{en:'living room',kr:'거실',e:'🛋️'},{en:'bathroom',kr:'욕실',e:'🚿'},
+ {en:'kitchen',kr:'부엌',e:'🍳'},{en:'garden',kr:'정원',e:'🌷'},{en:'bookshelf',kr:'책장',e:'📚'},
+ {en:'bathtub',kr:'욕조',e:'🛁'},{en:'chair',kr:'의자',e:'🪑'},{en:'desk',kr:'책상',e:'📝'}];
+const sentences=[
+ {en:"What's in the bedroom?",kr:'침실에 무엇이 있나요?',e:'🛏️❓',key:'bedroom'},
+ {en:'There is a bookshelf.',kr:'책장이 하나 있어요.',e:'📚',key:'bookshelf'},
+ {en:'There are two chairs.',kr:'의자 두 개가 있어요.',e:'🪑🪑',key:'two chairs'},
+ {en:'This is the kitchen.',kr:'이곳은 부엌입니다.',e:'🍳',key:'kitchen'},
+ {en:'There is a bathtub.',kr:'욕조가 있어요.',e:'🛁',key:'bathtub'},
+ {en:'There is a sofa.',kr:'소파가 있어요.',e:'🛋️',key:'sofa'}];
+const problems=[
+ {kr:'침실에 무엇이 있나요?',pre:"What's",ok:['in','the','bedroom'],fake:['on','a'],h:{on:"'on'은 '~위에'라는 뜻이에요. '~안에'는 뭘까요?",a:"여기서는 'a' 말고 다른 짧은 단어가 어울려요. the 를 써볼까요?"},suf:'?'},
+ {kr:'책장이 하나 있어요.',pre:'There',ok:['is','a','bookshelf'],fake:['are','desk'],h:{are:"책장은 하나예요. 하나일 때는 is 와 are 중 뭘 쓸까요?",desk:"desk는 책상이에요. 책장은 뭐였죠? 📚"},suf:'.'},
+ {kr:'의자 두 개가 있어요.',pre:'There',ok:['are','two','chairs'],fake:['is','chair'],h:{is:"의자가 두 개예요! 여러 개일 때는 is 와 are 중 뭘 쓸까요?",chair:"의자가 여러 개일 땐 chair 끝에 s가 붙어요!"},suf:'.'},
+ {kr:'이곳은 부엌입니다.',pre:'This',ok:['is','the','kitchen'],fake:['bathroom','in'],h:{bathroom:"bathroom은 욕실이에요. 부엌은 뭐였죠? 🍳",in:"'in'은 '~안에'예요. '이곳은 ~입니다'는 다른 단어를 써요!"},suf:'.'},
+ {kr:'욕조가 있어요.',pre:'There',ok:['is','a','bathtub'],fake:['are','kitchen'],h:{are:"욕조는 하나예요. 하나일 때는 is 와 are 중 뭘 쓸까요?",kitchen:"kitchen은 부엌이에요. 욕조는 뭐였죠? 🛁"},suf:'.'},
+ {kr:'소파가 있어요.',pre:'There',ok:['is','a','sofa'],fake:['are','chair'],h:{are:"소파는 하나예요. 하나일 때는 is 와 are 중 뭘 쓸까요?",chair:"chair는 의자예요. 소파는 sofa! 🛋️"},suf:'.'}];
+const state={1:false,2:false,3:false};
+let skip2=false;
+function needDone(){return state[1]&&state[3]&&(skip2||state[2])}
+function startWithout2(){skip2=true;$('mic-overlay').classList.remove('active');goHome()}
+const $=id=>document.getElementById(id);
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active');window.scrollTo(0,0)}
+function goHome(){killPrev();show('screen-home');refresh()}
+function refresh(){
+  [1,2,3].forEach(n=>{
+    const locked=false; /* 3단계 잠금 해제 (되돌리려면: n===3&&!state[2]) */
+    $('card-'+n).classList.toggle('locked',locked&&!state[n]);
+    $('st-'+n).textContent=state[n]?'성공 🎆':'도전 전';
+    $('st-'+n).classList.toggle('ok',!!state[n]);
+  });
+  $('card-2').style.display=skip2?'none':'';
+  $('cert-btn').classList.toggle('ready',needDone());
+}
+function goStage(n){
+  show('screen-'+n);
+  if(n===1){i1=0;pos=makePos(words.length);r1()}if(n===2){i2=0;r2()}if(n===3)init3();
+}
+function dots(n,total,idx,all){
+  $('dots-'+n).innerHTML=Array.from({length:total},(_,i)=>`<div class="dot ${all||i<idx?'done':i===idx?'now':''}"></div>`).join('');
+}
+function donePanel(n,color,title,text,fn){
+  return `<div class="done" style="border-color:${color};box-shadow:0 6px 0 ${color}"><div class="big">🎉</div><h3>${title}</h3><p>${text}</p><button class="pbtn" style="background:${color}" onclick="${fn}">첫 화면으로</button></div>`;
+}
 
-            if(level === 1) {
-                quizContainer.classList.remove("hidden");
-                blankControls.classList.add("hidden");
-            } else {
-                quizContainer.classList.add("hidden");
-                blankControls.classList.remove("hidden");
-            }
+/* MIC (한 번만 묻기) */
+let micOK=false;
+const MIC_URL='https://byhellena.github.io/lesson8/lesson9.html';
+function copyText(t){
+  if(navigator.clipboard&&window.isSecureContext){return navigator.clipboard.writeText(t)}
+  return new Promise((ok,no)=>{
+    try{
+      const ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;opacity:0;left:-999px';
+      document.body.appendChild(ta);ta.focus();ta.select();
+      const r=document.execCommand('copy');document.body.removeChild(ta);r?ok():no();
+    }catch(e){no(e)}
+  });
+}
+function copyUrl(){
+  const done=()=>{const m=$('copy-msg');m.textContent='복사되었습니다! ✅';m.style.visibility='visible';setTimeout(()=>{m.style.visibility='hidden'},2500)};
+  copyText(MIC_URL).then(done).catch(()=>{
+    const m=$('copy-msg');m.textContent='주소를 길게 눌러 직접 복사해 주세요';m.style.visibility='visible';
+  });
+}
+function showMicBlocked(){
+  micOK=false;
+  $('mic-overlay').classList.add('active');
+  $('mic-box').innerHTML=`<div class="big">🎤</div>
+    <h2>마이크가 허용되지 않았어요</h2>
+    <p>복사하기 버튼을 누르고 인터넷 창에 붙여넣은 후 새로 접속하여 마이크 허용해주세요</p>
+    <div onclick="copyUrl()" style="cursor:pointer;word-break:break-all;background:#f4f4f4;border-radius:12px;padding:10px;font-size:14px;margin-bottom:12px;user-select:all">${MIC_URL}</div>
+    <button class="pbtn" onclick="copyUrl()">📋 복사하기</button>
+    <div id="copy-msg" style="visibility:hidden;margin-top:10px;color:#2e9d5b;font-size:16px">복사되었습니다! ✅</div>
+    <p style="margin:16px 0 12px;color:#c93f72;font-size:16px">해결되지 않으면 선생님에게 도움을 청하세요 🙋</p>
+    <button class="pbtn" style="background:var(--sky);box-shadow:0 5px 0 var(--sky-d)" onclick="startWithout2()">2단계 빼고 이수하기</button>`;
+}
+async function askMic(){
+  const btn=$('mic-btn');if(btn)btn.disabled=true;
+  try{
+    if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia))throw new Error('no mic api');
+    const st=await navigator.mediaDevices.getUserMedia({audio:true});
+    st.getTracks().forEach(t=>t.stop());
+    micOK=true;$('mic-overlay').classList.remove('active');
+  }catch(e){
+    showMicBlocked();
+  }
+}
+/* 사용 중에 마이크 권한이 꺼지면 다시 막기 */
+try{
+  navigator.permissions&&navigator.permissions.query({name:'microphone'}).then(p=>{
+    p.onchange=()=>{if(p.state==='denied')showMicBlocked()};
+  }).catch(()=>{});
+}catch(e){}
+/* STAGE 1 */
+let i1=0,pos=[];
+function makePos(n){
+  let a;
+  do{a=shuffle(Array.from({length:n},(_,i)=>i%3))}while(a.some((v,i)=>i&&v===a[i-1]));
+  return a;
+}
+function r1(){
+  dots(1,words.length,i1,false);
+  const b=$('body-1');
+  if(i1>=words.length){b.innerHTML=donePanel(1,'#3ec99a','1단계 완료!','단어 학습을 모두 마쳤어요.','finish(1)');return}
+  const cur=words[i1];
+  const opts=shuffle(words.filter(w=>w.en!==cur.en)).slice(0,2);opts.splice(pos[i1],0,cur);
+  b.innerHTML=`<div class="qcard" style="--a:#4fb0ff"><div class="qcount">${i1+1} / ${words.length}</div>
+   <div class="qimg">${cur.e}</div><div class="qkr">${cur.kr}</div>
+   <div class="choices">${opts.map(o=>`<button class="choice" onclick="c1(this,'${o.en}')">${o.en}</button>`).join('')}</div>
+   <div class="fb" id="fb1"></div></div>`;
+}
+function c1(btn,ans){
+  const fb=$('fb1');
+  if(ans===words[i1].en){
+    document.querySelectorAll('.choice').forEach(x=>x.disabled=true);
+    btn.classList.add('ok');fb.textContent='정답이에요! 🎉';fb.className='fb good';
+    setTimeout(()=>{i1++;r1()},800);
+  }else{
+    btn.classList.add('no');fb.textContent='다시 골라봐요! 💪';fb.className='fb bad';
+    setTimeout(()=>btn.classList.remove('no'),350);
+  }
+}
+function finish(n){state[n]=true;goHome()}
 
-            renderSentences();
-        }
+/* STAGE 2 */
+let i2=0,tries=0,busy=false;
+function r2(){
+  tries=0;busy=false;
+  dots(2,sentences.length,i2,false);
+  const b=$('body-2');
+  if(i2>=sentences.length){b.innerHTML=donePanel(2,'#a58bff','2단계 완료!','말하기 학습을 모두 마쳤어요.','finish(2)');return}
+  const s=sentences[i2];
+  b.innerHTML=`<div class="qcard" style="--a:#a58bff"><div class="qcount">${i2+1} / ${sentences.length}</div>
+   <div class="qimg" style="font-size:70px">${s.e}</div>
+   <div class="sent en">${s.en}</div><div class="kr">${s.kr}</div>
+   <div class="btns"><button class="rbtn" onclick="say()">🔊 듣기</button></div>
+   <div class="ptt-wrap">
+     <button class="ptt" id="spk" type="button" aria-label="누르고 있는 동안 말하기">
+       <span class="ptt-ring"></span><span class="ptt-ring r2"></span>
+       <span class="ptt-ico" id="ptt-ico">🎤</span>
+     </button>
+     <div class="ptt-label" id="ptt-label">꾹 누르고 말하세요</div>
+     <div class="ptt-bars" id="ptt-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+   </div>
+   <div class="listen" id="lis"></div><div class="res" id="res"></div></div>`;
+  setupPTT();
+}
+function say(){
+  dropSR();held=false;waitingMic=false;
+  try{const u=new SpeechSynthesisUtterance(sentences[i2].en);u.lang='en-US';u.rate=.9;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}
+}
+const NUM={'1':'one','2':'two','3':'three','4':'four','5':'five'};
+const SAME={to:'two',too:'two',their:'there',theyre:'there',theres:'there',whats:'what'};
+function norm(s){
+  s=s.toLowerCase().replace(/what's/g,'what is').replace(/there's/g,'there is').replace(/[1-5]/g,m=>' '+NUM[m]+' ');
+  return s.replace(/[^a-z\s]/g,'').split(/\s+/).filter(Boolean).map(w=>SAME[w]||w).filter(w=>w!=='a'&&w!=='the'&&w!=='uh');
+}
+function lev(a,b){
+  const d=Array.from({length:a.length+1},(_,i)=>[i]);
+  for(let j=1;j<=b.length;j++)d[0][j]=j;
+  for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)
+    d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+  return d[a.length][b.length];
+}
+function score(heard,target){
+  const t=norm(target),r=norm(heard);
+  if(!t.length||!r.length)return 0;
+  const s=sentences.find(x=>x.en===target),K=s?norm(s.key):[];
+  const pool=[...r],joined=r.join('');let sum=0,tot=0;
+  t.forEach(w=>{
+    const wt=K.includes(w)?3:1;tot+=wt;
+    if(w.length>=5&&joined.includes(w)){sum+=wt;return}
+    let best=-1,bs=0;
+    pool.forEach((x,i)=>{
+      const base=x.replace(/s$/,''),tb=w.replace(/s$/,'');
+      const sim=Math.max(1-lev(w,x)/Math.max(w.length,x.length),1-lev(tb,base)/Math.max(tb.length,base.length,1));
+      if(sim>bs){bs=sim;best=i}
+    });
+    if(best>-1&&bs>=.4){sum+=wt*(bs>=.6?1:.6);pool.splice(best,1)}
+  });
+  return sum/tot;
+}
+function speechDebugPanel(title){
+  const res=$('res');
+  const panel=document.createElement('div');
+  panel.className='msg low';
+  panel.style.cssText='margin-top:12px;text-align:center;white-space:normal;overflow-wrap:anywhere';
+  panel.textContent=title;
+  res.appendChild(panel);
+}
+/* ===== 누르고 있는 동안만 듣는 방식 (Push-to-talk) =====
+   아이폰 사파리는 인식 세션을 여러 번 새로 시작하면 2번째부터 소리가 안 들어오는 문제가 있어서,
+   세션을 한 번 열어 두고 계속 유지하면서, 버튼을 누르고 있는 동안 들린 소리만 사용합니다. */
+let SR=null, srRunning=false, srReady=false, srStale=false, lastRes=null, srErr='', srMsg='', srEvents=[];
+let held=false, waitingMic=false, pressAt=0, base=0, judging=false, noSoundFails=0;
+const evt=n=>{srEvents.push(n);if(srEvents.length>40)srEvents.shift()};
+function dropSR(){
+  if(SR){
+    const o=SR;SR=null;
+    ['onstart','onaudiostart','onsoundstart','onspeechstart','onspeechend','onsoundend','onaudioend','onnomatch','onresult','onerror','onend'].forEach(k=>o[k]=null);
+    try{o.abort()}catch(e){}
+  }
+  srRunning=false;srReady=false;lastRes=null;
+}
+function textFrom(from){
+  if(!lastRes)return '';
+  let t='';
+  for(let k=from;k<lastRes.length;k++)t+=lastRes[k][0].transcript+' ';
+  return t.trim();
+}
+function beginListen(){
+  waitingMic=false;
+  base=lastRes?lastRes.length:0;
+  pressAt=Date.now();
+  pttUI('rec');
+}
+function openSR(){            /* 반드시 버튼을 누른 순간(사용자 동작) 안에서 호출 */
+  dropSR();
+  srStale=false;srErr='';srMsg='';srEvents=[];evt('새 세션');
+  const R=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const rec=new R();
+  rec.lang='en-US';rec.continuous=true;rec.interimResults=true;rec.maxAlternatives=1;
+  rec.onstart=()=>{if(SR!==rec)return;srRunning=true;evt('start')};
+  rec.onaudiostart=()=>{
+    if(SR!==rec)return;
+    srReady=true;evt('audiostart');
+    if(held&&waitingMic)beginListen();
+  };
+  rec.onsoundstart=()=>{if(SR===rec)evt('soundstart')};
+  rec.onspeechstart=()=>{if(SR===rec)evt('speechstart')};
+  rec.onspeechend=()=>{if(SR===rec)evt('speechend')};
+  rec.onaudioend=()=>{if(SR===rec)evt('audioend')};
+  rec.onnomatch=()=>{if(SR===rec)evt('nomatch')};
+  rec.onresult=e=>{
+    if(SR!==rec)return;
+    evt('result');
+    lastRes=e.results;
+    if(held&&!waitingMic){
+      const t=textFrom(base);
+      const l=$('ptt-label');
+      if(t&&l)l.textContent='🔴 '+t;
+    }
+  };
+  rec.onerror=e=>{if(SR!==rec)return;srErr=e.error||'unknown-error';srMsg=e.message||'';evt('error:'+srErr)};
+  rec.onend=()=>{
+    if(SR!==rec)return;
+    evt('end');srRunning=false;srReady=false;
+  };
+  SR=rec;
+  rec.start();
+}
 
-        function renderSentences() {
-            const container = document.getElementById("sentences-container");
-            container.innerHTML = "";
+function pttUI(state,text){
+  const b=$('spk'),l=$('ptt-label'),bars=$('ptt-bars'),ico=$('ptt-ico');
+  if(!b)return;
+  b.classList.toggle('rec',state==='rec');
+  b.classList.toggle('wait',state==='wait'||state==='warm');
+  l.className='ptt-label'+(state==='rec'?' rec':'');
+  bars.classList.toggle('on',state==='rec');
+  ico.textContent=state==='rec'?'🔴':(state==='wait'||state==='warm')?'⏳':'🎤';
+  l.textContent=text||(state==='rec'?'🔴 듣는 중! 손을 떼면 끝나요':state==='warm'?'마이크 켜는 중... 계속 누르고 있어요':state==='wait'?'확인하는 중...':'꾹 누르고 말하세요');
+}
 
-            sentencesData.forEach((item, index) => {
-                const card = document.createElement("div");
-                
-                let isHighlighted = (currentLevel > 1 && currentStepIndex >= 0 && getStepOwner(currentStepIndex) === index);
-                
-                let baseClass = "border-3 rounded-2xl p-4 shadow-sm transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-3 cursor-pointer group";
-                if (isHighlighted) {
-                    card.className = baseClass + " bg-yellow-300 border-yellow-600 shadow-lg scale-[1.01]";
-                } else {
-                    card.className = baseClass + " bg-white border-slate-200 hover:border-yellow-500 hover:bg-yellow-200";
-                }
-                
-                card.onclick = () => {
-                    if(currentLevel === 1) {
-                        playTTS(item.en);
-                    }
-                };
+function setupPTT(){
+  const b=$('spk');
+  if(!b)return;
+  pttUI('idle');
+  b.addEventListener('pointerdown',e=>{e.preventDefault();if(busy||held||judging)return;pressStart()});
+  b.addEventListener('pointerup',e=>{e.preventDefault();if(held)pressEnd()});
+  b.addEventListener('pointercancel',()=>{if(held)pressEnd()});
+  b.addEventListener('pointerleave',e=>{if(held&&e.pointerType==='mouse')pressEnd()});
+  b.addEventListener('contextmenu',e=>e.preventDefault());
+  b.addEventListener('selectstart',e=>e.preventDefault());
+  if(!window.__pttDoc){
+    window.__pttDoc=true;
+    document.addEventListener('pointerup',()=>{if(held)pressEnd()});
+    document.addEventListener('touchend',()=>{if(held)pressEnd()});
+  }
+}
 
-                const numBadge = `<span class="bg-emerald-100 text-emerald-800 font-black text-xl px-3 py-1 rounded-xl shrink-0">${index + 1}</span>`;
+function pressStart(){
+  const res=$('res'),tag=$('lis');
+  const R=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!R){
+    res.innerHTML='<div class="msg low">이 브라우저에서 음성 인식을 쓸 수 없어요.</div>';
+    
+    return;
+  }
+  held=true;pressAt=Date.now();
+  res.innerHTML='';tag.textContent='';
+  try{speechSynthesis.cancel()}catch(e){}
+  evt('눌림');
+  if(SR&&srRunning&&srReady&&!srStale){
+    beginListen();               /* 이미 켜져 있는 세션 그대로 사용 */
+  }else{
+    waitingMic=true;
+    pttUI('warm');
+    try{openSR()}catch(e){
+      held=false;waitingMic=false;dropSR();
+      pttUI('idle');
+      speechDebugPanel('음성 인식을 시작하지 못했어요. 다시 꾹 눌러 주세요.');
+    }
+  }
+}
 
-                let contentHtml = "";
+function pressEnd(){
+  if(!held)return;
+  held=false;
+  evt('뗌');
+  if(waitingMic){                /* 마이크가 켜지기 전에 손을 뗌: 세션은 유지 */
+    waitingMic=false;
+    pttUI('idle','마이크가 켜지는 중이었어요. 잠시 뒤 다시 꾹 눌러요 🙂');
+    return;
+  }
+  if(Date.now()-pressAt<500){
+    pttUI('idle','조금 더 오래 꾹 눌러 주세요 👆');
+    return;
+  }
+  judging=true;
+  pttUI('wait');
+  setTimeout(pttFinish,1200);    /* 마지막 단어의 최종 결과를 기다림 */
+}
 
-                if(currentLevel === 1) {
-                    contentHtml = `
-                        <div class="flex-1">
-                            <div class="text-3xl md:text-4xl font-black text-slate-800 tracking-wide">${item.en}</div>
-                            <div class="text-2xl font-bold text-slate-500 mt-1">(${item.ko})</div>
-                        </div>
-                    `;
-                } else {
-                    const targetBlanks = currentLevel === 2 ? item.blanks2 : item.blanks3;
-                    const formattedEn = renderBlanksForSentence(item, targetBlanks, index);
+function pttFinish(){
+  judging=false;
+  const res=$('res');
+  if(!res)return;
+  const text=textFrom(base);
+  if(text){
+    noSoundFails=0;
+    pttUI('idle');
+    judge(score(text,sentences[i2].en));
+    const d=document.createElement('div');d.className='try';d.textContent='들린 소리: '+text;res.appendChild(d);
+    return;
+  }
+  /* 아무것도 못 들음: 오답으로 세지 않음. 다음엔 새 세션으로 */
+  srStale=true;
+  noSoundFails++;
+  if(noSoundFails>=2){           /* 두 번 다 소리가 안 들어옴: 오류 티 내지 않고 자연스럽게 다음 문제로 */
+    busy=true;
+    pttUI('idle');
+    res.innerHTML='<div class="msg mid">나날이 발전해요! 🌱</div>';
+    setTimeout(next2,1800);
+    return;
+  }
+  pttUI('idle','마이크 위치를 확인하고 크게 이야기해 주세요 🎤');
+}
+function stopSR(cb){dropSR();cb&&cb()}
+function killPrev(){held=false;waitingMic=false;judging=false;noSoundFails=0;dropSR()}
 
-                    contentHtml = `
-                        <div class="flex-1">
-                            <div class="text-3xl md:text-4xl font-black text-slate-800 tracking-wide flex flex-wrap items-center gap-2">${formattedEn}</div>
-                            <div class="text-2xl font-bold text-slate-500 mt-1">(${item.ko})</div>
-                        </div>
-                    `;
-                }
+let praiseN=0;
+const PRAISE=[['너무나 정확해요!! 😲🤩','🎉👏✨🌟🏆✨👏🎉'],['원어민이신가요?! 🤯🎉','🥳🌈💯🔥💯🌈🥳']];
+function judge(ratio,miss){
+  if(busy)return;
+  const res=$('res');
+  const pct=ratio>0?Math.min(100,Math.round(ratio*100+15)):0;
+  if(ratio>=.4){
+    busy=true;
+    if(pct>=90){
+      const k=praiseN++%2;
+      res.innerHTML=`<div class="pct en">${pct}%</div><div class="wow">${PRAISE[k][0]}</div><div class="wow2">${PRAISE[k][1]}</div>`;
+      setTimeout(next2,1400);
+    }else{
+      res.innerHTML=`<div class="pct en">${pct}%</div><div class="msg high">잘했어요! 🎉</div>`;
+      setTimeout(next2,1000);
+    }
+    return;
+  }
+  tries++;
+  if(tries>=2){
+    busy=true;
+    const m=['이번에도 노력이 멋져요! 👏','발전하고 있어요! 🌱'][Math.floor(Math.random()*2)];
+    res.innerHTML=`<div class="msg mid">${m}</div>`;
+    setTimeout(next2,1800);return;
+  }
+  res.innerHTML=`${miss?'':`<div class="pct en">${pct}%</div>`}<div class="msg low">${miss?'마이크 위치를 확인하고 크게 이야기해 주세요 🎤':'조금만 더! 💪'}</div><div class="try">🎤 버튼을 꾹 누르고 다시 말해봐요!</div>`;
+}
+function next2(){held=false;waitingMic=false;judging=false;noSoundFails=0;i2++;r2()}
 
-                card.innerHTML = numBadge + contentHtml;
-                container.appendChild(card);
-            });
+/* STAGE 3 */
+const sb=[];
+function init3(){
+  problems.forEach((p,i)=>{sb[i]={slots:p.ok.map(()=>null),bank:shuffle([...p.ok,...p.fake]),src:p.ok.map(()=>null),solved:false,msg:'',bad:false}});
+  r3();
+}
+function r3(){
+  const all=sb.every(s=>s.solved);
+  dots(3,problems.length,sb.filter(s=>s.solved).length,all);
+  $('body-3').innerHTML=problems.map((p,i)=>{
+    const s=sb[i];
+    return `<div class="sb ${s.solved?'solved':''}"><div class="sbt">${i+1}. ${p.kr}</div>
+     <div class="row"><span>${p.pre}</span>${s.slots.map((w,k)=>`<span class="slot ${w?(s.bad?(w===p.ok[k]?'ok':'x'):'f'):''}" onclick="rm(${i},${k})">${w||'____'}</span>`).join('')}<span>${p.suf}</span></div>
+     <div class="bank">${s.bank.map((w,k)=>`<button class="tile ${s.src.includes(k)?'used':''}" onclick="pick(${i},${k})">${w}</button>`).join('')}</div>
+     <button class="reset" onclick="reset(${i})">🔄 다시하기</button>
+     <div class="sbf ${s.bad?'hint':''}">${s.solved?'성공! 🎉':s.msg}</div></div>`;
+  }).join('');
+  $('bottom-home').classList.toggle('glow',all);
+  if(all)state[3]=true;
+}
+function hintFor(i){
+  const p=problems[i],s=sb[i];
+  const fk=s.slots.find(w=>p.fake.includes(w));
+  if(fk)return '💡 '+p.h[fk]+' 빨간 칸을 눌러 바꿔봐요!';
+  const n=s.slots.findIndex((w,k)=>w!==p.ok[k]);
+  return `💡 단어는 모두 맞아요! ${n+1}번째 칸부터 순서를 다시 생각해봐요. 빨간 칸을 눌러 바꿔봐요!`;
+}
+function pick(i,k){
+  const s=sb[i],p=problems[i];
+  if(s.solved||s.src.includes(k))return;
+  const e=s.slots.indexOf(null);if(e<0)return;
+  s.slots[e]=s.bank[k];s.src[e]=k;s.msg='';
+  if(s.slots.every(Boolean)){
+    if(s.slots.join(' ')===p.ok.join(' '))s.solved=true;
+    else{s.bad=true;s.msg=hintFor(i)}
+  }
+  r3();
+}
+function rm(i,k){
+  const s=sb[i];if(s.solved||!s.slots[k])return;
+  s.slots[k]=null;s.src[k]=null;s.msg='';s.bad=false;r3();
+}
+function reset(i,m){
+  const s=sb[i];if(s.solved)return;
+  s.slots=s.slots.map(()=>null);s.src=s.src.map(()=>null);s.msg=m||'';s.bad=false;r3();
+}
 
-            if (currentLevel > 1 && currentStepIndex >= 0) {
-                const activeCard = container.children[getStepOwner(currentStepIndex)];
-                if (activeCard) {
-                    activeCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }
-        }
-
-        function getTotalSteps() {
-            let total = 0;
-            sentencesData.forEach(item => {
-                let blanksCount = (currentLevel === 2 ? item.blanks2 : item.blanks3).length;
-                total += (1 + blanksCount); 
-            });
-            return total;
-        }
-
-        function getStepOwner(stepIdx) {
-            let current = 0;
-            for (let i = 0; i < sentencesData.length; i++) {
-                let blanksCount = (currentLevel === 2 ? sentencesData[i].blanks2 : sentencesData[i].blanks3).length;
-                let itemSteps = 1 + blanksCount;
-                if (stepIdx >= current && stepIdx < current + itemSteps) {
-                    return i;
-                }
-                current += itemSteps;
-            }
-            return 0;
-        }
-
-        window.addEventListener('keydown', (e) => {
-            if (!document.getElementById("quiz-modal").classList.contains("hidden")) return;
-
-            if (currentLevel === 1) {
-                if (e.code === 'Space' || e.key === 'PageDown' || e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    currentStepIndex = (currentStepIndex + 1) % sentencesData.length;
-                    renderSentences();
-                    playTTS(sentencesData[currentStepIndex].en);
-                } else if (e.key === 'PageUp' || e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    currentStepIndex = (currentStepIndex - 1 + sentencesData.length) % sentencesData.length;
-                    renderSentences();
-                    playTTS(sentencesData[currentStepIndex].en);
-                }
-            } else {
-                let maxSteps = getTotalSteps();
-                if (e.code === 'Space' || e.key === 'PageDown' || e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    if (currentStepIndex < maxSteps - 1) {
-                        currentStepIndex++;
-                        applyStepState();
-                        renderSentences();
-                    }
-                } else if (e.key === 'PageUp' || e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    if (currentStepIndex > 0) {
-                        currentStepIndex--;
-                        applyStepState();
-                        renderSentences();
-                    }
-                }
-            }
-        });
-
-        function applyStepState() {
-            blankStates = {};
-            let runningStep = 0;
-
-            sentencesData.forEach((item, sIdx) => {
-                let blanks = currentLevel === 2 ? item.blanks2 : item.blanks3;
-                let itemSteps = 1 + blanks.length;
-
-                if (currentStepIndex >= runningStep + 1) {
-                    let openedCount = currentStepIndex - runningStep;
-                    let matchedCount = 0;
-                    
-                    let originalWords = item.en.split(" ");
-                    originalWords.forEach((origWord, wIdx) => {
-                        let cleanWord = origWord.replace(/[.,!?]/g, "");
-                        if (blanks.includes(cleanWord) && matchedCount < openedCount) {
-                            blankStates[`${currentLevel}_${item.id}_${wIdx}`] = true;
-                            matchedCount++;
-                        }
-                    });
-                }
-                runningStep += itemSteps;
-            });
-        }
-
-        function renderBlanksForSentence(item, blanksToHide, sIdx) {
-            let originalWords = item.en.split(" ");
-            
-            return originalWords.map((origWord, wIdx) => {
-                let cleanWord = origWord.replace(/[.,!?]/g, "");
-                let punct = origWord.replace(/[a-zA-Z's]/g, "");
-
-                let isTarget = blanksToHide.includes(cleanWord);
-                let stateKey = `${currentLevel}_${item.id}_${wIdx}`;
-                let isOpen = blankStates[stateKey] === true;
-
-                if(isTarget) {
-                    if(isOpen) {
-                        return `<span class="text-emerald-600 bg-emerald-100 px-3 py-1 rounded-lg border-2 border-emerald-400 font-black">${origWord}</span>`;
-                    } else {
-                        return `<button onclick="event.stopPropagation(); toggleBlank('${stateKey}')" class="bg-amber-400 hover:bg-amber-500 text-amber-950 px-4 py-1 rounded-xl border-2 border-amber-600 font-black text-2xl md:text-3xl shadow-md">[ ? ]${punct}</button>`;
-                    }
-                } else {
-                    return `<span>${origWord}</span>`;
-                }
-            }).join(" ");
-        }
-
-        function toggleBlank(key) {
-            blankStates[key] = true;
-            renderSentences();
-        }
-
-        function revealAllBlanks() {
-            sentencesData.forEach((item) => {
-                let targetBlanks = currentLevel === 2 ? item.blanks2 : item.blanks3;
-                let originalWords = item.en.split(" ");
-                originalWords.forEach((origWord, wIdx) => {
-                    let cleanWord = origWord.replace(/[.,!?]/g, "");
-                    if(targetBlanks.includes(cleanWord)) {
-                        blankStates[`${currentLevel}_${item.id}_${wIdx}`] = true;
-                    }
-                });
-            });
-            renderSentences();
-        }
-
-        function resetBlanks() {
-            blankStates = {};
-            currentStepIndex = -1;
-            renderSentences();
-        }
-
-        function playTTS(text) {
-            if (!('speechSynthesis' in window)) return;
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'en-US';
-            utterance.rate = 0.9;
-
-            const voices = window.speechSynthesis.getVoices();
-            const preferredVoice = voices.find(v => 
-                (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Samantha') || v.name.includes('Zira')) && v.lang.includes('en')
-            ) || voices.find(v => v.lang.includes('en-US')) || voices[0];
-
-            if (preferredVoice) utterance.voice = preferredVoice;
-            window.speechSynthesis.speak(utterance);
-        }
-
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        let audioCtx = null;
-
-        function initAudio() {
-            if (!audioCtx) audioCtx = new AudioContext();
-        }
-
-        function playFanfareSound() {
-            initAudio();
-            if(audioCtx.state === 'suspended') audioCtx.resume();
-            const notes = [523.25, 659.25, 783.99, 1046.50];
-            notes.forEach((freq, idx) => {
-                let osc = audioCtx.createOscillator();
-                let gain = audioCtx.createGain();
-                osc.type = 'triangle';
-                osc.frequency.value = freq;
-                let startTime = audioCtx.currentTime + (idx * 0.12);
-                let duration = idx === 3 ? 0.5 : 0.1;
-                gain.gain.setValueAtTime(0.3, startTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start(startTime);
-                osc.stop(startTime + duration);
-            });
-        }
-
-        let edmInterval = null;
-        function playEDMPartySound() {
-            initAudio();
-            if(audioCtx.state === 'suspended') audioCtx.resume();
-            let beatCount = 0;
-            edmInterval = setInterval(() => {
-                if(beatCount > 12) {
-                    stopEDMSound();
-                    return;
-                }
-                let osc = audioCtx.createOscillator();
-                let gain = audioCtx.createGain();
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(beatCount % 2 === 0 ? 150 : 300, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.15);
-                gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.15);
-                beatCount++;
-            }, 180);
-        }
-
-        function stopEDMSound() {
-            if(edmInterval) {
-                clearInterval(edmInterval);
-                edmInterval = null;
-            }
-        }
-
-        let currentQuizIndex = 1;
-
-        function openQuizModal() {
-            currentQuizIndex = 1;
-            loadQuizData(1);
-            document.getElementById("quiz-modal").classList.remove("hidden");
-            document.getElementById("quiz-feedback").innerHTML = "";
-            document.getElementById("next-quiz-btn").classList.add("hidden");
-            stopEDMSound();
-        }
-
-        function closeQuizModal() {
-            document.getElementById("quiz-modal").classList.add("hidden");
-            document.getElementById("fireworks-container").classList.add("hidden");
-            document.getElementById("quiz-modal-box").classList.remove("edm-mode");
-            stopEDMSound();
-        }
-
-        function loadQuizData(step) {
-            document.getElementById("quiz-feedback").innerHTML = "";
-            document.getElementById("next-quiz-btn").classList.add("hidden");
-            document.getElementById("quiz-modal-box").classList.remove("edm-mode");
-            stopEDMSound();
-
-            const title = document.getElementById("quiz-title");
-            const progress = document.getElementById("quiz-progress");
-            const question = document.getElementById("quiz-question");
-            const imgLeft = document.getElementById("quiz-img-left");
-            const imgRight = document.getElementById("quiz-img-right");
-            const txtLeft = document.getElementById("quiz-txt-left");
-            const txtRight = document.getElementById("quiz-txt-right");
-
-            if(step === 1) {
-                title.innerText = "1번 문제";
-                progress.innerText = "문제 1 / 2";
-                question.innerText = "알렉스의 방은 무엇일까요?";
-                txtLeft.innerText = "로봇이 가득한 방";
-                txtRight.innerText = "책이 가득한 방";
-
-                /* 1번 정답: 로봇이 가득한 방 고품질 일러스트 */
-                imgLeft.innerHTML = `
-                    <svg viewBox="0 0 200 150" class="w-full h-full">
-                        <!-- 배경 -->
-                        <rect width="200" height="150" fill="#e0f2fe"/>
-                        <!-- 바닥 -->
-                        <rect y="110" width="200" height="40" fill="#bae6fd"/>
-                        <!-- 장난감 상자 -->
-                        <rect x="25" y="70" width="150" height="50" rx="6" fill="#0284c7" stroke="#0369a1" stroke-width="2"/>
-                        <rect x="20" y="65" width="160" height="12" rx="3" fill="#38bdf8"/>
-                        <!-- 로봇 1 (메인) -->
-                        <g transform="translate(80, 25)">
-                            <rect x="10" y="10" width="20" height="16" rx="3" fill="#0284c7" stroke="#1e293b"/>
-                            <circle cx="15" cy="18" r="2.5" fill="#facc15"/>
-                            <circle cx="25" cy="18" r="2.5" fill="#facc15"/>
-                            <line x1="20" y1="10" x2="20" y2="4" stroke="#ef4444" stroke-width="2"/>
-                            <circle cx="20" cy="3" r="2" fill="#ef4444"/>
-                            <rect x="6" y="28" width="28" height="24" rx="4" fill="#38bdf8" stroke="#1e293b"/>
-                            <circle cx="20" cy="40" r="4" fill="#22c55e"/>
-                        </g>
-                        <!-- 로봇 2 (작은 로봇) -->
-                        <g transform="translate(35, 38)">
-                            <rect x="5" y="8" width="14" height="12" rx="2" fill="#facc15"/>
-                            <rect x="3" y="22" width="18" height="18" rx="3" fill="#ef4444"/>
-                        </g>
-                        <!-- 로봇 3 (오른쪽) -->
-                        <g transform="translate(135, 40)">
-                            <rect x="5" y="8" width="14" height="12" rx="2" fill="#a855f7"/>
-                            <rect x="2" y="22" width="20" height="18" rx="3" fill="#22c55e"/>
-                        </g>
-                    </svg>
-                `;
-
-                /* 1번 오답: 책이 가득한 서재 방 고품질 일러스트 */
-                imgRight.innerHTML = `
-                    <svg viewBox="0 0 200 150" class="w-full h-full">
-                        <!-- 배경 -->
-                        <rect width="200" height="150" fill="#fef3c7"/>
-                        <!-- 책장 프레임 -->
-                        <rect x="25" y="15" width="150" height="125" fill="#78350f" rx="4"/>
-                        <rect x="32" y="22" width="136" height="111" fill="#fde68a"/>
-                        <!-- 선반들 -->
-                        <line x1="32" y1="58" x2="168" y2="58" stroke="#78350f" stroke-width="4"/>
-                        <line x1="32" y1="95" x2="168" y2="95" stroke="#78350f" stroke-width="4"/>
-                        <!-- 1단 책들 -->
-                        <rect x="40" y="28" width="12" height="30" fill="#ef4444" rx="1"/>
-                        <rect x="53" y="25" width="10" height="33" fill="#3b82f6" rx="1"/>
-                        <rect x="64" y="30" width="14" height="28" fill="#22c55e" rx="1"/>
-                        <rect x="80" y="27" width="11" height="31" fill="#facc15" rx="1"/>
-                        <rect x="92" y="29" width="13" height="29" fill="#a855f7" rx="1"/>
-                        <rect x="107" y="26" width="10" height="32" fill="#ec4899" rx="1"/>
-                        <!-- 2단 책들 -->
-                        <rect x="42" y="65" width="14" height="30" fill="#0284c7" rx="1"/>
-                        <rect x="57" y="63" width="11" height="32" fill="#f97316" rx="1"/>
-                        <rect x="70" y="66" width="12" height="29" fill="#84cc16" rx="1"/>
-                        <rect x="83" y="62" width="15" height="33" fill="#e11d48" rx="1"/>
-                        <!-- 3단 책들 -->
-                        <rect x="110" y="102" width="13" height="28" fill="#6366f1" rx="1"/>
-                        <rect x="124" y="100" width="11" height="30" fill="#14b8a6" rx="1"/>
-                        <rect x="136" y="103" width="14" height="27" fill="#d97706" rx="1"/>
-                    </svg>
-                `;
-            } else {
-                title.innerText = "2번 문제";
-                progress.innerText = "문제 2 / 2";
-                question.innerText = "앤드루의 방은 무엇일까요?";
-                txtLeft.innerText = "곰인형이 가득한 방";
-                txtRight.innerText = "기타가 있는 방";
-
-                /* 2번 오답: 곰인형이 가득한 방 고품질 일러스트 */
-                imgLeft.innerHTML = `
-                    <svg viewBox="0 0 200 150" class="w-full h-full">
-                        <!-- 배경 -->
-                        <rect width="200" height="150" fill="#fce7f3"/>
-                        <!-- 침대 -->
-                        <rect x="25" y="75" width="150" height="55" rx="8" fill="#f472b6"/>
-                        <rect x="30" y="80" width="140" height="40" rx="5" fill="#ffffff"/>
-                        <!-- 메인 테디베어 인형 -->
-                        <g transform="translate(85, 45)">
-                            <!-- 귀 -->
-                            <circle cx="6" cy="6" r="7" fill="#d97706"/>
-                            <circle cx="24" cy="6" r="7" fill="#d97706"/>
-                            <!-- 머리 -->
-                            <circle cx="15" cy="15" r="13" fill="#f59e0b"/>
-                            <!-- 주둥이 및 코 -->
-                            <ellipse cx="15" cy="18" rx="5" ry="4" fill="#fef3c7"/>
-                            <circle cx="15" cy="16" r="2" fill="#451a03"/>
-                            <!-- 눈 -->
-                            <circle cx="10" cy="13" r="1.5" fill="#451a03"/>
-                            <circle cx="20" cy="13" r="1.5" fill="#451a03"/>
-                            <!-- 몸통 -->
-                            <ellipse cx="15" cy="38" rx="12" ry="14" fill="#f59e0b"/>
-                            <!-- 리본 -->
-                            <polygon points="15,26 9,22 9,30" fill="#ef4444"/>
-                            <polygon points="15,26 21,22 21,30" fill="#ef4444"/>
-                        </g>
-                        <!-- 작은 곰인형 (왼쪽) -->
-                        <g transform="translate(45, 65) scale(0.6)">
-                            <circle cx="15" cy="15" r="12" fill="#b45309"/>
-                            <ellipse cx="15" cy="35" rx="11" ry="13" fill="#b45309"/>
-                        </g>
-                    </svg>
-                `;
-
-                /* 2번 정답: 침대 위 기타 한 대 고품질 일러스트 */
-                imgRight.innerHTML = `
-                    <svg viewBox="0 0 200 150" class="w-full h-full">
-                        <!-- 배경 포근한 방 -->
-                        <rect width="200" height="150" fill="#f5f3ff"/>
-                        <!-- 침대 프레임 및 매트리스 -->
-                        <rect x="30" y="65" width="140" height="65" rx="8" fill="#c4b5fd" stroke="#7c3aed" stroke-width="2"/>
-                        <rect x="35" y="70" width="130" height="50" rx="6" fill="#ffffff"/>
-                        <!-- 베개 -->
-                        <rect x="40" y="75" width="35" height="25" rx="5" fill="#ddd6fe"/>
-                        <!-- 침대 위 기타 한 대 (바디, 넥, 헤드 정밀 표현) -->
-                        <g transform="translate(85, 78) rotate(-15)">
-                            <!-- 기타 넥 -->
-                            <rect x="22" y="-22" width="6" height="35" fill="#78350f" rx="2"/>
-                            <!-- 기타 헤드 -->
-                            <rect x="21" y="-30" width="8" height="10" fill="#451a03" rx="1"/>
-                            <!-- 기타 바디 (몸통) -->
-                            <circle cx="25" cy="18" rx="14" ry="16" fill="#d97706" stroke="#b45309" stroke-width="2"/>
-                            <!-- 사운드홀 -->
-                            <circle cx="25" cy="18" r="4" fill="#451a03"/>
-                        </g>
-                    </svg>
-                `;
-            }
-        }
-
-        function checkQuizAnswer(choice) {
-            const feedback = document.getElementById("quiz-feedback");
-            const nextBtn = document.getElementById("next-quiz-btn");
-            const modalBox = document.getElementById("quiz-modal-box");
-
-            if(currentQuizIndex === 1) {
-                if(choice === 1) {
-                    feedback.innerHTML = "🎉 <span class='text-emerald-600'>정답입니다!</span> 🎉";
-                    playFanfareSound();
-                    triggerFireworks();
-                    nextBtn.classList.remove("hidden");
-                } else {
-                    feedback.innerHTML = "❌ <span class='text-rose-500'>다시 골라보세요.</span>";
-                }
-            } else if(currentQuizIndex === 2) {
-                if(choice === 2) {
-                    feedback.innerHTML = "🔥 <span class='text-fuchsia-600 font-black text-3xl'>YEAH! EDM 파티 타임! 🎸✨</span>";
-                    playEDMPartySound();
-                    modalBox.classList.add("edm-mode");
-                    nextBtn.classList.remove("hidden");
-                    nextBtn.innerText = "퀴즈 완료 🏁";
-                } else {
-                    feedback.innerHTML = "❌ <span class='text-rose-500'>다시 골라보세요.</span>";
-                }
-            }
-        }
-
-        function nextQuizStep() {
-            if(currentQuizIndex === 1) {
-                currentQuizIndex = 2;
-                loadQuizData(2);
-            } else {
-                closeQuizModal();
-            }
-        }
-
-        function triggerFireworks() {
-            const container = document.getElementById("fireworks-container");
-            container.innerHTML = "";
-            container.classList.remove("hidden");
-            const colors = ['#ef4444', '#3b82f6', '#22c55e', '#facc15', '#a855f7', '#ec4899', '#ffffff'];
-
-            for(let i=0; i<60; i++) {
-                const particle = document.createElement("div");
-                particle.className = "firework-particle";
-                const x = (window.innerWidth / 2) + (Math.random() * 600 - 300);
-                const y = (window.innerHeight / 2) + (Math.random() * 500 - 250);
-                particle.style.left = `${window.innerWidth / 2}px`;
-                particle.style.top = `${window.innerHeight / 2}px`;
-                particle.style.setProperty('--x', `${x - window.innerWidth / 2}px`);
-                particle.style.setProperty('--y', `${y - window.innerHeight / 2}px`);
-                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                particle.style.animationDuration = `${1 + Math.random() * 2}s`;
-                container.appendChild(particle);
-            }
-
-            setTimeout(() => {
-                container.classList.add("hidden");
-            }, 6000);
-        }
-
-        window.onload = initApp;
-    </script>
+/* CERT */
+const CC=['#ff4d6d','#ff9f1c','#ffd60a','#3ec99a','#4fb0ff','#a58bff','#8b5a2b','#222222','#ffffff'];
+const STK=['⭐','🌈','🦄','🐰','🐻','🐱','🐶','🌸','🌻','🍭','🍓','🎀','👑','💖','🚀','🎈','🏆','🌟','🍀','🦋','🎵','☁️'];
+const BGS=['#fffdf3','#ffe3ef','#e3f4ff','#e8ffe9','#f1e6ff','linear-gradient(135deg,#ffd6e8,#d6ecff)','linear-gradient(135deg,#fff3b0,#ffc2d4)','#252550'];
+let pen=CC[0],mode='pen',strokes=[],cur=null,bgi=0,fx=new Set(),parts=[],raf=0,inited=false;
+function initCert(){
+  if(inited)return;inited=true;
+  $('colors').innerHTML=CC.map((c,i)=>`<button class="sw ${i?'':'on'}" style="background:${c}" onclick="setPen('${c}',this)"></button>`).join('');
+  $('stickers').innerHTML=STK.map(s=>`<button class="tb sk" onclick="addStk('${s}')">${s}</button>`).join('');
+  const c=$('draw');
+  const pt=e=>{const r=c.getBoundingClientRect();return[(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height]};
+  c.addEventListener('pointerdown',e=>{e.preventDefault();c.setPointerCapture(e.pointerId);cur={c:pen,w:+$('psize').value,e:mode==='eraser',p:[pt(e)]};if(cur.e)cur.w*=2.2;strokes.push(cur);redraw()});
+  c.addEventListener('pointermove',e=>{if(!cur)return;cur.p.push(pt(e));redraw()});
+  ['pointerup','pointercancel'].forEach(n=>c.addEventListener(n,()=>{cur=null}));
+  window.addEventListener('resize',sizeCv);
+}
+function sizeCv(){
+  const r=$('cert').getBoundingClientRect(),d=window.devicePixelRatio||1;
+  ['draw','fx'].forEach(id=>{const c=$(id);c.width=r.width*d;c.height=r.height*d});redraw();
+}
+function redraw(){
+  const c=$('draw'),x=c.getContext('2d'),W=c.width,H=c.height;
+  x.clearRect(0,0,W,H);x.lineCap=x.lineJoin='round';
+  strokes.forEach(s=>{
+    x.globalCompositeOperation=s.e?'destination-out':'source-over';x.strokeStyle=s.c;x.lineWidth=s.w*W/1000;
+    x.beginPath();s.p.forEach((q,i)=>i?x.lineTo(q[0]*W,q[1]*H):x.moveTo(q[0]*W,q[1]*H));
+    if(s.p.length===1)x.lineTo(s.p[0][0]*W+.1,s.p[0][1]*H);x.stroke();
+  });
+  x.globalCompositeOperation='source-over';
+}
+function setPen(c,b){pen=c;setMode('pen');document.querySelectorAll('.sw').forEach(s=>s.classList.toggle('on',s===b))}
+function setMode(m){mode=m;$('b-pen').classList.toggle('on',m==='pen');$('b-eraser').classList.toggle('on',m==='eraser')}
+function undo(){const s=$('stk');if(strokes.length)strokes.pop(),redraw();else if(s.lastChild)s.removeChild(s.lastChild)}
+function clearAll(){strokes=[];redraw();$('stk').innerHTML=''}
+function addStk(e){
+  const el=document.createElement('div');el.className='stk';el.textContent=e;
+  el.style.left=(30+Math.random()*40)+'%';el.style.top=(30+Math.random()*40)+'%';
+  let ox=0,oy=0,mv=0,last=0;
+  el.addEventListener('pointerdown',ev=>{ev.preventDefault();el.setPointerCapture(ev.pointerId);mv=0;ox=ev.clientX;oy=ev.clientY});
+  el.addEventListener('pointermove',ev=>{
+    if(!el.hasPointerCapture(ev.pointerId))return;
+    const r=$('cert').getBoundingClientRect();mv+=Math.abs(ev.clientX-ox)+Math.abs(ev.clientY-oy);ox=ev.clientX;oy=ev.clientY;
+    el.style.left=Math.min(100,Math.max(0,(ev.clientX-r.left)/r.width*100))+'%';el.style.top=Math.min(100,Math.max(0,(ev.clientY-r.top)/r.height*100))+'%';
+  });
+  el.addEventListener('pointerup',()=>{if(mv<8){const n=Date.now();if(n-last<400)el.remove();last=n}});
+  $('stk').appendChild(el);
+}
+function nextBg(){
+  bgi=(bgi+1)%BGS.length;const c=$('cert');
+  c.style.setProperty('--cb',BGS[bgi]);c.classList.toggle('dk',bgi===BGS.length-1);
+}
+function toggleFx(n){
+  fx.has(n)?fx.delete(n):fx.add(n);$('fx-'+n).classList.toggle('on',fx.has(n));
+  if(n==='neon')$('cert').classList.toggle('neon',fx.has(n));
+  if(!raf)raf=requestAnimationFrame(fxLoop);
+}
+function fxLoop(){
+  const c=$('fx'),x=c.getContext('2d'),W=c.width,H=c.height,d=window.devicePixelRatio||1,R=Math.random;
+  x.clearRect(0,0,W,H);
+  if(fx.has('sakura')&&R()<.25)parts.push({t:'s',x:R()*W,y:-20,v:(1+R()*1.5)*d,r:(7+R()*7)*d,a:R()*6});
+  if(fx.has('snow')&&R()<.5)parts.push({t:'n',x:R()*W,y:-10,v:(1+R()*2)*d,r:(2.5+R()*4)*d,a:R()*6});
+  if(fx.has('fire')&&R()<.035){const bx=W*(.15+R()*.7),by=H*(.15+R()*.4),h=R()*360;for(let i=0;i<48;i++){const an=i/48*6.283,sp=(1.5+R()*3.5)*d;parts.push({t:'f',x:bx,y:by,vx:Math.cos(an)*sp,vy:Math.sin(an)*sp,l:1,h,r:2.4*d})}}
+  parts=parts.filter(p=>{
+    if(p.t==='f'){p.x+=p.vx;p.y+=p.vy;p.vy+=.05*d;p.l-=.013;if(p.l<=0)return false;x.fillStyle=`hsla(${p.h},100%,60%,${p.l})`;x.beginPath();x.arc(p.x,p.y,p.r,0,6.283);x.fill();return true}
+    p.y+=p.v;p.a+=.04;p.x+=Math.sin(p.a)*(p.t==='s'?1.3:.6)*d;if(p.y>H+20)return false;
+    x.beginPath();
+    if(p.t==='s'){x.fillStyle='rgba(255,160,195,.92)';x.ellipse(p.x,p.y,p.r,p.r*.6,p.a,0,6.283);x.fill()}
+    else{x.fillStyle='#fff';x.strokeStyle='rgba(110,160,230,.9)';x.lineWidth=d;x.arc(p.x,p.y,p.r,0,6.283);x.fill();x.stroke()}
+    return true;
+  });
+  raf=(fx.size||parts.length)&&$('cert-overlay').classList.contains('active')?requestAnimationFrame(fxLoop):0;
+}
+function showCert(){
+  if(!needDone())return;
+  $('cert-overlay').classList.add('active');initCert();sizeCv();
+  if(fx.size&&!raf)raf=requestAnimationFrame(fxLoop);
+}
+function closeCert(){$('cert-overlay').classList.remove('active')}
+document.addEventListener('contextmenu',e=>e.preventDefault());
+if(/SamsungBrowser/i.test(navigator.userAgent))$('sam-tip').style.display='block';
+refresh();
+</script>
 </body>
 </html>
