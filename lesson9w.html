@@ -149,7 +149,7 @@
     <div id="fireworks-container" class="fixed inset-0 pointer-events-none z-50 overflow-hidden hidden"></div>
 
     <script>
-        // 학습 데이터 원본 정의 (2단계, 3단계 이름/고유명사 정답 제외 수정 반영 완료)
+        // 학습 데이터 원본 정의 (사람 이름 정답 제외 수정 반영 완료)
         const sentencesData = [
             { id: 1, en: "This is the living room.", ko: "이곳은 거실입니다.", blanks2: ["is"], blanks3: ["This", "is"] },
             { id: 2, en: "Look! There are pictures on the table.", ko: "봐봐! 테이블 위에 사진들이 있어요.", blanks2: ["There"], blanks3: ["There", "pictures"] },
@@ -160,7 +160,7 @@
             { id: 7, en: "This is Alex's room.", ko: "이곳은 알렉스의 방입니다.", blanks2: ["room"], blanks3: ["This", "room"] },
             { id: 8, en: "There are robots in the box.", ko: "상자 안에 로봇들이 있습니다.", blanks2: ["are"], blanks3: ["There", "are"] },
             { id: 9, en: "Alex likes making robots.", ko: "알렉스는 로봇 만드는 것을 좋아합니다.", blanks2: ["robots"], blanks3: ["likes", "robots"] },
-            { id: 10, en: "This is Andrew's room.", ko: "이곳은 앤드루의 방입니다.", blanks2: ["Andrew's"], blanks3: ["This", "room"] },
+            { id: 10, en: "This is Andrew's room.", ko: "이곳은 앤드루의 방입니다.", blanks2: ["room"], blanks3: ["This", "room"] },
             { id: 11, en: "There is a guitar on the bed.", ko: "침대 위에 기타가 한 대 있습니다.", blanks2: ["guitar"], blanks3: ["is", "guitar"] },
             { id: 12, en: "Andrew likes playing the guitar.", ko: "앤드루는 기타 연주하는 것을 좋아합니다.", blanks2: ["playing"], blanks3: ["likes", "guitar"] },
             { id: 13, en: "They look the same.", ko: "그들은 똑같이 생겼습니다.", blanks2: ["same"], blanks3: ["look", "same"] },
@@ -501,7 +501,7 @@
                 title.innerText = "1번 문제";
                 progress.innerText = "문제 1 / 2";
                 question.innerText = "알렉스의 방은 무엇일까요?";
-                txtLeft.innerText = "로봇이 가득한 방 (정답)";
+                txtLeft.innerText = "로봇이 가득한 방";
                 txtRight.innerText = "책이 가득한 방";
 
                 imgLeft.innerHTML = `
@@ -527,7 +527,7 @@
                 progress.innerText = "문제 2 / 2";
                 question.innerText = "앤드루의 방은 무엇일까요?";
                 txtLeft.innerText = "곰인형이 가득한 방";
-                txtRight.innerText = "기타가 종류별로 있는 방 (정답)";
+                txtRight.innerText = "기타가 종류별로 있는 방";
 
                 imgLeft.innerHTML = `
                     <svg viewBox="0 0 200 150" class="w-full h-full">
