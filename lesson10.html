@@ -239,6 +239,7 @@ button{min-height:44px}
 @media (min-width:700px){#game-body .sent{font-size:68px!important;margin:24px 0 30px!important}#game-body .choice{min-height:92px;font-size:32px}#id-overlay select{font-size:30px!important;min-height:64px!important}.trw{font-size:20px;padding:12px 6px}#t-body h3{font-size:24px}}
 @media (orientation:landscape) and (max-height:820px){#id-overlay .big,#m-overlay .big{font-size:56px}#id-overlay p{margin:2px 0 8px}}
 html,body{-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+#t-overlay h2{font-size:34px!important}#t-overlay .tb{font-size:20px;padding:12px 20px;min-height:52px}#t-overlay .trw{font-size:24px;padding:14px 8px}#t-overlay h3{font-size:28px;margin:18px 0 6px}#t-info{font-size:18px!important}.chip{font-size:20px!important;padding:5px 14px!important}
 </style>
 </head>
 <body>
@@ -289,8 +290,9 @@ html,body{-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
 </div>
 
 <div class="overlay active" id="id-overlay" style="z-index:60"><div class="mic-box" style="max-width:600px"><div class="big">🙋</div><h2>나의 반, 번호를 입력해 주세요</h2><p>반을 누르고, 번호를 눌러요</p><div style="display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:6px 0 20px;font-size:24px"><span>반</span><select id="id-c" onchange="pc=+this.value;idChk()" style="font:400 26px Jua,sans-serif;padding:10px 14px;border:4px solid var(--pink);border-radius:18px;background:#fff;color:var(--ink);min-height:56px"></select><span style="margin-left:14px">번호</span><select id="id-n" onchange="pn=+this.value;idChk()" style="font:400 26px Jua,sans-serif;padding:10px 14px;border:4px solid var(--pink);border-radius:18px;background:#fff;color:var(--ink);min-height:56px"></select></div><button class="pbtn" id="id-go" onclick="idOK()" disabled>시작하기</button></div></div>
+<div class="overlay" id="r-overlay" style="z-index:58"><div class="mic-box"><div class="big">📌</div><h2>이어서 할 수 있어요!</h2><p id="r-info" style="font-size:20px"></p><button class="pbtn" onclick="doResume()">▶ 이어서 하기</button><p><button class="reset" onclick="doFresh()">처음부터 다시 하기</button></p></div></div>
 <div class="overlay" id="m-overlay" style="z-index:55"><div class="mic-box"><div class="big">🎉</div><h2>미션 완료를 축하합니다!</h2><p style="font-size:20px">이제 7~10단원 단어 복습 게임을 해봐요!</p><button class="pbtn" onclick="mCheck()">게임 시작하기</button></div></div>
-<div class="overlay" id="t-overlay" style="z-index:90;align-items:flex-start;overflow:auto"><div class="mic-box" style="max-width:780px;text-align:left"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2>📋 이수 현황</h2><div><button class="tb" onclick="tLoad()">🔄</button> <button class="tb" onclick="tClose()">닫기</button></div></div><div id="t-info" style="font-size:14px;color:var(--soft);margin:6px 0"></div><div class="trow" id="t-tabs"></div><div id="t-body"></div></div></div>
+<div class="overlay" id="t-overlay" style="z-index:90;align-items:flex-start;overflow:auto;padding:8px"><div class="mic-box" style="max-width:1280px;width:100%;min-height:96vh;text-align:left;padding:20px 24px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2>📋 이수 현황</h2><div><button class="tb" onclick="tLoad()">🔄</button> <button class="tb" onclick="tDelAll()">🗑 목록 삭제</button> <button class="tb" onclick="tClose()">닫기</button></div></div><div id="t-info" style="font-size:14px;color:var(--soft);margin:6px 0"></div><div class="trow" id="t-tabs"></div><div id="t-body"></div></div></div>
 <button onclick="tOpen()" style="position:fixed;right:max(8px,env(safe-area-inset-right));bottom:max(4px,env(safe-area-inset-bottom));z-index:80;font:400 12px Jua;opacity:.45;background:none;border:0;color:#8a7b92;min-height:0;padding:6px 8px">선생님용</button>
 <script>
 const words=[
@@ -305,7 +307,7 @@ const sentences=[
  {en:'Turn left at the school.',kr:'학교에서 왼쪽으로 도세요.',e:'⬅️🏫',key:'left school'},
  {en:"It's on your left.",kr:'당신의 왼편에 있어요.',e:'📍⬅️',key:'left'},
  {en:"It's on your right.",kr:'당신의 오른편에 있어요.',e:'➡️📍',key:'right'},
- {en:'Go straight three blocks and turn right at the school.',kr:'세 블록 직진해서 학교에서 오른쪽으로 도세요.',e:'⬆️➡️🏫',key:'three right school'}];
+ {en:'Go straight three blocks and turn right.',kr:'세 블록 직진해서 오른쪽으로 도세요.',e:'⬆️➡️',key:'three right'}];
 /* 문장 구성: w=전체 단어, b=학생이 채울 빈칸 위치(0부터), fake=헷갈리는 단어, suf=마침표 */
 const problems=[
  {kr:'한 블록 직진하세요.',w:['Go','straight','one','block'],b:[1,2],fake:['turn','blocks'],h:{turn:"turn은 '돌다'예요. 직진은 어떤 단어였죠? ⬆️",blocks:"한 블록일 때는 block, 여러 블록일 때는 blocks예요!"},suf:'.'},
@@ -319,7 +321,7 @@ problems.forEach(p=>{p.ok=p.b.map(j=>p.w[j])});
 const state={1:false,2:false,3:false};
 let skip2=false;
 function needDone(){return state[1]&&state[3]&&(skip2||state[2])}
-function startWithout2(){skip2=true;$('mic-overlay').classList.remove('active');goHome()}
+function startWithout2(){skip2=true;save({skip2:true,stage2:false});$('mic-overlay').classList.remove('active');goHome()}
 const $=id=>document.getElementById(id);
 const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active');window.scrollTo(0,0)}
@@ -752,20 +754,47 @@ function save(p){
   if(!ME)return;
   p={...p,class_no:ME.c,student_no:ME.n,updated_at:new Date().toISOString()};
   try{const a=JSON.parse(localStorage.getItem('l10')||'{}'),k=ME.c+'-'+ME.n;a[k]={...(a[k]||{}),...p};localStorage.setItem('l10',JSON.stringify(a))}catch(e){}
-  if(dbOn())fetch(`${SB_URL}/rest/v1/${TABLE}?on_conflict=class_no,student_no`,{method:'POST',headers:{...hdr(),Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(p)}).catch(()=>{});
+  if(dbOn())fetch(`${SB_URL}/rest/v1/${TABLE}?on_conflict=class_no,student_no`,{method:'POST',keepalive:true,headers:{...hdr(),Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(p)}).catch(()=>{});
 }
 async function loadAll(){
-  if(dbOn()){const r=await fetch(`${SB_URL}/rest/v1/${TABLE}?select=*&order=class_no,student_no`,{headers:hdr()});if(!r.ok)throw new Error(r.status);return r.json()}
+  if(dbOn()){const r=await fetch(`${SB_URL}/rest/v1/${TABLE}?select=*&order=class_no,student_no`,{headers:hdr()});if(!r.ok){let m='';try{m=(await r.json()).message||''}catch(e){}throw new Error(r.status+' '+m)}return r.json()}
   try{return Object.values(JSON.parse(localStorage.getItem('l10')||'{}'))}catch(e){return[]}
 }
 /* 반/번호 입력 */
 const opt=(n,u)=>'<option value="">선택</option>'+Array.from({length:n},(_,i)=>`<option value="${i+1}">${i+1}${u}</option>`).join('');
 $('id-c').innerHTML=opt(8,'반');$('id-n').innerHTML=opt(26,'번');
 function idChk(){$('id-go').disabled=!(pc&&pn)}
-function idOK(){
-  ME={c:pc,n:pn};$('id-overlay').classList.remove('active');
-  if(!started){started=true;save({});$('mic-overlay').classList.add('active')}
-  else{save({stage1:!!state[1],stage2:!!state[2],stage3:!!state[3]});refresh()}
+async function getRow(){
+  if(dbOn()){const r=await fetch(`${SB_URL}/rest/v1/${TABLE}?class_no=eq.${ME.c}&student_no=eq.${ME.n}&select=*`,{headers:hdr()});if(!r.ok)throw 0;return (await r.json())[0]||null}
+  try{return JSON.parse(localStorage.getItem('l10')||'{}')[ME.c+'-'+ME.n]||null}catch(e){return null}
+}
+let RES=null;
+async function idOK(){
+  ME={c:pc,n:pn};$('id-overlay').classList.remove('active');started=true;
+  let row=null;try{row=await getRow()}catch(e){}
+  if(row&&(row.stage1||row.stage2||row.stage3||row.mission_done||row.game_index>0)){
+    RES=row;const ck=v=>v?'✅':'⬜';
+    $('r-info').innerHTML=`${ME.c}반 ${ME.n}번<br>`+(row.mission_done?`미션 완료 · 단어 게임 ${row.game_index||0}/40문제 (${row.game_score||0}점)`:`1단계 ${ck(row.stage1)} 2단계 ${ck(row.stage2)} 3단계 ${ck(row.stage3)}`);
+    $('r-overlay').classList.add('active');return;
+  }
+  save({});$('mic-overlay').classList.add('active');
+}
+function doResume(){
+  const w=RES;$('r-overlay').classList.remove('active');
+  state[1]=!!w.stage1;state[2]=!!w.stage2;state[3]=!!w.stage3;skip2=!!w.skip2;
+  if(w.mission_done){
+    missionOK=true;const o=(w.game_order||'').split(',').map(Number);
+    if(w.game_done){gs=w.game_score||0;show('screen-game');gEnd();return}
+    if(o.length===VOCAB.length&&w.game_index>0){gO=o;gi=w.game_index;gs=w.game_score||0;show('screen-game');gQ();return}
+    startGame();return;
+  }
+  refresh();$('mic-overlay').classList.add('active');
+}
+function doFresh(){
+  if(!confirm('이전 기록이 지워지고 처음부터 시작해요. 괜찮아요?'))return;
+  state[1]=state[2]=state[3]=false;skip2=false;missionOK=false;
+  save({stage1:false,stage2:false,stage3:false,skip2:false,mission_done:false,game_score:0,game_index:0,game_order:null,game_done:false});
+  $('r-overlay').classList.remove('active');refresh();$('mic-overlay').classList.add('active');
 }
 function reId(){$('m-overlay').classList.remove('active');$('id-overlay').classList.add('active')}
 /* 미션 완료 → 출석번호 확인 → 단어 복습 게임 */
@@ -779,22 +808,28 @@ const VOCAB=('beach/해변;vacation/방학, 휴가;yesterday/어제;visit/방문
 'bedroom/침실;living room/거실;kitchen/부엌;bathroom/욕실;garden/정원;bookshelf/책장;bathtub/욕조;bed/침대;sofa/소파;guitar/기타;'+
 'bookstore/서점;bank/은행;library/도서관;museum/박물관;park/공원;straight/직진하여;block/블록, 구역;left/왼쪽;right/오른쪽;next to/~옆에').split(';').map(x=>{const[a,b]=x.split('/');return{en:a,kr:b}});
 let gO=[],gi=0,gs=0,gC=[],gT=0,gLock=false;
-function startGame(){gO=shuffle(VOCAB.map((_,i)=>i));gi=0;gs=0;show('screen-game');gQ()}
+function startGame(){gO=shuffle(VOCAB.map((_,i)=>i));gi=0;gs=0;save({game_score:0,game_index:0,game_order:gO.join(','),game_done:false});show('screen-game');gQ()}
 function gQ(){
   if(gi>=VOCAB.length)return gEnd();
   const w=VOCAB[gO[gi]];gT=0;gLock=false;
   gC=shuffle([w.kr,...shuffle(VOCAB.filter(v=>v.kr!==w.kr)).slice(0,3).map(v=>v.kr)]);
   $('game-body').innerHTML=`<div class="qcard" style="--a:#ff7aa8"><div class="qcount">${gi+1} / ${VOCAB.length} · ⭐ ${gs}점</div>
    <div class="sent en" style="font-size:44px;margin:14px 0 20px">${w.en}</div>
-   <div class="choices">${gC.map((c,k)=>`<button class="choice" style="font-family:Jua,sans-serif" onclick="gA(${k},this)">${c}</button>`).join('')}</div><div class="fb" id="gfb"></div></div>`;
+   <div class="choices">${gC.map((c,k)=>`<button class="choice" style="font-family:Jua,sans-serif" onclick="gA(${k},this)">${c}</button>`).join('')}</div><div class="fb" id="gfb"></div></div><button class="reset" style="display:block;margin:18px auto 0;font-size:18px" onclick="gQuit()">💾 여기까지 저장하고 끝내기</button>`;
 }
 function gA(k,b){
   if(gLock)return;const w=VOCAB[gO[gi]],fb=$('gfb');
   if(gC[k]===w.kr){
     gLock=true;b.classList.add('ok');fb.className='fb good';fb.textContent='정답이에요! 🎉';
-    if(gT===0){gs++;save({game_score:gs});if(gs%10===0)fb.textContent=`🎊 ${gs}점 돌파! ${gs===40?'master 👑':''}`}
+    if(gT===0){gs++;if(gs%10===0)fb.textContent=`🎊 ${gs}점 돌파! ${gs===40?'master 👑':''}`}
+    save({game_score:gs,game_index:gi+1,game_order:gO.join(',')});
     setTimeout(()=>{gi++;gQ()},gs%10===0&&gT===0?1600:800);
   }else{gT++;b.classList.add('no');fb.className='fb bad';fb.textContent='다시 골라봐요! 💪';setTimeout(()=>b.classList.remove('no'),350)}
+}
+function gQuit(){
+  save({game_score:gs,game_index:gi,game_order:gO.join(',')});
+  $('game-body').innerHTML='<div class="done" style="border-color:#ff7aa8;box-shadow:0 6px 0 #ff7aa8"><div class="big">💾</div><h3>저장 완료!</h3><p>다음에 같은 반·번호로 들어오면<br>이어서 할 수 있어요.</p><h3 style="color:var(--pink-d)">🎒 패드를 정리해 주세요<br>이 창은 닫아도 돼요</h3></div>';
+  setTimeout(()=>{try{window.close()}catch(e){}},800);
 }
 function gEnd(){
   save({game_score:gs,game_done:true});
@@ -806,15 +841,22 @@ function tOpen(){const p=prompt('선생님 비밀번호');if(p===null)return;if(
 function tClose(){$('t-overlay').classList.remove('active');clearInterval(tTimer)}
 async function tLoad(){
   try{tRows=await loadAll();$('t-info').textContent=dbOn()?'☁️ 데이터베이스 연결됨 · 10초마다 자동 새로고침':'⚠️ DB 미연결: 이 기기의 기록만 보여요'}
-  catch(e){$('t-info').textContent='❌ 불러오기 실패 ('+e.message+')'}
+  catch(e){const m=e.message,h=/^40[13]/.test(m)?'키(SB_KEY) 또는 정책(policy)을 확인하세요':/^404/.test(m)?'테이블 이름/생성 여부를 확인하세요':/Failed|Load|network/i.test(m)?'SB_URL 주소(오타, 끝의 / 또는 /rest/v1)를 확인하세요':'';$('t-info').textContent='❌ 불러오기 실패 ('+m+') '+h}
   tDraw();
 }
+async function delRows(q,fn){
+  try{const a=JSON.parse(localStorage.getItem('l10')||'{}');Object.keys(a).forEach(k=>{const[c,n]=k.split('-').map(Number);if(fn(c,n))delete a[k]});localStorage.setItem('l10',JSON.stringify(a))}catch(e){}
+  if(dbOn()){try{const r=await fetch(`${SB_URL}/rest/v1/${TABLE}?${q}`,{method:'DELETE',headers:hdr()});if(!r.ok)alert('삭제 실패 ('+r.status+'). Supabase에서 grant delete 문을 실행했는지 확인하세요.')}catch(e){alert('삭제 실패')}}
+  tLoad();
+}
+function tDel(c,n){if(confirm(`${c}반 ${n}번 기록을 삭제할까요?`))delRows(`class_no=eq.${c}&student_no=eq.${n}`,(a,b)=>a===c&&b===n)}
+function tDelAll(){if(confirm(`${tF?tF+'반':'전체'} 기록을 모두 삭제할까요? 되돌릴 수 없어요.`))delRows(tF?`class_no=eq.${tF}`:'class_no=gte.0',a=>!tF||a===tF)}
 const bd=s=>[10,20,30].filter(t=>s>=t).map(t=>`<span class="chip">${t}점 돌파</span>`).join('')+(s>=40?'<span class="chip m">master 👑</span>':'');
 function tDraw(){
   $('t-tabs').innerHTML=[0,1,2,3,4,5,6,7,8].map(c=>`<button class="tb ${c===tF?'on':''}" onclick="tF=${c};tDraw()">${c?c+'반':'전체'}</button>`).join('');
   const r=tRows.filter(x=>!tF||x.class_no===tF).sort((a,b)=>a.class_no-b.class_no||a.student_no-b.student_no);
-  const ok=r.filter(x=>x.mission_done),ing=r.filter(x=>!x.mission_done),id=x=>`<b>${x.class_no}반 ${x.student_no}번</b>`;
-  $('t-body').innerHTML=`<h3>🏆 미션 성공 (${ok.length}명)</h3>`+(ok.map(x=>`<div class="trw">${id(x)} · ⭐ ${x.game_score||0}점 ${x.game_done?'🏁':''} ${x.game_score?bd(x.game_score):'<span style="color:var(--soft)">게임 전</span>'}</div>`).join('')||'<p>아직 없어요</p>')
+  const ok=r.filter(x=>x.mission_done),ing=r.filter(x=>!x.mission_done),id=x=>`<button class="tb" style="float:right;font-size:16px;padding:6px 14px;min-height:40px" onclick="tDel(${x.class_no},${x.student_no})">삭제</button><b>${x.class_no}반 ${x.student_no}번</b>`;
+  $('t-body').innerHTML=`<h3>🏆 미션 성공 (${ok.length}명)</h3>`+(ok.map(x=>`<div class="trw">${id(x)} · ⭐ ${x.game_score||0}점 (${x.game_index||0}/40) ${x.game_done?'🏁':''} ${x.game_score?bd(x.game_score):'<span style="color:var(--soft)">게임 전</span>'}</div>`).join('')||'<p>아직 없어요</p>')
    +`<h3>✏️ 진행 중 (${ing.length}명)</h3>`+(ing.map(x=>`<div class="trw">${id(x)} · 1단계 ${x.stage1?'✅':'⬜'} 2단계 ${x.stage2?'✅':'⬜'} 3단계 ${x.stage3?'✅':'⬜'}</div>`).join('')||'<p>없어요</p>');
 }
 ['gesturestart','gesturechange','dblclick'].forEach(n=>document.addEventListener(n,e=>e.preventDefault()));
