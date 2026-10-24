@@ -383,7 +383,7 @@ function showMicBlocked(){
   $('mic-overlay').classList.add('active');
   $('mic-box').innerHTML=`<div class="big">🎤</div>
     <h2>마이크가 허용되지 않았어요</h2>
-    <p>복사하기 버튼을 누르고 인터넷 창에 붙여넣은 후 새로 접속하여 마이크 허용해주세요</p>
+    <p>복사하기 버튼을 누르고 인터넷 창에 붙여넣은 후 새로 접속하여 마이크를 허용해 주세요</p>
     <div onclick="copyUrl()" style="cursor:pointer;word-break:break-all;background:#f4f4f4;border-radius:12px;padding:10px;font-size:14px;margin-bottom:12px;user-select:all">${MIC_URL}</div>
     <button class="pbtn" onclick="copyUrl()">📋 복사하기</button>
     <div id="copy-msg" style="visibility:hidden;margin-top:10px;color:#2e9d5b;font-size:16px">복사되었습니다! ✅</div>
@@ -600,7 +600,7 @@ function pressStart(){
   const res=$('res'),tag=$('lis');
   const R=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!R){
-    res.innerHTML='<div class="msg low">이 브라우저에서 음성 인식을 쓸 수 없어요.</div>';held=false;if(pressN>=2)forceNext();
+    res.innerHTML='<div class="msg low">이 브라우저에서 음성 인식을 쓸 수 없어요.</div>';held=false;pressN++;if(pressN>=2)forceNext();
     
     return;
   }
