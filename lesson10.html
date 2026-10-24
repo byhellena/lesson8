@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="길 안내하기">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="format-detection" content="telephone=no">
@@ -234,6 +235,10 @@ button{min-height:44px}
   .tb{font-size:18px;padding:11px 18px;min-height:46px}.sw{width:46px;height:46px}.sk{font-size:40px}
 }
 @media (min-width:1000px){.wrap{max-width:980px}}
+.pbtn:disabled{opacity:.4;box-shadow:none}.chip{display:inline-block;padding:3px 10px;margin:2px;border-radius:99px;background:#fff1b8;color:#c2570a;font-size:14px}.chip.m{background:#a58bff;color:#fff}.trw{padding:8px 4px;border-bottom:1px dashed #ddd;font-size:17px}
+@media (min-width:700px){#game-body .sent{font-size:68px!important;margin:24px 0 30px!important}#game-body .choice{min-height:92px;font-size:32px}#id-overlay select{font-size:30px!important;min-height:64px!important}.trw{font-size:20px;padding:12px 6px}#t-body h3{font-size:24px}}
+@media (orientation:landscape) and (max-height:820px){#id-overlay .big,#m-overlay .big{font-size:56px}#id-overlay p{margin:2px 0 8px}}
+html,body{-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
 </style>
 </head>
 <body>
@@ -247,7 +252,6 @@ button{min-height:44px}
     <div class="stage-card" id="card-1" style="--c:var(--sky)" onclick="goStage(1)"><div class="num">1</div><div><h3>단어 학습</h3><p>그림과 뜻을 보고 영어 단어 고르기</p></div><div class="st" id="st-1">도전 전</div></div>
     <div class="stage-card" id="card-2" style="--c:var(--purple)" onclick="goStage(2)"><div class="num">2</div><div><h3>말하기 학습</h3><p>문장을 듣고 따라 말해보기</p></div><div class="st" id="st-2">도전 전</div></div>
     <div class="stage-card" id="card-3" style="--c:var(--orange)" onclick="goStage(3)"><div class="num">3</div><div><h3>문장 구성하기</h3><p>빈칸에 알맞은 단어를 눌러 문장 완성하기</p></div><div class="st" id="st-3">도전 전</div></div>
-    <button class="cert-btn" id="cert-btn" onclick="showCert()">✨ 이수 확인증 제출하기 ✨</button>
   </div>
 
   <div class="screen" id="screen-1">
@@ -268,9 +272,13 @@ button{min-height:44px}
     <div id="body-3"></div>
     <button class="bottom-home" id="bottom-home" onclick="goHome()">🏠 첫 화면으로</button>
   </div>
+  <div class="screen" id="screen-game">
+    <div class="sh"><div class="badge" style="background:var(--pink)">⭐</div><div><h2>7~10단원 단어 복습하기</h2><p>알맞은 뜻을 눌러요</p></div></div>
+    <div id="game-body"></div>
+  </div>
 </div>
 
-<div class="overlay active" id="mic-overlay">
+<div class="overlay" id="mic-overlay">
   <div class="mic-box" id="mic-box">
     <div class="big">🎤</div>
     <h2>마이크를 켜도 될까요?</h2>
@@ -280,25 +288,10 @@ button{min-height:44px}
   </div>
 </div>
 
-<div class="overlay" id="cert-overlay">
-  <div class="cwrap">
-    <div class="cert" id="cert">
-      <div class="cst">⭐️⭐️⭐️⭐️⭐️</div>
-      <h2>이 수 증</h2>
-      <p class="body">위 학생은<br>길 안내하기 Giving Directions<br>영어로 말하기를<br>멋지게 이수했습니다.</p>
-      <div class="signoff">선생님께 보여드리세요! 🌟</div>
-      <canvas id="draw"></canvas><div id="stk"></div><canvas id="fx"></canvas>
-    </div>
-    <div class="tools">
-      <div class="trow" id="colors"></div>
-      <div class="trow"><button class="tb on" id="b-pen" onclick="setMode('pen')">✏️ 펜</button><button class="tb" id="b-eraser" onclick="setMode('eraser')">🧽 지우개</button><input type="range" id="psize" min="3" max="26" value="9"><button class="tb" onclick="undo()">↩️ 되돌리기</button><button class="tb" onclick="clearAll()">🗑️ 모두 지우기</button></div>
-      <div class="trow" id="stickers"></div>
-      <div class="trow fxr"><b>✨ 특수효과</b><button class="tb" onclick="nextBg()">🎨 배경색</button><button class="tb" id="fx-sakura" onclick="toggleFx('sakura')">🌸 벚꽃</button><button class="tb" id="fx-snow" onclick="toggleFx('snow')">❄️ 눈</button><button class="tb" id="fx-neon" onclick="toggleFx('neon')">💡 네온</button><button class="tb" id="fx-fire" onclick="toggleFx('fire')">🎆 폭죽</button></div>
-      <button class="pbtn" onclick="closeCert()">닫기</button>
-    </div>
-  </div>
-</div>
-
+<div class="overlay active" id="id-overlay" style="z-index:60"><div class="mic-box" style="max-width:600px"><div class="big">🙋</div><h2>나의 반, 번호를 입력해 주세요</h2><p>반을 누르고, 번호를 눌러요</p><div style="display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:6px 0 20px;font-size:24px"><span>반</span><select id="id-c" onchange="pc=+this.value;idChk()" style="font:400 26px Jua,sans-serif;padding:10px 14px;border:4px solid var(--pink);border-radius:18px;background:#fff;color:var(--ink);min-height:56px"></select><span style="margin-left:14px">번호</span><select id="id-n" onchange="pn=+this.value;idChk()" style="font:400 26px Jua,sans-serif;padding:10px 14px;border:4px solid var(--pink);border-radius:18px;background:#fff;color:var(--ink);min-height:56px"></select></div><button class="pbtn" id="id-go" onclick="idOK()" disabled>시작하기</button></div></div>
+<div class="overlay" id="m-overlay" style="z-index:55"><div class="mic-box"><div class="big">🎉</div><h2>미션 완료를 축하합니다!</h2><p style="font-size:20px">이제 7~10단원 단어 복습 게임을 해봐요!</p><button class="pbtn" onclick="mCheck()">게임 시작하기</button></div></div>
+<div class="overlay" id="t-overlay" style="z-index:90;align-items:flex-start;overflow:auto"><div class="mic-box" style="max-width:780px;text-align:left"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2>📋 이수 현황</h2><div><button class="tb" onclick="tLoad()">🔄</button> <button class="tb" onclick="tClose()">닫기</button></div></div><div id="t-info" style="font-size:14px;color:var(--soft);margin:6px 0"></div><div class="trow" id="t-tabs"></div><div id="t-body"></div></div></div>
+<button onclick="tOpen()" style="position:fixed;right:max(8px,env(safe-area-inset-right));bottom:max(4px,env(safe-area-inset-bottom));z-index:80;font:400 12px Jua;opacity:.45;background:none;border:0;color:#8a7b92;min-height:0;padding:6px 8px">선생님용</button>
 <script>
 const words=[
  {en:'bank',kr:'은행',e:'🏦'},{en:'library',kr:'도서관',e:'📚'},{en:'straight',kr:'직진하다',e:'⬆️'},
@@ -318,10 +311,10 @@ const problems=[
  {kr:'한 블록 직진하세요.',w:['Go','straight','one','block'],b:[1,2],fake:['turn','blocks'],h:{turn:"turn은 '돌다'예요. 직진은 어떤 단어였죠? ⬆️",blocks:"한 블록일 때는 block, 여러 블록일 때는 blocks예요!"},suf:'.'},
  {kr:'두 블록 직진하세요.',w:['Go','straight','two','blocks'],b:[2,3],fake:['one','block'],h:{one:"one은 하나예요. 두 블록이니까 다른 숫자를 써요!",block:"블록이 둘 이상이면 block 끝에 s가 붙어요!"},suf:'.'},
  {kr:'은행에서 오른쪽으로 도세요.',w:['Turn','right','at','the','bank'],b:[1,4],fake:['left','library'],h:{left:"left는 왼쪽이에요. 오른쪽은 뭐였죠? ➡️",library:"library는 도서관이에요. 은행은 뭐였죠? 🏦"},suf:'.'},
- {kr:'도서관에서 왼쪽으로 도세요.',w:['Turn','left','at','the','library'],b:[1,4],fake:['right','bank'],h:{right:"right는 오른쪽이에요. 왼쪽은 뭐였죠? ⬅️",bank:"bank는 은행이에요. 도서관은 뭐였죠? 📚"},suf:'.'},
+ {kr:'10월 30일에 책 축제에 오세요.',w:['Come','to','the','book','festival','on','October','30th'],b:[0,4,6],fake:['Go','November'],h:{Go:"Go는 '가다'예요. 오라는 말은 다른 단어예요!",November:"November는 11월이에요. 10월은 뭐였죠?"},suf:'.'},
  {kr:'당신의 왼편에 있어요.',w:["It's",'on','your','left'],b:[1,3],fake:['in','right'],h:{in:"in은 '~안에'예요. 방향을 말할 땐 on을 써요!",right:"right는 오른편이에요. 왼편은 뭐였죠? ⬅️"},suf:'.'},
  {kr:'두 블록 직진해서 왼쪽으로 도세요.',w:['Go','straight','two','blocks','and','turn','left'],b:[2,5,6],fake:['one','right'],h:{one:"one은 하나예요. 두 블록이에요!",right:"right는 오른쪽이에요. 왼쪽으로 도는 거예요! ⬅️"},suf:'.'},
- {kr:'세 블록 직진해서 학교에서 오른쪽으로 도세요.',w:['Go','straight','three','blocks','and','turn','right','at','the','school'],b:[2,6,9],fake:['two','left'],h:{two:"two는 둘이에요. 세 블록이니까 three를 써요!",left:"left는 왼쪽이에요. 오른쪽으로 도는 거예요! ➡️"},suf:'.'}];
+ {kr:'세 블록 직진해서 오른쪽으로 도세요.',w:['Go','straight','three','blocks','and','turn','right'],b:[2,5,6],fake:['two','left'],h:{two:"two는 둘이에요. 세 블록이니까 three를 써요!",left:"left는 왼쪽이에요. 오른쪽으로 도는 거예요! ➡️"},suf:'.'}];
 problems.forEach(p=>{p.ok=p.b.map(j=>p.w[j])});
 const state={1:false,2:false,3:false};
 let skip2=false;
@@ -338,7 +331,7 @@ function refresh(){
     $('st-'+n).classList.toggle('ok',!!state[n]);
   });
   $('card-2').style.display=skip2?'none':'';
-  $('cert-btn').classList.toggle('ready',needDone());
+  if(needDone())showMission();
 }
 function goStage(n){
   show('screen-'+n);
@@ -428,12 +421,12 @@ function c1(btn,ans){
     setTimeout(()=>btn.classList.remove('no'),350);
   }
 }
-function finish(n){state[n]=true;goHome()}
+function finish(n){state[n]=true;save({['stage'+n]:true});goHome()}
 
 /* STAGE 2 */
-let i2=0,tries=0,busy=false;
+let i2=0,tries=0,busy=false,pressN=0;
 function r2(){
-  tries=0;busy=false;
+  tries=0;busy=false;pressN=0;
   dots(2,sentences.length,i2,false);
   const b=$('body-2');
   if(i2>=sentences.length){b.innerHTML=donePanel(2,'#a58bff','2단계 완료!','말하기 학습을 모두 마쳤어요.','finish(2)');return}
@@ -592,10 +585,11 @@ function pressStart(){
   const res=$('res'),tag=$('lis');
   const R=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!R){
-    res.innerHTML='<div class="msg low">이 브라우저에서 음성 인식을 쓸 수 없어요.</div>';
+    res.innerHTML='<div class="msg low">이 브라우저에서 음성 인식을 쓸 수 없어요.</div>';held=false;if(pressN>=2)forceNext();
     
     return;
   }
+  pressN++;
   held=true;pressAt=Date.now();
   res.innerHTML='';tag.textContent='';
   try{speechSynthesis.cancel()}catch(e){}
@@ -620,10 +614,12 @@ function pressEnd(){
   if(waitingMic){                /* 마이크가 켜지기 전에 손을 뗌: 세션은 유지 */
     waitingMic=false;
     pttUI('idle','마이크가 켜지는 중이었어요. 잠시 뒤 다시 꾹 눌러요 🙂');
+    if(pressN>=4)forceNext();
     return;
   }
   if(Date.now()-pressAt<500){
     pttUI('idle','조금 더 오래 꾹 눌러 주세요 👆');
+    if(pressN>=4)forceNext();
     return;
   }
   judging=true;
@@ -645,8 +641,8 @@ function pttFinish(){
   }
   /* 아무것도 못 들음: 오답으로 세지 않음. 다음엔 새 세션으로 */
   srStale=true;
-  noSoundFails++;
-  if(noSoundFails>=2){           /* 두 번 다 소리가 안 들어옴: 오류 티 내지 않고 자연스럽게 다음 문제로 */
+  tries++;
+  if(tries>=2){           /* 두 번 다 소리가 안 들어옴: 오류 티 내지 않고 자연스럽게 다음 문제로 */
     busy=true;
     pttUI('idle');
     res.innerHTML='<div class="msg mid">나날이 발전해요! 🌱</div>';
@@ -685,6 +681,7 @@ function judge(ratio,miss){
   }
   res.innerHTML=`${miss?'':`<div class="pct en">${pct}%</div>`}<div class="msg low">${miss?'마이크 위치를 확인하고 크게 이야기해 주세요 🎤':'조금만 더! 💪'}</div><div class="try">🎤 버튼을 꾹 누르고 다시 말해봐요!</div>`;
 }
+function forceNext(){if(busy)return;busy=true;const q=$('res');if(q)q.innerHTML='<div class="msg mid">괜찮아요, 다음 문제로 가요! 🌱</div>';setTimeout(next2,1500)}
 function next2(){held=false;waitingMic=false;judging=false;noSoundFails=0;i2++;r2()}
 
 /* STAGE 3 : 일부 단어는 미리 채워져 있고, 빈칸만 학생이 채움 */
@@ -711,7 +708,7 @@ function r3(){
      <div class="sbf ${s.bad?'hint':''}">${s.solved?'성공! 🎉':s.msg}</div></div>`;
   }).join('');
   $('bottom-home').classList.toggle('glow',all);
-  if(all)state[3]=true;
+  if(all&&!state[3]){state[3]=true;save({stage3:true});if(needDone())setTimeout(showMission,1200)}
 }
 function hintFor(i){
   const p=problems[i],s=sb[i];
@@ -740,86 +737,89 @@ function reset(i,m){
   s.slots=s.slots.map(()=>null);s.src=s.src.map(()=>null);s.msg=m||'';s.bad=false;r3();
 }
 
-/* CERT */
-const CC=['#ff4d6d','#ff9f1c','#ffd60a','#3ec99a','#4fb0ff','#a58bff','#8b5a2b','#222222','#ffffff'];
-const STK=['⭐','🌈','🦄','🐰','🐻','🐱','🐶','🌸','🌻','🍭','🍓','🎀','👑','💖','🚀','🎈','🏆','🌟','🍀','🦋','🎵','☁️'];
-const BGS=['#fffdf3','#ffe3ef','#e3f4ff','#e8ffe9','#f1e6ff','linear-gradient(135deg,#ffd6e8,#d6ecff)','linear-gradient(135deg,#fff3b0,#ffc2d4)','#252550'];
-let pen=CC[0],mode='pen',strokes=[],cur=null,bgi=0,fx=new Set(),parts=[],raf=0,inited=false;
-function initCert(){
-  if(inited)return;inited=true;
-  $('colors').innerHTML=CC.map((c,i)=>`<button class="sw ${i?'':'on'}" style="background:${c}" onclick="setPen('${c}',this)"></button>`).join('');
-  $('stickers').innerHTML=STK.map(s=>`<button class="tb sk" onclick="addStk('${s}')">${s}</button>`).join('');
-  const c=$('draw');
-  const pt=e=>{const r=c.getBoundingClientRect();return[(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height]};
-  c.addEventListener('pointerdown',e=>{e.preventDefault();c.setPointerCapture(e.pointerId);cur={c:pen,w:+$('psize').value,e:mode==='eraser',p:[pt(e)]};if(cur.e)cur.w*=2.2;strokes.push(cur);redraw()});
-  c.addEventListener('pointermove',e=>{if(!cur)return;cur.p.push(pt(e));redraw()});
-  ['pointerup','pointercancel'].forEach(n=>c.addEventListener(n,()=>{cur=null}));
-  window.addEventListener('resize',sizeCv);
-}
-function sizeCv(){
-  const r=$('cert').getBoundingClientRect(),d=window.devicePixelRatio||1;
-  ['draw','fx'].forEach(id=>{const c=$(id);c.width=r.width*d;c.height=r.height*d});redraw();
-}
-function redraw(){
-  const c=$('draw'),x=c.getContext('2d'),W=c.width,H=c.height;
-  x.clearRect(0,0,W,H);x.lineCap=x.lineJoin='round';
-  strokes.forEach(s=>{
-    x.globalCompositeOperation=s.e?'destination-out':'source-over';x.strokeStyle=s.c;x.lineWidth=s.w*W/1000;
-    x.beginPath();s.p.forEach((q,i)=>i?x.lineTo(q[0]*W,q[1]*H):x.moveTo(q[0]*W,q[1]*H));
-    if(s.p.length===1)x.lineTo(s.p[0][0]*W+.1,s.p[0][1]*H);x.stroke();
-  });
-  x.globalCompositeOperation='source-over';
-}
-function setPen(c,b){pen=c;setMode('pen');document.querySelectorAll('.sw').forEach(s=>s.classList.toggle('on',s===b))}
-function setMode(m){mode=m;$('b-pen').classList.toggle('on',m==='pen');$('b-eraser').classList.toggle('on',m==='eraser')}
-function undo(){const s=$('stk');if(strokes.length)strokes.pop(),redraw();else if(s.lastChild)s.removeChild(s.lastChild)}
-function clearAll(){strokes=[];redraw();$('stk').innerHTML=''}
-function addStk(e){
-  const el=document.createElement('div');el.className='stk';el.textContent=e;
-  el.style.left=(30+Math.random()*40)+'%';el.style.top=(30+Math.random()*40)+'%';
-  let ox=0,oy=0,mv=0,last=0;
-  el.addEventListener('pointerdown',ev=>{ev.preventDefault();el.setPointerCapture(ev.pointerId);mv=0;ox=ev.clientX;oy=ev.clientY});
-  el.addEventListener('pointermove',ev=>{
-    if(!el.hasPointerCapture(ev.pointerId))return;
-    const r=$('cert').getBoundingClientRect();mv+=Math.abs(ev.clientX-ox)+Math.abs(ev.clientY-oy);ox=ev.clientX;oy=ev.clientY;
-    el.style.left=Math.min(100,Math.max(0,(ev.clientX-r.left)/r.width*100))+'%';el.style.top=Math.min(100,Math.max(0,(ev.clientY-r.top)/r.height*100))+'%';
-  });
-  el.addEventListener('pointerup',()=>{if(mv<8){const n=Date.now();if(n-last<400)el.remove();last=n}});
-  $('stk').appendChild(el);
-}
-function nextBg(){
-  bgi=(bgi+1)%BGS.length;const c=$('cert');
-  c.style.setProperty('--cb',BGS[bgi]);c.classList.toggle('dk',bgi===BGS.length-1);
-}
-function toggleFx(n){
-  fx.has(n)?fx.delete(n):fx.add(n);$('fx-'+n).classList.toggle('on',fx.has(n));
-  if(n==='neon')$('cert').classList.toggle('neon',fx.has(n));
-  if(!raf)raf=requestAnimationFrame(fxLoop);
-}
-function fxLoop(){
-  const c=$('fx'),x=c.getContext('2d'),W=c.width,H=c.height,d=window.devicePixelRatio||1,R=Math.random;
-  x.clearRect(0,0,W,H);
-  if(fx.has('sakura')&&R()<.25)parts.push({t:'s',x:R()*W,y:-20,v:(1+R()*1.5)*d,r:(7+R()*7)*d,a:R()*6});
-  if(fx.has('snow')&&R()<.5)parts.push({t:'n',x:R()*W,y:-10,v:(1+R()*2)*d,r:(2.5+R()*4)*d,a:R()*6});
-  if(fx.has('fire')&&R()<.035){const bx=W*(.15+R()*.7),by=H*(.15+R()*.4),h=R()*360;for(let i=0;i<48;i++){const an=i/48*6.283,sp=(1.5+R()*3.5)*d;parts.push({t:'f',x:bx,y:by,vx:Math.cos(an)*sp,vy:Math.sin(an)*sp,l:1,h,r:2.4*d})}}
-  parts=parts.filter(p=>{
-    if(p.t==='f'){p.x+=p.vx;p.y+=p.vy;p.vy+=.05*d;p.l-=.013;if(p.l<=0)return false;x.fillStyle=`hsla(${p.h},100%,60%,${p.l})`;x.beginPath();x.arc(p.x,p.y,p.r,0,6.283);x.fill();return true}
-    p.y+=p.v;p.a+=.04;p.x+=Math.sin(p.a)*(p.t==='s'?1.3:.6)*d;if(p.y>H+20)return false;
-    x.beginPath();
-    if(p.t==='s'){x.fillStyle='rgba(255,160,195,.92)';x.ellipse(p.x,p.y,p.r,p.r*.6,p.a,0,6.283);x.fill()}
-    else{x.fillStyle='#fff';x.strokeStyle='rgba(110,160,230,.9)';x.lineWidth=d;x.arc(p.x,p.y,p.r,0,6.283);x.fill();x.stroke()}
-    return true;
-  });
-  raf=(fx.size||parts.length)&&$('cert-overlay').classList.contains('active')?requestAnimationFrame(fxLoop):0;
-}
-function showCert(){
-  if(!needDone())return;
-  $('cert-overlay').classList.add('active');initCert();sizeCv();
-  if(fx.size&&!raf)raf=requestAnimationFrame(fxLoop);
-}
-function closeCert(){$('cert-overlay').classList.remove('active')}
 document.addEventListener('contextmenu',e=>e.preventDefault());
 if(/SamsungBrowser/i.test(navigator.userAgent))$('sam-tip').style.display='block';
+
+/* ===== 설정 (Supabase 연결: 아래 두 값을 채우세요) ===== */
+const SB_URL='https://plbbahcoilxxtvovufpj.supabase.co';            // 예: https://abcdxyz.supabase.co
+const SB_KEY='sb_publishable_Bjl1z6nBNwuKLBzKIOwTRA_-gCV73FP';            // publishable(anon) key
+const TEACHER_PIN='1215';   // 선생님용 비밀번호 (꼭 바꾸세요)
+const TABLE='lesson10_progress';
+const dbOn=()=>!!(SB_URL&&SB_KEY);
+const hdr=()=>{const h={apikey:SB_KEY,'Content-Type':'application/json'};if(!SB_KEY.startsWith('sb_'))h.Authorization='Bearer '+SB_KEY;return h};
+let ME=null,pc=0,pn=0,started=false,missionOK=false;
+function save(p){
+  if(!ME)return;
+  p={...p,class_no:ME.c,student_no:ME.n,updated_at:new Date().toISOString()};
+  try{const a=JSON.parse(localStorage.getItem('l10')||'{}'),k=ME.c+'-'+ME.n;a[k]={...(a[k]||{}),...p};localStorage.setItem('l10',JSON.stringify(a))}catch(e){}
+  if(dbOn())fetch(`${SB_URL}/rest/v1/${TABLE}?on_conflict=class_no,student_no`,{method:'POST',headers:{...hdr(),Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(p)}).catch(()=>{});
+}
+async function loadAll(){
+  if(dbOn()){const r=await fetch(`${SB_URL}/rest/v1/${TABLE}?select=*&order=class_no,student_no`,{headers:hdr()});if(!r.ok)throw new Error(r.status);return r.json()}
+  try{return Object.values(JSON.parse(localStorage.getItem('l10')||'{}'))}catch(e){return[]}
+}
+/* 반/번호 입력 */
+const opt=(n,u)=>'<option value="">선택</option>'+Array.from({length:n},(_,i)=>`<option value="${i+1}">${i+1}${u}</option>`).join('');
+$('id-c').innerHTML=opt(8,'반');$('id-n').innerHTML=opt(26,'번');
+function idChk(){$('id-go').disabled=!(pc&&pn)}
+function idOK(){
+  ME={c:pc,n:pn};$('id-overlay').classList.remove('active');
+  if(!started){started=true;save({});$('mic-overlay').classList.add('active')}
+  else{save({stage1:!!state[1],stage2:!!state[2],stage3:!!state[3]});refresh()}
+}
+function reId(){$('m-overlay').classList.remove('active');$('id-overlay').classList.add('active')}
+/* 미션 완료 → 출석번호 확인 → 단어 복습 게임 */
+function showMission(){
+  if(missionOK||!ME||$('m-overlay').classList.contains('active'))return;
+  save({mission_done:true});$('m-overlay').classList.add('active');
+}
+function mCheck(){missionOK=true;$('m-overlay').classList.remove('active');startGame()}
+const VOCAB=('beach/해변;vacation/방학, 휴가;yesterday/어제;visit/방문하다;seafood/해산물;movie/영화;boring/지루한;during/~동안에;last/지난;free/한가한, 자유로운;'+
+'subject/과목;favorite/가장 좋아하는;science/과학;math/수학;English/영어;music/음악;art/미술;P.E./체육;season/계절;sports/스포츠, 운동;'+
+'bedroom/침실;living room/거실;kitchen/부엌;bathroom/욕실;garden/정원;bookshelf/책장;bathtub/욕조;bed/침대;sofa/소파;guitar/기타;'+
+'bookstore/서점;bank/은행;library/도서관;museum/박물관;park/공원;straight/직진하여;block/블록, 구역;left/왼쪽;right/오른쪽;next to/~옆에').split(';').map(x=>{const[a,b]=x.split('/');return{en:a,kr:b}});
+let gO=[],gi=0,gs=0,gC=[],gT=0,gLock=false;
+function startGame(){gO=shuffle(VOCAB.map((_,i)=>i));gi=0;gs=0;show('screen-game');gQ()}
+function gQ(){
+  if(gi>=VOCAB.length)return gEnd();
+  const w=VOCAB[gO[gi]];gT=0;gLock=false;
+  gC=shuffle([w.kr,...shuffle(VOCAB.filter(v=>v.kr!==w.kr)).slice(0,3).map(v=>v.kr)]);
+  $('game-body').innerHTML=`<div class="qcard" style="--a:#ff7aa8"><div class="qcount">${gi+1} / ${VOCAB.length} · ⭐ ${gs}점</div>
+   <div class="sent en" style="font-size:44px;margin:14px 0 20px">${w.en}</div>
+   <div class="choices">${gC.map((c,k)=>`<button class="choice" style="font-family:Jua,sans-serif" onclick="gA(${k},this)">${c}</button>`).join('')}</div><div class="fb" id="gfb"></div></div>`;
+}
+function gA(k,b){
+  if(gLock)return;const w=VOCAB[gO[gi]],fb=$('gfb');
+  if(gC[k]===w.kr){
+    gLock=true;b.classList.add('ok');fb.className='fb good';fb.textContent='정답이에요! 🎉';
+    if(gT===0){gs++;save({game_score:gs});if(gs%10===0)fb.textContent=`🎊 ${gs}점 돌파! ${gs===40?'master 👑':''}`}
+    setTimeout(()=>{gi++;gQ()},gs%10===0&&gT===0?1600:800);
+  }else{gT++;b.classList.add('no');fb.className='fb bad';fb.textContent='다시 골라봐요! 💪';setTimeout(()=>b.classList.remove('no'),350)}
+}
+function gEnd(){
+  save({game_score:gs,game_done:true});
+  $('game-body').innerHTML=`<div class="done" style="border-color:#ff7aa8;box-shadow:0 6px 0 #ff7aa8"><div class="big">${gs===40?'🏆':'🎉'}</div><h3>${gs===40?'만점 돌파! master 👑':'40문제 완료!'}</h3><p>점수 ${gs}점</p><h3 style="color:var(--pink-d)">🎒 패드를 정리해 주세요</h3></div>`;
+}
+/* 선생님용 */
+let tTimer,tRows=[],tF=0;
+function tOpen(){const p=prompt('선생님 비밀번호');if(p===null)return;if(p!==TEACHER_PIN){alert('비밀번호가 달라요');return}$('t-overlay').classList.add('active');tLoad();clearInterval(tTimer);tTimer=setInterval(tLoad,10000)}
+function tClose(){$('t-overlay').classList.remove('active');clearInterval(tTimer)}
+async function tLoad(){
+  try{tRows=await loadAll();$('t-info').textContent=dbOn()?'☁️ 데이터베이스 연결됨 · 10초마다 자동 새로고침':'⚠️ DB 미연결: 이 기기의 기록만 보여요'}
+  catch(e){$('t-info').textContent='❌ 불러오기 실패 ('+e.message+')'}
+  tDraw();
+}
+const bd=s=>[10,20,30].filter(t=>s>=t).map(t=>`<span class="chip">${t}점 돌파</span>`).join('')+(s>=40?'<span class="chip m">master 👑</span>':'');
+function tDraw(){
+  $('t-tabs').innerHTML=[0,1,2,3,4,5,6,7,8].map(c=>`<button class="tb ${c===tF?'on':''}" onclick="tF=${c};tDraw()">${c?c+'반':'전체'}</button>`).join('');
+  const r=tRows.filter(x=>!tF||x.class_no===tF).sort((a,b)=>a.class_no-b.class_no||a.student_no-b.student_no);
+  const ok=r.filter(x=>x.mission_done),ing=r.filter(x=>!x.mission_done),id=x=>`<b>${x.class_no}반 ${x.student_no}번</b>`;
+  $('t-body').innerHTML=`<h3>🏆 미션 성공 (${ok.length}명)</h3>`+(ok.map(x=>`<div class="trw">${id(x)} · ⭐ ${x.game_score||0}점 ${x.game_done?'🏁':''} ${x.game_score?bd(x.game_score):'<span style="color:var(--soft)">게임 전</span>'}</div>`).join('')||'<p>아직 없어요</p>')
+   +`<h3>✏️ 진행 중 (${ing.length}명)</h3>`+(ing.map(x=>`<div class="trw">${id(x)} · 1단계 ${x.stage1?'✅':'⬜'} 2단계 ${x.stage2?'✅':'⬜'} 3단계 ${x.stage3?'✅':'⬜'}</div>`).join('')||'<p>없어요</p>');
+}
+['gesturestart','gesturechange','dblclick'].forEach(n=>document.addEventListener(n,e=>e.preventDefault()));
+let wl=null;const keepAwake=async()=>{try{if(navigator.wakeLock&&!wl){wl=await navigator.wakeLock.request('screen');wl.addEventListener('release',()=>{wl=null})}}catch(e){}};
+document.addEventListener('pointerdown',keepAwake);document.addEventListener('visibilitychange',()=>{if(!document.hidden)keepAwake()});
 refresh();
 </script>
 </body>
