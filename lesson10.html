@@ -293,7 +293,7 @@ html,body{-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
 <div class="overlay" id="r-overlay" style="z-index:58"><div class="mic-box"><div class="big">📌</div><h2>이어서 할 수 있어요!</h2><p id="r-info" style="font-size:20px"></p><button class="pbtn" onclick="doResume()">▶ 이어서 하기</button><p><button class="reset" onclick="doFresh()">처음부터 다시 하기</button></p></div></div>
 <div class="overlay" id="m-overlay" style="z-index:55"><div class="mic-box"><div class="big">🎉</div><h2>미션 완료를 축하합니다!</h2><p style="font-size:20px">이제 7~10단원 단어 복습 게임을 해봐요!</p><button class="pbtn" onclick="mCheck()">게임 시작하기</button></div></div>
 <div class="overlay" id="t-overlay" style="z-index:90;align-items:flex-start;overflow:auto;padding:8px"><div class="mic-box" style="max-width:1280px;width:100%;min-height:96vh;text-align:left;padding:20px 24px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2>📋 이수 현황</h2><div><button class="tb" onclick="tLoad()">🔄</button> <button class="tb" onclick="tDelAll()">🗑 목록 삭제</button> <button class="tb" onclick="tClose()">닫기</button></div></div><div id="t-info" style="font-size:14px;color:var(--soft);margin:6px 0"></div><div class="trow" id="t-tabs"></div><div id="t-body"></div></div></div>
-<button onclick="tOpen()" style="position:fixed;right:max(8px,env(safe-area-inset-right));bottom:max(4px,env(safe-area-inset-bottom));z-index:80;font:400 12px Jua;opacity:.45;background:none;border:0;color:#8a7b92;min-height:0;padding:6px 8px">선생님용</button>
+<button onclick="tOpen()" style="position:fixed;right:max(8px,env(safe-area-inset-right));bottom:max(4px,env(safe-area-inset-bottom));z-index:80;font:400 15px Jua;opacity:.9;background:rgba(74,59,82,.75);border:0;border-radius:99px;color:#fff;min-height:0;padding:10px 16px;margin:10px">선생님용</button>
 <script>
 const words=[
  {en:'bank',kr:'은행',e:'🏦'},{en:'library',kr:'도서관',e:'📚'},{en:'straight',kr:'직진하다',e:'⬆️'},
@@ -852,12 +852,23 @@ async function delRows(q,fn){
 function tDel(c,n){if(confirm(`${c}반 ${n}번 기록을 삭제할까요?`))delRows(`class_no=eq.${c}&student_no=eq.${n}`,(a,b)=>a===c&&b===n)}
 function tDelAll(){if(confirm(`${tF?tF+'반':'전체'} 기록을 모두 삭제할까요? 되돌릴 수 없어요.`))delRows(tF?`class_no=eq.${tF}`:'class_no=gte.0',a=>!tF||a===tF)}
 const bd=s=>[10,20,30].filter(t=>s>=t).map(t=>`<span class="chip">${t}점 돌파</span>`).join('')+(s>=40?'<span class="chip m">master 👑</span>':'');
+const SC=['#e6e2ea','#fff3c4','#ffd9a0','#a8ecce','#c9b3ff'],SN=['미접속','접속','진행 중','미션 완료','master'];
+const stat=x=>!x?0:x.game_score>=40?4:x.mission_done?3:(x.stage1||x.stage2||x.stage3)?2:1;
 function tDraw(){
   $('t-tabs').innerHTML=[0,1,2,3,4,5,6,7,8].map(c=>`<button class="tb ${c===tF?'on':''}" onclick="tF=${c};tDraw()">${c?c+'반':'전체'}</button>`).join('');
-  const r=tRows.filter(x=>!tF||x.class_no===tF).sort((a,b)=>a.class_no-b.class_no||a.student_no-b.student_no);
-  const ok=r.filter(x=>x.mission_done),ing=r.filter(x=>!x.mission_done),id=x=>`<button class="tb" style="float:right;font-size:16px;padding:6px 14px;min-height:40px" onclick="tDel(${x.class_no},${x.student_no})">삭제</button><b>${x.class_no}반 ${x.student_no}번</b>`;
-  $('t-body').innerHTML=`<h3>🏆 미션 성공 (${ok.length}명)</h3>`+(ok.map(x=>`<div class="trw">${id(x)} · ⭐ ${x.game_score||0}점 (${x.game_index||0}/40) ${x.game_done?'🏁':''} ${x.game_score?bd(x.game_score):'<span style="color:var(--soft)">게임 전</span>'}</div>`).join('')||'<p>아직 없어요</p>')
-   +`<h3>✏️ 진행 중 (${ing.length}명)</h3>`+(ing.map(x=>`<div class="trw">${id(x)} · 1단계 ${x.stage1?'✅':'⬜'} 2단계 ${x.stage2?'✅':'⬜'} 3단계 ${x.stage3?'✅':'⬜'}</div>`).join('')||'<p>없어요</p>');
+  const by={};tRows.forEach(x=>{by[x.class_no+'-'+x.student_no]=x});
+  const lg='<div style="margin:6px 0">'+SN.map((n,i)=>`<span class="chip" style="background:${SC[i]};color:#4a3b52">${n}</span>`).join('')+'</div>';
+  if(!tF){
+    $('t-body').innerHTML=lg+[1,2,3,4,5,6,7,8].map(c=>`<div style="display:flex;align-items:center;flex-wrap:wrap;margin:6px 0"><b style="width:70px;font-size:24px;cursor:pointer" onclick="tF=${c};tDraw()">${c}반</b>`+Array.from({length:26},(_,i)=>`<span onclick="tF=${c};tDraw()" style="width:44px;height:44px;line-height:44px;text-align:center;border-radius:10px;margin:2px;font-size:19px;cursor:pointer;background:${SC[stat(by[c+'-'+(i+1)])]}">${i+1}</span>`).join('')+'</div>').join('');
+    return;
+  }
+  const rows=Array.from({length:26},(_,i)=>by[tF+'-'+(i+1)]),ok=rows.filter(x=>x&&x.mission_done).length,on=rows.filter(Boolean).length;
+  $('t-body').innerHTML=lg+`<h3>${tF}반 · 접속 ${on}명 · 미션 완료 ${ok}명</h3>`+rows.map((x,i)=>{
+    const n=i+1;
+    if(!x)return `<div class="trw" style="color:#aaa;background:${SC[0]}55"><b>${n}번</b> · 미접속</div>`;
+    const ck=(v,sk)=>v?'✅':sk?'➖':'⬜';
+    return `<div class="trw" style="background:${SC[stat(x)]}88"><button class="tb" style="float:right;font-size:16px;padding:6px 14px;min-height:40px" onclick="tDel(${tF},${n})">삭제</button><b>${n}번</b> · 1단계 ${ck(x.stage1)} 2단계 ${ck(x.stage2,x.skip2)} 3단계 ${ck(x.stage3)} · `+(x.mission_done?`🏆 ⭐ ${x.game_score||0}점 (${x.game_index||0}/40) ${x.game_done?'🏁':''} ${bd(x.game_score||0)}`:'✏️ 진행 중')+'</div>';
+  }).join('');
 }
 ['gesturestart','gesturechange','dblclick'].forEach(n=>document.addEventListener(n,e=>e.preventDefault()));
 let wl=null;const keepAwake=async()=>{try{if(navigator.wakeLock&&!wl){wl=await navigator.wakeLock.request('screen');wl.addEventListener('release',()=>{wl=null})}}catch(e){}};
