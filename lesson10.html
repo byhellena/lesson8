@@ -51,7 +51,7 @@ background:radial-gradient(circle at 1px 1px,#ffd9e6 2px,transparent 2.5px) 0 0/
 .qcount{color:var(--a);font-size:14px;margin-bottom:6px}
 .qimg{font-size:92px;line-height:1.1}
 .qkr{display:inline-block;margin:6px 0 16px;padding:6px 20px;background:#fff3c4;border-radius:100px;font-size:26px;color:#8a5a00}
-.choices{display:grid;gap:10px}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .choice{font:800 21px 'Baloo 2';padding:13px;border-radius:20px;border:3px solid var(--sky);background:#fff;color:var(--sky-d);box-shadow:0 4px 0 var(--sky)}
 .choice:active{transform:translateY(3px);box-shadow:0 1px 0 var(--sky)}
 .choice.ok{background:var(--mint);border-color:var(--mint-d);color:#fff;box-shadow:0 4px 0 var(--mint-d)}
@@ -147,7 +147,7 @@ button{touch-action:manipulation}
   .wrap{max-width:880px;padding-top:22px}
   .title h1 b{font-size:38px}.title h1{font-size:26px}.mascot{font-size:78px}
   .stage-card{padding:20px}.stage-card h3{font-size:23px}.stage-card p{font-size:16px}.num{width:62px;height:62px;min-width:62px;font-size:32px}
-  .choices{grid-template-columns:repeat(3,1fr);gap:14px}
+  .choices{grid-template-columns:repeat(2,1fr);gap:14px}
   .choice{font-size:28px;padding:18px 8px}
   .qimg{font-size:112px}.qkr{font-size:30px}
   .sent{font-size:38px}.kr{font-size:23px}
@@ -351,7 +351,7 @@ function refresh(){
 }
 function goStage(n){
   show('screen-'+n);
-  if(n===1){i1=0;pos=makePos(words.length);r1()}if(n===2){i2=0;r2()}if(n===3)init3();
+  if(n===1){i1=0;use1={};pos=makePos(words.length);r1()}if(n===2){i2=0;r2()}if(n===3)init3();
 }
 function dots(n,total,idx,all){
   $('dots-'+n).innerHTML=Array.from({length:total},(_,i)=>`<div class="dot ${all||i<idx?'done':i===idx?'now':''}"></div>`).join('');
@@ -409,10 +409,12 @@ try{
   }).catch(()=>{});
 }catch(e){}
 /* STAGE 1 */
-let i1=0,pos=[];
+let i1=0,pos=[],use1={};
+/* 1단계 보기용 헷갈리는 단어(2·3단계에 나오는 단어들) */
+const decoys=[{en:'bank',kr:'은행'},{en:'zoo',kr:'동물원'},{en:'turn',kr:'돌다'},{en:'block',kr:'블록'},{en:'festival',kr:'축제'},{en:'October',kr:'10월'}];
 function makePos(n){
   let a;
-  do{a=shuffle(Array.from({length:n},(_,i)=>i%3))}while(a.some((v,i)=>i&&v===a[i-1]));
+  do{a=shuffle(Array.from({length:n},(_,i)=>i%4))}while(a.some((v,i)=>i&&v===a[i-1]));
   return a;
 }
 function r1(){
@@ -420,7 +422,9 @@ function r1(){
   const b=$('body-1');
   if(i1>=words.length){b.innerHTML=donePanel(1,'#3ec99a','1단계 완료!','단어 학습을 모두 마쳤어요.','finish(1)');return}
   const cur=words[i1];
-  const opts=shuffle(words.filter(w=>w.en!==cur.en)).slice(0,2);opts.splice(pos[i1],0,cur);
+  const pool=[...words.filter(w=>w.en!==cur.en),...decoys];
+  const opts=shuffle(pool).sort((a,b)=>(use1[a.en]||0)-(use1[b.en]||0)).slice(0,3);   /* 덜 나온 단어 우선 → 같은 단어만 반복되지 않음 */
+  opts.forEach(o=>use1[o.en]=(use1[o.en]||0)+1);opts.splice(pos[i1],0,cur);
   b.innerHTML=`<div class="qcard" style="--a:#4fb0ff"><div class="qcount">${i1+1} / ${words.length}</div>
    <div class="qimg">${cur.e}</div><div class="qkr">${cur.kr}</div>
    <div class="choices">${opts.map(o=>`<button class="choice" onclick="c1(this,'${o.en}')">${o.en}</button>`).join('')}</div>
