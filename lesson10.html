@@ -81,6 +81,9 @@ background:radial-gradient(circle at 1px 1px,#ffd9e6 2px,transparent 2.5px) 0 0/
 .sbf.hint{color:var(--orange-d);line-height:1.4}
 .tile{font:800 19px 'Baloo 2';padding:9px 15px;border-radius:16px;border:3px solid var(--purple);background:#fff;color:var(--purple-d);box-shadow:0 4px 0 var(--purple)}
 .tile.used{opacity:.25;box-shadow:none}
+.tile.glow{border-color:#ffb300;background:#fff7cc;box-shadow:0 4px 0 #ffb300,0 0 12px 3px #ffe066;animation:glw .9s ease-in-out infinite alternate}
+@keyframes glw{to{box-shadow:0 4px 0 #ffb300,0 0 22px 7px #ffd23f}}
+.hbox{margin-top:8px;padding:10px 12px;background:#fff8d6;border:3px dashed var(--orange);border-radius:16px;color:var(--orange-d);font-size:16px;line-height:1.6;text-align:left}.hbox b{font-family:'Baloo 2',sans-serif;font-weight:800;letter-spacing:1px;color:var(--pink-d)}
 .reset{background:#fff;border:2px solid var(--lock);border-radius:100px;padding:5px 14px;font:400 14px 'Jua';color:var(--soft)}
 .sbf{min-height:24px;margin-top:6px;font-size:17px;color:var(--mint-d)}.sbf.bad{color:#d65a5a}
 .done{background:#fff;border:4px solid var(--mint);border-radius:30px;box-shadow:0 6px 0 var(--mint);padding:30px 16px;text-align:center}
@@ -309,27 +312,25 @@ html,body{-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
 <button onclick="tOpen()" style="position:fixed;right:max(8px,env(safe-area-inset-right));bottom:max(4px,env(safe-area-inset-bottom));z-index:80;font:400 15px Jua;opacity:.9;background:rgba(74,59,82,.75);border:0;border-radius:99px;color:#fff;min-height:0;padding:10px 16px;margin:10px">선생님용</button>
 <script>
 const words=[
- {en:'bank',kr:'은행',e:'🏦'},{en:'library',kr:'도서관',e:'📚'},{en:'straight',kr:'직진하다',e:'⬆️'},
- {en:'right',kr:'오른쪽',e:'➡️'},{en:'left',kr:'왼쪽',e:'⬅️'}];
+ {en:'book store',kr:'서점',e:'📖'},{en:'library',kr:'도서관',e:'📚'},{en:'go straight',kr:'직진하다',e:'⬆️'},
+ {en:'right',kr:'오른쪽',e:'➡️'},{en:'left',kr:'왼쪽',e:'⬅️'},{en:'next to',kr:'~의 옆에',e:'↔️'}];
 const sentences=[
  {en:'Go straight one block.',kr:'한 블록 직진하세요.',e:'⬆️',key:'one'},
- {en:'Go straight two blocks.',kr:'두 블록 직진하세요.',e:'⬆️⬆️',key:'two'},
- {en:'Turn right at the bank.',kr:'은행에서 오른쪽으로 도세요.',e:'➡️🏦',key:'right bank'},
+ {en:'Go straight two blocks and turn left.',kr:'두 블록 직진해서 왼쪽으로 도세요.',e:'⬆️⬆️⬅️',key:'two left'},
+ {en:'Where is the book store?',kr:'서점은 어디에 있나요?',e:'❓📖',key:'where book store'},
  {en:'Turn left at the library.',kr:'도서관에서 왼쪽으로 도세요.',e:'⬅️📚',key:'left library'},
- {en:"Turn right at the McDonald's.",kr:'맥도날드에서 오른쪽으로 도세요.',e:'➡️🍔',key:'right mcdonalds'},
- {en:'Turn left at the school.',kr:'학교에서 왼쪽으로 도세요.',e:'⬅️🏫',key:'left school'},
+ {en:"It's next to the zoo.",kr:'동물원 옆에 있습니다.',e:'↔️🦁',key:'next zoo'},
+ {en:'On October 30th.',kr:'10월 30일에',e:'🎃📅',key:'october thirtieth'},
  {en:"It's on your left.",kr:'당신의 왼편에 있어요.',e:'📍⬅️',key:'left'},
- {en:"It's on your right.",kr:'당신의 오른편에 있어요.',e:'➡️📍',key:'right'},
- {en:'Go straight three blocks and turn right.',kr:'세 블록 직진해서 오른쪽으로 도세요.',e:'⬆️➡️',key:'three right'}];
+ {en:"It's on your right.",kr:'당신의 오른편에 있어요.',e:'➡️📍',key:'right'}];
 /* 문장 구성: w=전체 단어, b=학생이 채울 빈칸 위치(0부터), fake=헷갈리는 단어, suf=마침표 */
 const problems=[
- {kr:'한 블록 직진하세요.',w:['Go','straight','one','block'],b:[1,2],fake:['turn','blocks'],h:{turn:"turn은 '돌다'예요. 직진은 어떤 단어였죠? ⬆️",blocks:"한 블록일 때는 block, 여러 블록일 때는 blocks예요!"},suf:'.'},
- {kr:'두 블록 직진하세요.',w:['Go','straight','two','blocks'],b:[2,3],fake:['one','block'],h:{one:"one은 하나예요. 두 블록이니까 다른 숫자를 써요!",block:"블록이 둘 이상이면 block 끝에 s가 붙어요!"},suf:'.'},
- {kr:'은행에서 오른쪽으로 도세요.',w:['Turn','right','at','the','bank'],b:[1,4],fake:['left','library'],h:{left:"left는 왼쪽이에요. 오른쪽은 뭐였죠? ➡️",library:"library는 도서관이에요. 은행은 뭐였죠? 🏦"},suf:'.'},
- {kr:'10월 30일에 책 축제에 오세요.',w:['Come','to','the','book','festival','on','October','30th'],b:[0,4,6],fake:['Go','November'],h:{Go:"Go는 '가다'예요. 오라는 말은 다른 단어예요!",November:"November는 11월이에요. 10월은 뭐였죠?"},suf:'.'},
- {kr:'당신의 왼편에 있어요.',w:["It's",'on','your','left'],b:[1,3],fake:['in','right'],h:{in:"in은 '~안에'예요. 방향을 말할 땐 on을 써요!",right:"right는 오른편이에요. 왼편은 뭐였죠? ⬅️"},suf:'.'},
- {kr:'두 블록 직진해서 왼쪽으로 도세요.',w:['Go','straight','two','blocks','and','turn','left'],b:[2,5,6],fake:['one','right'],h:{one:"one은 하나예요. 두 블록이에요!",right:"right는 오른쪽이에요. 왼쪽으로 도는 거예요! ⬅️"},suf:'.'},
- {kr:'세 블록 직진해서 오른쪽으로 도세요.',w:['Go','straight','three','blocks','and','turn','right'],b:[2,5,6],fake:['two','left'],h:{two:"two는 둘이에요. 세 블록이니까 three를 써요!",left:"left는 왼쪽이에요. 오른쪽으로 도는 거예요! ➡️"},suf:'.'}];
+ {kr:'두 블록 직진하세요.',w:['Go','straight','two','blocks'],b:[2,3],fake:['one','block'],m:['둘(2)','블록들(2개 이상)'],h:{one:"one은 하나예요. 두 블록이니까 다른 숫자를 써요!",block:"블록이 둘 이상이면 block 끝에 s가 붙어요!"},suf:'.'},
+ {kr:'은행 옆에 있습니다.',w:["It's",'next','to','the','bank'],b:[1,2],fake:['on','in'],m:['~의 옆에 (첫 번째 단어)','~의 옆에 (두 번째 단어)'],h:{on:"on은 '~위에, ~에'예요. '~의 옆에'는 다른 두 단어였어요! ↔️",in:"in은 '~안에'예요. '~의 옆에'는 어떤 말이었죠? ↔️"},suf:'.'},
+ {kr:'10월 30일에 책 축제에 오세요.',w:['Come','to','the','book','festival','on','October','30th'],b:[0,4,6],fake:['Go','November'],m:['오다','축제','10월'],h:{Go:"Go는 '가다'예요. 오라는 말은 다른 단어예요!",November:"November는 11월이에요. 10월은 뭐였죠?"},suf:'.'},
+ {kr:'당신의 왼편에 있어요.',w:["It's",'on','your','left'],b:[1,3],fake:['in','right'],m:['~에 (위치를 말할 때)','왼쪽'],h:{in:"in은 '~안에'예요. 방향을 말할 땐 on을 써요!",right:"right는 오른편이에요. 왼편은 뭐였죠? ⬅️"},suf:'.'},
+ {kr:'두 블록 직진해서 왼쪽으로 도세요.',w:['Go','straight','two','blocks','and','turn','left'],b:[2,5,6],fake:['one','right'],m:['둘(2)','돌다','왼쪽'],h:{one:"one은 하나예요. 두 블록이에요!",right:"right는 오른쪽이에요. 왼쪽으로 도는 거예요! ⬅️"},suf:'.'},
+ {kr:'세 블록 직진해서 오른쪽으로 도세요.',w:['Go','straight','three','blocks','and','turn','right'],b:[2,5,6],fake:['two','left'],m:['셋(3)','돌다','오른쪽'],h:{two:"two는 둘이에요. 세 블록이니까 three를 써요!",left:"left는 왼쪽이에요. 오른쪽으로 도는 거예요! ➡️"},suf:'.'}];
 problems.forEach(p=>{p.ok=p.b.map(j=>p.w[j])});
 const state={1:false,2:false,3:false};
 let skip2=false;
@@ -466,9 +467,9 @@ function say(){
   try{const u=new SpeechSynthesisUtterance(sentences[i2].en);u.lang='en-US';u.rate=.9;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}
 }
 const NUM={'1':'one','2':'two','3':'three','4':'four','5':'five'};
-const SAME={to:'two',too:'two',their:'there',theyre:'there',theres:'there',whats:'what',write:'right',rite:'right',strait:'straight',won:'one'};
+const SAME={to:'two',too:'two',their:'there',theyre:'there',theres:'there',whats:'what',write:'right',rite:'right',strait:'straight',won:'one',thirty:'thirtieth'};
 function norm(s){
-  s=s.toLowerCase().replace(/what's/g,'what is').replace(/there's/g,'there is').replace(/it's/g,'it is').replace(/[1-5]/g,m=>' '+NUM[m]+' ');
+  s=s.toLowerCase().replace(/\b30(th)?\b/g,' thirtieth ').replace(/what's/g,'what is').replace(/there's/g,'there is').replace(/it's/g,'it is').replace(/[1-5]/g,m=>' '+NUM[m]+' ');
   return s.replace(/[^a-z\s]/g,'').split(/\s+/).filter(Boolean).map(w=>SAME[w]||w).filter(w=>w!=='a'&&w!=='the'&&w!=='uh');
 }
 function lev(a,b){
@@ -702,7 +703,7 @@ function next2(){held=false;waitingMic=false;judging=false;noSoundFails=0;i2++;r
 /* STAGE 3 : 일부 단어는 미리 채워져 있고, 빈칸만 학생이 채움 */
 const sb=[];
 function init3(){
-  problems.forEach((p,i)=>{sb[i]={slots:p.ok.map(()=>null),bank:shuffle([...p.ok,...p.fake]),src:p.ok.map(()=>null),solved:false,msg:'',bad:false}});
+  problems.forEach((p,i)=>{sb[i]={slots:p.ok.map(()=>null),bank:shuffle([...p.ok,...p.fake]),src:p.ok.map(()=>null),solved:false,msg:'',bad:false,wrong:0}});
   r3();
 }
 function r3(){
@@ -718,9 +719,9 @@ function r3(){
     }).join('');
     return `<div class="sb ${s.solved?'solved':''}"><div class="sbt">${i+1}. ${p.kr}</div>
      <div class="row">${row}<span class="fx">${p.suf}</span></div>
-     <div class="bank">${s.bank.map((w,k)=>`<button class="tile ${s.src.includes(k)?'used':''}" onclick="pick(${i},${k})">${w}</button>`).join('')}</div>
+     <div class="bank">${s.bank.map((w,k)=>`<button class="tile ${s.src.includes(k)?'used':(s.wrong>=3&&p.ok.includes(w)?'glow':'')}" onclick="pick(${i},${k})">${w}</button>`).join('')}</div>
      <button class="reset" onclick="reset(${i})">🔄 다시하기</button>
-     <div class="sbf ${s.bad?'hint':''}">${s.solved?'성공! 🎉':s.msg}</div></div>`;
+     <div class="sbf ${s.bad?'hint':''}">${s.solved?'성공! 🎉':(s.msg||(s.wrong>=3?strongHint(i):''))}</div></div>`;
   }).join('');
   $('bottom-home').classList.toggle('glow',all);
   if(all&&!state[3]){state[3]=true;save({stage3:true});if(needDone())setTimeout(showMission,1200)}
@@ -732,6 +733,12 @@ function hintFor(i){
   const n=s.slots.findIndex((w,k)=>w!==p.ok[k]);
   return `💡 단어는 모두 맞아요! 빈칸 ${n+1}번째부터 순서를 다시 생각해봐요. 빨간 칸을 눌러 바꿔봐요!`;
 }
+function strongHint(i){
+  const p=problems[i];
+  const pat=p.w.map((w,j)=>{const k=p.b.indexOf(j);return k<0?w:`<b>${w[0]}${'_'.repeat(w.length-1)}</b>`}).join(' ')+p.suf;
+  const lines=p.ok.map((w,k)=>`${k+1}번 빈칸 : ${p.m[k]} → <b>${w[0]}${'_'.repeat(w.length-1)}</b> (${w.length}글자)`).join('<br>');
+  return `<div class="hbox">🔥 힌트 대방출!<br>${p.kr}<br>👉 ${pat}<br>${lines}<br>✨ 노랗게 빛나는 카드가 정답 단어예요. 순서대로 놓아 보세요!</div>`;
+}
 function pick(i,k){
   const s=sb[i],p=problems[i];
   if(s.solved||s.src.includes(k))return;
@@ -739,7 +746,7 @@ function pick(i,k){
   s.slots[e]=s.bank[k];s.src[e]=k;s.msg='';
   if(s.slots.every(Boolean)){
     if(s.slots.join(' ')===p.ok.join(' '))s.solved=true;
-    else{s.bad=true;s.msg=hintFor(i)}
+    else{s.bad=true;s.wrong++;s.msg=hintFor(i)+(s.wrong>=3?strongHint(i):'')}
   }
   r3();
 }
