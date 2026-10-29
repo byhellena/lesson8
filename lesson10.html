@@ -326,11 +326,9 @@ const sentences=[
 /* 문장 구성: w=전체 단어, b=학생이 채울 빈칸 위치(0부터), fake=헷갈리는 단어, suf=마침표 */
 const problems=[
  {kr:'두 블록 직진하세요.',w:['Go','straight','two','blocks'],b:[2,3],fake:['one','block'],m:['둘(2)','블록들(2개 이상)'],h:{one:"one은 하나예요. 두 블록이니까 다른 숫자를 써요!",block:"블록이 둘 이상이면 block 끝에 s가 붙어요!"},suf:'.'},
- {kr:'은행 옆에 있습니다.',w:["It's",'next','to','the','bank'],b:[1,2],fake:['on','in'],m:['~의 옆에 (첫 번째 단어)','~의 옆에 (두 번째 단어)'],h:{on:"on은 '~위에, ~에'예요. '~의 옆에'는 다른 두 단어였어요! ↔️",in:"in은 '~안에'예요. '~의 옆에'는 어떤 말이었죠? ↔️"},suf:'.'},
  {kr:'10월 30일에 책 축제에 오세요.',w:['Come','to','the','book','festival','on','October','30th'],b:[0,4,6],fake:['Go','November'],m:['오다','축제','10월'],h:{Go:"Go는 '가다'예요. 오라는 말은 다른 단어예요!",November:"November는 11월이에요. 10월은 뭐였죠?"},suf:'.'},
  {kr:'당신의 왼편에 있어요.',w:["It's",'on','your','left'],b:[1,3],fake:['in','right'],m:['~에 (위치를 말할 때)','왼쪽'],h:{in:"in은 '~안에'예요. 방향을 말할 땐 on을 써요!",right:"right는 오른편이에요. 왼편은 뭐였죠? ⬅️"},suf:'.'},
- {kr:'두 블록 직진해서 왼쪽으로 도세요.',w:['Go','straight','two','blocks','and','turn','left'],b:[2,5,6],fake:['one','right'],m:['둘(2)','돌다','왼쪽'],h:{one:"one은 하나예요. 두 블록이에요!",right:"right는 오른쪽이에요. 왼쪽으로 도는 거예요! ⬅️"},suf:'.'},
- {kr:'세 블록 직진해서 오른쪽으로 도세요.',w:['Go','straight','three','blocks','and','turn','right'],b:[2,5,6],fake:['two','left'],m:['셋(3)','돌다','오른쪽'],h:{two:"two는 둘이에요. 세 블록이니까 three를 써요!",left:"left는 왼쪽이에요. 오른쪽으로 도는 거예요! ➡️"},suf:'.'}];
+ {kr:'두 블록 직진해서 왼쪽으로 도세요.',w:['Go','straight','two','blocks','and','turn','left'],b:[2,5,6],fake:['one','right'],m:['둘(2)','돌다','왼쪽'],h:{one:"one은 하나예요. 두 블록이에요!",right:"right는 오른쪽이에요. 왼쪽으로 도는 거예요! ⬅️"},suf:'.'}];
 problems.forEach(p=>{p.ok=p.b.map(j=>p.w[j])});
 const state={1:false,2:false,3:false};
 let skip2=false;
