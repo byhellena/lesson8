@@ -128,7 +128,7 @@ html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:10
    <li><span class="ic">✅</span><div>친구가 <b>엔터 키</b>를 누르면 빈칸이 열리고 <b>+1점</b>이 쌓이며 다음 빈칸으로 넘어가요.</div></li>
    <li><span class="ic">❌</span><div>열어 봤는데 내가 말한 답과 다르면, 친구가 <em>감점 −1</em> 버튼을 <b>한 번에 1점씩</b> 눌러 주세요.</div></li>
    <li><span class="ic">↩️</span><div>박스를 <b>잘못 열었다면</b> 되돌리기 버튼을 눌러 주세요.</div></li>
-   <li><span class="ic">⏱️</span><div><b>시간도 점수에 들어가요!</b> 첫 박스가 열릴 때부터 마지막 박스가 열릴 때까지 재요. LEVEL 1·2는 <em>1분</em>, HARD LEVEL은 <em>1분 20초</em>가 넘으면 10초마다 −1점이에요.</div></li>
+   <li><span class="ic">⏱️</span><div><b>시간도 점수에 들어가요!</b> 첫 박스가 열릴 때부터 마지막 박스가 열릴 때까지 재요. LEVEL 1은 <em>1분 20초</em>, LEVEL 2는 <em>1분 40초</em>, HARD LEVEL은 <em>1분 20초</em>가 넘으면 10초마다 −1점이에요.</div></li>
    <li><span class="ic">🏆</span><div>점수는 <b>레벨마다 따로</b> 계산되고, LEVEL 1·2는 <b>총점으로 합산</b>하고, 🔥 <b>HARD LEVEL</b>은 따로 점수가 매겨져요.</div></li>
   </ol>
   <button id="ok">알겠어요! 시작할게요 🚀</button>
@@ -182,7 +182,7 @@ const state={1:mk(),2:mk(),3:mk()};
 let view='study',level=1,items=[],si=0,rev=false;
 const list=document.getElementById('list'),$=id=>document.getElementById(id);
 const esc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-const GRACE={1:60,2:60,3:80};
+const GRACE={1:80,2:100,3:80};
 const lname=l=>l===3?'HARD LEVEL':'LEVEL '+l;
 const TIER=[[.9,'🏅 최상급','상위 10%'],[.7,'⭐ 상위권','상위 30%']];
 const tier=l=>{const s=state[l];if(!s.done)return null;const r=score(l)/total(l);return TIER.find(t=>r>=t[0])||null};
