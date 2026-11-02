@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Welcome to Monet’s House – Let’s Read</title>
 <style>
 :root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
@@ -15,7 +15,7 @@ header h1{margin:0;font-size:max(2.8vh,18px);color:#2f5fbf}
 .tabs button{font:inherit;font-weight:700;font-size:max(2.2vh,14px);padding:.8vh 1.6vh;border:.3vh solid #8fb6ea;border-radius:2vh;background:#fff;color:#2f5fbf;cursor:pointer}
 .tabs button.on{background:#2f5fbf;color:#fff}
 .info{font-size:max(1.9vh,12px);color:#456}
-main{max-width:1100px;margin:0 auto;padding:2vh 3vw 36vh}
+main{max-width:1100px;margin:0 auto;padding:2vh 3vw 40vh}
 .s{position:relative;background:#fff;border:.35vh solid #8fb6ea;border-radius:2vh;padding:2.2vh 2.5vw;margin:0 0 2vh;font-weight:700;font-size:min(5vh,4.2vw);line-height:1.9;text-align:center}
 .s.title{font-size:min(6vh,5vw);color:#2f5fbf}
 .gap{height:3vh;text-align:center;color:#6aa84f;font-size:max(2vh,13px)}
@@ -44,6 +44,9 @@ main{max-width:1100px;margin:0 auto;padding:2vh 3vw 36vh}
 .stcard small{font-size:max(2.2vh,14px);font-weight:400;color:#777}
 .stcard .k2{font-size:max(2.6vh,15px);color:#9a7a30;font-weight:400}
 #clock{display:none;font-weight:700;font-variant-numeric:tabular-nums;font-size:max(2.8vh,17px);padding:.6vh 1.8vh;border-radius:2vh;background:#fff;color:#2f5fbf;border:.3vh solid #8fb6ea}
+#tr{display:none;font-weight:700;font-size:max(2.2vh,14px);color:#fff;background:#e8590c;border-radius:2vh;padding:.4vh 1.4vh}
+.tot.hard{background:#fff4e6;border-color:#ff922b}
+.note2{text-align:center;font-weight:700;color:#e8590c;font-size:max(2.4vh,15px);margin:-.6vh 0 2vh}
 #clock.over{background:#ffe3e3;color:#e03131;border-color:#e03131}
 #clock small{font-weight:400;font-size:.6em;margin-left:.7em}
 /* 설명 화면 */
@@ -88,6 +91,23 @@ footer button.sm{font-size:max(1.9vh,12px);padding:1vh 1.6vh}
 .grand{background:linear-gradient(135deg,#fff3c4,#ffe08a);border-color:#f2b84b;color:#5a3a00;font-size:min(5vh,5.4vw)}
 .grand .sc{font-size:min(9vh,11vw);color:#d6336c}
 .note{text-align:center;color:#a55;font-size:max(2.2vh,14px);margin:1vh 0 2vh}
+
+/* 화면 크기 고정 · 하단 바 */
+html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%;overscroll-behavior-y:none}
+#clock{display:inline-block!important;visibility:hidden;width:min(44vh,46vw);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+@media (max-width:1100px){.info{display:none}}
+#fscore.show{display:grid;grid-template-columns:repeat(12,1fr);grid-template-rows:11vh 7vh;gap:1vh 1vw;align-items:stretch}
+#fscore button{padding:0 1vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:max(2.3vh,14px)}
+#fscore .score{grid-column:1/5;grid-row:1;flex-direction:column;align-items:flex-start;justify-content:center;gap:.3vh;margin:0;min-width:0;position:relative}
+#fscore .score b{font-size:max(5.2vh,30px);line-height:1}
+#fscore .score span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+#fscore #tr{position:absolute;right:0;top:0;overflow:visible;max-width:none}
+#fscore #pen{grid-column:5/9;grid-row:1;font-size:max(3.6vh,21px);border-radius:2.4vh}
+#fscore #next{grid-column:9/13;grid-row:1;font-size:max(3.6vh,21px);border-radius:2.4vh}
+#fscore #unpen{grid-column:1/4;grid-row:2}
+#fscore #undo{grid-column:4/7;grid-row:2}
+#fscore #help{grid-column:7/10;grid-row:2}
+#fscore #reset{grid-column:10/13;grid-row:2}
 </style>
 </head>
 <body>
@@ -108,13 +128,13 @@ footer button.sm{font-size:max(1.9vh,12px);padding:1vh 1.6vh}
    <li><span class="ic">✅</span><div>친구가 <b>엔터 키</b>를 누르면 빈칸이 열리고 <b>+1점</b>이 쌓이며 다음 빈칸으로 넘어가요.</div></li>
    <li><span class="ic">❌</span><div>열어 봤는데 내가 말한 답과 다르면, 친구가 <em>감점 −1</em> 버튼을 <b>한 번에 1점씩</b> 눌러 주세요.</div></li>
    <li><span class="ic">↩️</span><div>박스를 <b>잘못 열었다면</b> 되돌리기 버튼을 눌러 주세요.</div></li>
-   <li><span class="ic">⏱️</span><div><b>시간도 점수에 들어가요!</b> 첫 박스가 열릴 때부터 마지막 박스가 열릴 때까지 재요. LEVEL 1·2는 <em>1분</em>, LEVEL 3은 <em>1분 20초</em>가 넘으면 10초마다 −1점이에요.</div></li>
-   <li><span class="ic">🏆</span><div>점수는 <b>레벨마다 따로</b> 계산되고, LEVEL 1~3이 끝나면 <b>총점으로 합산</b>해요.</div></li>
+   <li><span class="ic">⏱️</span><div><b>시간도 점수에 들어가요!</b> 첫 박스가 열릴 때부터 마지막 박스가 열릴 때까지 재요. LEVEL 1·2는 <em>1분</em>, HARD LEVEL은 <em>1분 20초</em>가 넘으면 10초마다 −1점이에요.</div></li>
+   <li><span class="ic">🏆</span><div>점수는 <b>레벨마다 따로</b> 계산되고, LEVEL 1·2는 <b>총점으로 합산</b>하고, 🔥 <b>HARD LEVEL</b>은 따로 점수가 매겨져요.</div></li>
   </ol>
   <button id="ok">알겠어요! 시작할게요 🚀</button>
 </div></div>
 <footer id="fscore">
-  <div class="score"><b id="scv">0</b><span id="scd"></span></div>
+  <div class="score"><b id="scv">0</b><span id="scd"></span><span id="tr"></span></div>
   <button class="pen" id="pen">감점 −1</button>
   <button class="sm" id="unpen">감점 취소</button>
   <button class="main" id="next">다음 빈칸 (Enter)</button>
@@ -163,6 +183,9 @@ let view='study',level=1,items=[],si=0,rev=false;
 const list=document.getElementById('list'),$=id=>document.getElementById(id);
 const esc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
 const GRACE={1:60,2:60,3:80};
+const lname=l=>l===3?'HARD LEVEL':'LEVEL '+l;
+const TIER=[[.9,'🏅 최상급','상위 10%'],[.7,'⭐ 상위권','상위 30%']];
+const tier=l=>{const s=state[l];if(!s.done)return null;const r=score(l)/total(l);return TIER.find(t=>r>=t[0])||null};
 const fmt=sec=>Math.floor(sec/60)+':'+String(Math.floor(sec%60)).padStart(2,'0');
 const elapsed=l=>{const s=state[l];return (s.acc+(s.run?Date.now()-s.run:0))/1000};
 const tpen=l=>Math.max(0,Math.floor((elapsed(l)-GRACE[l])/10));
@@ -171,9 +194,9 @@ function pauseT(l){const s=state[l];if(s.run){s.acc+=Date.now()-s.run;s.run=null
 function resumeT(l){const s=state[l];if(s.started&&!s.done&&!s.run)s.run=Date.now()}
 function updateClock(){
   const c=$('clock');
-  if(!L.includes(view)){c.style.display='none';return}
+  if(!L.includes(view)){c.style.visibility='hidden';return}
   const s=state[level],e=elapsed(level),g=GRACE[level],tp=tpen(level),over=e>=g;
-  c.style.display='inline-block';c.className=over?'over':'';
+  c.style.visibility='visible';c.className=over?'over':'';
   c.textContent='⏱ '+fmt(e);
   const sm=document.createElement('small');
   sm.textContent=!s.started?'첫 박스를 열면 시작 · 제한 '+fmt(g):s.done?'✔ 완료 · 시간 감점 −'+tp:over?'시간 감점 −'+tp:'제한 '+fmt(g);
@@ -261,7 +284,7 @@ function updateScore(){
   if(!L.includes(view))return;
   const s=state[level];
   $('scv').textContent=score(level)+'점';
-  $('scd').textContent='LEVEL '+level+' · 열기 +'+s.open.size+' / 감점 −'+s.pen+' / 시간 −'+tpen(level)+' · '+s.open.size+'/'+total(level)+'칸';
+  $('scd').textContent=lname(level)+' · 열기 +'+s.open.size+' / 감점 −'+s.pen+' / 시간 −'+tpen(level)+' · '+s.open.size+'/'+total(level)+'칸';const tt=level===3?tier(3):null;$('tr').style.display=tt?'inline-block':'none';$('tr').textContent=tt?tt[1]+' ('+tt[2]+')':'';
   updateClock();
 }
 
@@ -269,28 +292,34 @@ function updateScore(){
 let armedAll=false;
 function renderTotal(){
   list.innerHTML='';let sum=0,max=0,unfinished=false;
-  L.forEach(l=>{
+  const row=l=>{
     const s=state[l],sc=score(l),fin=s.open.size===total(l);
-    sum+=sc;max+=total(l);if(!fin)unfinished=true;
     const d=document.createElement('div');d.className='tot';
-    d.innerHTML='<div>LEVEL '+l+'<small></small></div><div class="sc"></div>';
+    d.innerHTML='<div><span class="nm"></span><small></small></div><div class="sc"></div>';
+    d.querySelector('.nm').textContent=lname(l);
     d.querySelector('small').textContent='열기 +'+s.open.size+' / 감점 −'+s.pen+' / 시간 감점 −'+tpen(l)+' ('+fmt(elapsed(l))+') · '+(fin?'끝까지 완료':'진행 중 ('+s.open.size+'/'+total(l)+'칸)');
     d.querySelector('.sc').textContent=sc+'점 / '+total(l);
-    list.appendChild(d);
-  });
+    list.appendChild(d);return{sc,fin,d};
+  };
+  [1,2].forEach(l=>{const r=row(l);sum+=r.sc;max+=total(l);if(!r.fin)unfinished=true});
   const g=document.createElement('div');g.className='tot grand';
   g.innerHTML='<div>🏆 총점<small></small></div><div class="sc"></div>';
-  g.querySelector('small').textContent='LEVEL 1~3 합계 (만점 '+max+'점)';
+  g.querySelector('small').textContent='LEVEL 1·2 합계 (만점 '+max+'점)';
   g.querySelector('.sc').textContent=sum+'점';
   list.appendChild(g);
   if(unfinished){const n=document.createElement('div');n.className='note';n.textContent='아직 끝나지 않은 단계가 있어요. 지금까지의 점수로 계산한 총점이에요.';list.appendChild(n)}
+  const gp=document.createElement('div');gp.className='gap';gp.textContent='▼ 총점에 합산되지 않는 도전 ▼';list.appendChild(gp);
+  const h3=row(3);h3.d.classList.add('hard');
+  const t=tier(3),nb=document.createElement('div');nb.className='note2';
+  nb.textContent=t?t[1]+' · '+t[2]+' 점수예요!':(h3.fin?'도전 완료! (최상급: 만점의 90% 이상 · 상위권: 70% 이상)':'HARD LEVEL을 끝까지 마치면 등급이 표시돼요. (최상급: 90% 이상 · 상위권: 70% 이상)');
+  list.appendChild(nb);
   const r=document.createElement('button');r.className='btn';r.textContent='전체 점수 초기화';
   r.onclick=()=>{if(!armedAll){armedAll=true;r.textContent='한 번 더 누르면 전체 초기화';setTimeout(()=>{armedAll=false;r.textContent='전체 점수 초기화'},3000)}else{armedAll=false;L.forEach(l=>state[l]=mk());renderTotal()}};
   const w=document.createElement('div');w.style.textAlign='center';w.appendChild(r);list.appendChild(w);
 }
 
 /* ---------- 화면 전환 ---------- */
-const VIEWS=[['study','📖 본문 학습'],[1,'LEVEL 1'],[2,'LEVEL 2'],[3,'LEVEL 3'],['total','🏆 총점']];
+const VIEWS=[['study','📖 본문 학습'],[1,'LEVEL 1'],[2,'LEVEL 2'],[3,'🔥 HARD LEVEL'],['total','🏆 총점']];
 const tabs=$('tabs');
 VIEWS.forEach(([v,t])=>{const b=document.createElement('button');b.textContent=t;b.dataset.v=v;b.onclick=()=>{setView(v);b.blur()};tabs.appendChild(b)});
 function setView(v){
@@ -312,10 +341,17 @@ const bind=(id,f)=>{const b=$(id);b.onclick=()=>{f();b.blur()};b.onkeyup=e=>{if(
 bind('next',next);bind('help',showIntro);bind('undo',undo);
 bind('pen',()=>{state[level].pen++;updateScore()});
 bind('unpen',()=>{if(state[level].pen>0){state[level].pen--;updateScore()}});
+let rsT=null;
 bind('reset',()=>{
   const b=$('reset');
-  if(!armed){armed=true;b.textContent='한 번 더 누르면 초기화';setTimeout(()=>{armed=false;b.textContent='이 단계 초기화'},3000)}
-  else{armed=false;b.textContent='이 단계 초기화';state[level]=mk();renderLevel();window.scrollTo(0,0)}
+  clearTimeout(rsT);
+  if(!armed){
+    armed=true;b.textContent='⚠️ 한 번 더!';b.style.background='#e03131';b.style.color='#fff';
+    rsT=setTimeout(()=>{armed=false;b.textContent='이 단계 초기화';b.style.background='';b.style.color=''},5000);
+  }else{
+    armed=false;b.textContent='이 단계 초기화';b.style.background='';b.style.color='';
+    state[level]=mk();renderLevel();window.scrollTo(0,0);
+  }
 });
 bind('sreset',()=>{stRev.clear();renderStudy();window.scrollTo(0,0)});bind('sgo',()=>setView(1));
 document.addEventListener('keydown',e=>{
