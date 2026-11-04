@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>텐세그리티 가상 실험실</title>
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#e6eff1;--pn:#fff;--tx:#17323a;--ac:#0f8b8d;--bd:#c3d5d9;--cv:#f5fafb;--gr:#dcebee;--gl:#b9d0d5;--ok:#17743f;--bad:#b3392b;--okb:#e0f4e8;--badb:#fbe6e2;--inb:#eef5f6;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0c1a20;--pn:#162b33;--tx:#e3f0f2;--ac:#3cc3c5;--bd:#2c4a55;--cv:#0f212a;--gr:#16303a;--gl:#2b4a55;--ok:#6fd49a;--bad:#ff9a8c;--okb:#173a28;--badb:#43211d;--inb:#1d3640;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0c1a20;--pn:#162b33;--tx:#e3f0f2;--ac:#3cc3c5;--bd:#2c4a55;--cv:#0f212a;--gr:#16303a;--gl:#2b4a55;--ok:#6fd49a;--bad:#ff9a8c;--okb:#173a28;--badb:#43211d;--inb:#1d3640;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--tx);font-family:"Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif;font-size:16px;line-height:1.55}
+#app{display:flex;height:100%;gap:12px;padding:12px}
+#side{width:310px;flex:none;background:var(--pn);border:1px solid var(--bd);border-radius:14px;padding:14px;overflow-y:auto}
+h1{font-family:Jua,"Noto Sans KR",sans-serif;font-weight:400;font-size:24px;margin:0 0 4px}
+h2{font-family:Jua,"Noto Sans KR",sans-serif;font-weight:400;font-size:17px;margin:16px 0 6px}
+p.s{margin:0;font-size:13px;opacity:.8}
+.chips{display:grid;gap:6px}
+.chip{display:flex;align-items:center;gap:10px;text-align:left;width:100%;padding:7px 10px;border:2px solid var(--bd);border-radius:10px;background:var(--inb);color:var(--tx);font:inherit;cursor:pointer}
+.chip.on{border-color:var(--ac);background:var(--pn);box-shadow:0 0 0 2px var(--ac) inset}
+.chip i{display:block;flex:none;width:44px;border-radius:4px}
+.chip small{display:block;opacity:.75;font-size:12px}
+button.b{font:inherit;padding:10px 14px;border-radius:10px;border:2px solid var(--ac);background:var(--ac);color:#fff;cursor:pointer;margin:6px 6px 0 0}
+button.b.g{background:transparent;color:var(--tx);border-color:var(--bd)}
+button.b:focus-visible,.chip:focus-visible{outline:3px solid #f2a516;outline-offset:2px}
+#msg{white-space:pre-line;margin-top:14px;padding:12px 14px;border-radius:10px;background:var(--inb);font-size:14px}
+#msg.ok{background:var(--okb);color:var(--ok)}#msg.bad{background:var(--badb);color:var(--bad)}
+#stage{position:relative;flex:1;min-width:0;border:1px solid var(--bd);border-radius:14px;overflow:hidden;background:var(--cv)}
+canvas{width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+#badge{position:absolute;left:12px;top:12px;padding:4px 12px;border-radius:99px;background:var(--pn);border:1px solid var(--bd);font-family:Jua,sans-serif}
+#tip{position:absolute;left:12px;right:12px;bottom:10px;font-size:12.5px;opacity:.8}
+@media (max-width:760px){#app{flex-direction:column-reverse}#side{width:100%;max-height:48%}}
+</style></head><body>
+<div id="app">
+<aside id="side">
+<h1>텐세그리티 실험실</h1>
+<p class="s">🎯 <b>미션</b>: 막대를 줄로 이어서, 막대끼리 닿지 않고 공중에 뜬 것처럼 세워 보세요! 막대는 <b>밀고</b>, 줄은 <b>당겨요</b>.</p>
+<h2>① 막대(압축 부재) 고르기</h2>
+<div class="chips" id="sc"></div>
+<button class="b" id="addS">막대 놓기</button>
+<h2>② 줄(장력 부재) 고르기</h2>
+<div class="chips" id="cc"></div>
+<p class="s" style="margin-top:8px">막대 끝의 동그란 점을 <b>차례로 두 번 클릭</b>하면 선택한 줄이 연결돼요.</p>
+<h2>③ 균형 확인</h2>
+<button class="b" id="go">▶ 균형 시험하기</button>
+<button class="b g" id="rs">처음 모양으로</button>
+<button class="b g" id="un">되돌리기</button>
+<button class="b g" id="ex">예시 불러오기</button>
+<button class="b g" id="cl">모두 지우기</button>
+<div id="msg" role="status">1) 막대를 3개 놓아요.
+2) 줄을 고르고 막대 끝점을 두 번 클릭해 이어요.
+3) “균형 시험하기”를 눌러요!
+(어려우면 “예시 불러오기”를 먼저 구경해요.)</div>
+</aside>
+<main id="stage"><canvas id="cv"></canvas><div id="badge">만드는 중</div>
+<div id="tip">빈 곳 드래그: 화면 돌리기 · 휠/두 손가락: 확대·축소 · 막대 끝 드래그: 방향 바꾸기 · 막대 가운데 드래그: 옮기기</div></main>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const S=[{n:'나무 막대',L:1.25,w:8,c:'#c08a4a',cap:'round'},{n:'짧고 굵은 막대',L:.9,w:12,c:'#8a5a2b',cap:'butt'},{n:'긴 철 막대',L:1.6,w:5,c:'#8ea3b3',cap:'butt'},{n:'플라스틱 빨대',L:1.1,w:4,c:'#2fb0a0',cap:'round'}];
+const C=[{n:'고무줄',d:'쭉 늘어나고 되돌아와요',sh:.8,k:.05,c:'#e0457b',w:2.8,dash:[]},{n:'실(끈)',d:'늘어나지 않아요',sh:.97,k:.6,c:'#55646b',w:2.2,dash:[]}];
+let N=[],st=[],cb=[],acts=[],selS=0,selC=0,sel=-1,mode='build',snap=null,yaw=.6,pit=.35,D=5.2,t=0,calm=0,res=null,drag=null;
+const cv=$('cv'),g=cv.getContext('2d'),T=[0,.6,0];
+let W=1,H=1,cy_,sy_,cp_,sp_;
+function mk(list,box,sel0,fn){box.innerHTML='';list.forEach((o,i)=>{const b=document.createElement('button');b.className='chip'+(i==sel0?' on':'');
+b.innerHTML=`<i style="height:${o.w+2}px;background:${o.c};${o.dash&&o.dash.length?'background:repeating-linear-gradient(90deg,'+o.c+' 0 6px,transparent 6px 10px)':''};border-radius:${o.cap=='round'?'99px':'2px'}"></i><span>${o.n}<small>${o.L?'길이 '+Math.round(o.L*40)+'cm':o.d}</small></span>`;
+b.onclick=()=>{fn(i);[...box.children].forEach((x,j)=>x.classList.toggle('on',j==i))};box.appendChild(b)})}
+mk(S,$('sc'),0,i=>selS=i);mk(C,$('cc'),0,i=>selC=i);
+function msg(s,c){const m=$('msg');m.textContent=s;m.className=c||''}
+function addStrut(ti){const k=st.length,a=k*2.399,L=S[ti].L,bx=.5*Math.cos(a),bz=.5*Math.sin(a);
+let dx=.4*Math.cos(a+1.2),dz=.4*Math.sin(a+1.2),l=Math.hypot(dx,1,dz);dx/=l;dz/=l;const dy=1/l;
+N.push({x:bx,y:.02,z:bz},{x:bx+dx*L,y:.02+dy*L,z:bz+dz*L});st.push({t:ti});acts.push('s')}
+function addCable(a,b,ti){if(a==b||a>>1==b>>1||cb.some(c=>(c.a==a&&c.b==b)||(c.a==b&&c.b==a)))return;cb.push({a,b,t:ti});acts.push('c')}
+function reset(){N=[];st=[];cb=[];acts=[];sel=-1;mode='build';res=null;hl=null;bad=[];badge()}
+function badge(){$('badge').textContent=mode=='build'?'만드는 중':'시험 중'}
+$('addS').onclick=()=>{if(mode!='build')return;if(st.length>=8)return msg('막대는 8개까지 놓을 수 있어요.');addStrut(selS);msg('막대를 놓았어요. 끝점을 드래그해서 원하는 방향으로 세워 보세요.')};
+$('cl').onclick=()=>{reset();msg('모두 지웠어요. 새로 시작해 볼까요?')};
+$('un').onclick=()=>{if(mode!='build')return;const a=acts.pop();if(a=='c')cb.pop();else if(a=='s'){st.pop();N.length-=2;cb=cb.filter(c=>c.a<N.length&&c.b<N.length)}sel=-1};
+$('rs').onclick=()=>{if(mode=='test'&&snap){N=snap.map(n=>({...n}));mode='build';res=null;hl=null;bad=[];badge();msg('처음 모양으로 돌아왔어요. 줄이나 막대를 고쳐서 다시 시험해 보세요.')}};
+$('ex').onclick=()=>{reset();const L=S[0].L,r=.5,h=Math.sqrt(L*L-Math.pow(2*r*Math.sin(5*Math.PI/12),2));
+for(let k=0;k<3;k++){const a=k*2*Math.PI/3,b=a+5*Math.PI/6;N.push({x:r*Math.cos(a),y:.02,z:r*Math.sin(a)},{x:r*Math.cos(b),y:.02+h,z:r*Math.sin(b)});st.push({t:0})}
+for(let i=0;i<3;i++){addCable(2*i,2*((i+1)%3),0);addCable(2*i+1,2*((i+1)%3)+1,0);addCable(2*i,2*((i+2)%3)+1,0)}
+msg('예시를 불러왔어요. 시험해 보고, 줄 종류를 바꿔 어떻게 달라지는지 비교해 보세요.')};
+function dist(a,b){return Math.hypot(N[a].x-N[b].x,N[a].y-N[b].y,N[a].z-N[b].z)}
+$('go').onclick=()=>{if(mode!='build')return;if(st.length<2||cb.length<3)return msg('막대 2개 이상, 줄 3개 이상이 필요해요.','bad');
+snap=N.map(n=>({...n}));N.forEach(n=>{n.px=n.x;n.py=n.y;n.pz=n.z});cb.forEach(c=>c.rest=dist(c.a,c.b)*C[c.t].sh);
+mode='test';t=0;calm=0;res=null;sel=-1;hl=null;bad=[];badge();msg('시험 중… 잠시 기다려 보세요.')};
+function step(){const d2=1/57600;
+for(let s=0;s<4;s++){N.forEach(n=>{const x=n.x+(n.x-n.px)*.998,y=n.y+(n.y-n.py)*.998-9.8*d2,z=n.z+(n.z-n.pz)*.998;n.px=n.x;n.py=n.y;n.pz=n.z;n.x=x;n.y=y;n.z=z});
+for(let it=0;it<8;it++){
+st.forEach((q,k)=>{const a=N[2*k],b=N[2*k+1],L=S[q.t].L;let dx=b.x-a.x,dy=b.y-a.y,dz=b.z-a.z,d=Math.hypot(dx,dy,dz)||1e-6,f=(d-L)/d*.5;a.x+=dx*f;a.y+=dy*f;a.z+=dz*f;b.x-=dx*f;b.y-=dy*f;b.z-=dz*f});
+cb.forEach(c=>{const a=N[c.a],b=N[c.b];let dx=b.x-a.x,dy=b.y-a.y,dz=b.z-a.z,d=Math.hypot(dx,dy,dz)||1e-6;if(d>c.rest){const f=(d-c.rest)/d*.5*C[c.t].k;a.x+=dx*f;a.y+=dy*f;a.z+=dz*f;b.x-=dx*f;b.y-=dy*f;b.z-=dz*f}});
+N.forEach(n=>{if(n.y<0){n.y=0;n.x-=(n.x-n.px)*.5;n.z-=(n.z-n.pz)*.5}})}}
+let sp=0;N.forEach(n=>sp=Math.max(sp,Math.hypot(n.x-n.px,n.y-n.py,n.z-n.pz)*240));
+t+=1/60;calm=sp<.06?calm+1/60:0;if(!res&&((t>2&&calm>1)||t>14))judge()}
+let hl=null,bad=[];
+function lab(i){return (i>>1)+1+'번 막대의 '+(N[i].y>=N[i^1].y?'윗끝':'아랫끝')}
+function judge(){hl=null;bad=[];const top=Math.max(...N.map(n=>n.y)),minL=Math.min(...st.map(q=>S[q.t].L)),ok=top>.45*minL,still=calm>1,cm=Math.round(top*40);
+const ten=cb.map(c=>(dist(c.a,c.b)-c.rest)/c.rest),taut=ten.filter(v=>v>-.01).length,deg=N.map((n,i)=>cb.filter(c=>c.a==i||c.b==i).length);
+const comp=st.map((q,k)=>{const a=N[2*k],b=N[2*k+1],L=S[q.t].L,u=[(b.x-a.x)/L,(b.y-a.y)/L,(b.z-a.z)/L];let s=0;
+cb.forEach((c,j)=>{const tv=Math.max(0,ten[j]);[[2*k,1],[2*k+1,-1]].forEach(([n,sg])=>{if(c.a==n||c.b==n){const o=N[c.a==n?c.b:c.a],m=N[n],l=dist(c.a,c.b)||1;s+=tv*(((o.x-m.x)*u[0]+(o.y-m.y)*u[1]+(o.z-m.z)*u[2])/l)*sg}})});return s});
+if(ok&&still){const od=ten.map((v,i)=>i).sort((x,y)=>ten[y]-ten[x]),c1=cb[od[0]],ks=comp.indexOf(Math.max(...comp));hl={c:od.slice(0,2),s:ks};res='ok';
+msg(`🎉 균형 성공! 높이 ${cm}cm로 서 있어요.\n💪 가장 팽팽하게 당기는 줄: ${lab(c1.a)} ↔ ${lab(c1.b)} (${C[c1.t].n})\n🪵 가장 많이 눌리는 막대: ${ks+1}번 막대\n노랗게 빛나는 곳이 힘이 가장 센 곳이에요. 줄이 막대 끝을 바깥에서 당기고, 막대는 안에서 버티며 밀어내요. 당기는 힘과 미는 힘이 맞서서 균형이 잡혔어요!`,'ok')}
+else if(ok){res='mid';msg(`서 있긴 한데 아직 흔들려요 (높이 ${cm}cm).\n줄이 느슨한 곳이 있을 수 있어요. 고무줄을 더 팽팽하게 이어 보거나 줄을 하나 더 연결해 보세요.`)}
+else{const f=[];const lo=deg.findIndex(d=>d==0);if(lo>=0){f.push(`${lab(lo)}에 줄이 하나도 없어요. 줄이 안 잡아 주는 끝은 힘을 받을 곳이 없어서 쓰러져요.`);bad=[lo]}
+const one=deg.findIndex(d=>d==1);if(!f.length&&one>=0){f.push(`${lab(one)}에는 줄이 1개뿐이에요. 끝마다 줄을 2~3개씩 이어야 사방에서 잡아 줘요.`);bad=[one]}
+if(cb.length<2*st.length)f.push(`줄이 모자라요. 막대가 ${st.length}개면 줄은 ${2*st.length}개 이상 필요해요.`);
+if(taut<cb.length*.5)f.push('늘어져서 흐릿한 줄이 많아요. 느슨한 줄은 당기는 힘이 없어서 막대를 못 잡아요. 고무줄로 바꾸거나 이을 끝점들을 더 가깝게 놓아 보세요.');
+if(cb.every(c=>c.t==1))f.push('실만 쓰면 쭉 당겨 주지 못해요. 고무줄을 섞어 보세요.');
+if(!f.length)f.push('줄이 한쪽으로만 몰려서 막대가 끌려갔어요. 막대 끝마다 다른 막대의 위끝·아랫끝으로 골고루 엇갈리게 이어 보세요.');
+res='bad';msg('😢 무너졌어요.\n'+f.slice(0,2).join('\n')+'\n“처음 모양으로”를 눌러 고친 뒤 다시 도전해요!','bad')}}
+function judgeOld(){const top=Math.max(...N.map(n=>n.y)),minL=Math.min(...st.map(q=>S[q.t].L)),ok=top>.45*minL,still=calm>1;
+const loose=N.findIndex((n,i)=>!cb.some(c=>c.a==i||c.b==i))>=0,cm=Math.round(top*40);
+if(ok&&still){res='ok';msg(`🎉 균형 성공! 줄이 막대를 잡아 주어서 높이 ${cm}cm로 서 있어요. 화면을 돌려 어느 줄이 팽팽한지 살펴보세요.`,'ok')}
+else if(ok){res='mid';msg(`서 있긴 하지만 아직 흔들려요(높이 ${cm}cm). 줄을 더 연결하거나 더 팽팽한 줄로 바꿔 보세요.`)}
+else{res='bad';msg('무너졌어요. '+(loose?'줄이 하나도 연결되지 않은 막대 끝이 있어요. ':'')+'막대 끝마다 줄을 2~3개씩 이어 보고, 막대를 서로 엇갈리게 세워 보세요. “처음 모양으로”를 눌러 다시 고칠 수 있어요.','bad')}}
+/* 3D */
+function R(x,y,z,inv){if(!inv){let a=x*cy_+z*sy_,b=-x*sy_+z*cy_;x=a;z=b;let c=y*cp_-z*sp_;z=y*sp_+z*cp_;y=c}
+else{let y1=y*cp_+z*sp_,z1=-y*sp_+z*cp_;let a=x*cy_-z1*sy_,b=x*sy_+z1*cy_;x=a;z=b;y=y1}return[x,y,z]}
+function P(x,y,z){const[a,b,c]=R(x-T[0],y-T[1],z-T[2]),F=Math.min(W,H)*.95,s=F/(D-c);return{x:W/2+a*s,y:H*.56-b*s,s,z:c}}
+function seg(p,q,m){const dx=q.x-p.x,dy=q.y-p.y,l=dx*dx+dy*dy,u=l?Math.max(0,Math.min(1,((m.x-p.x)*dx+(m.y-p.y)*dy)/l)):0;return Math.hypot(m.x-p.x-u*dx,m.y-p.y-u*dy)}
+function hitNode(m){let b=-1,bd=16;N.forEach((n,i)=>{const p=P(n.x,n.y,n.z),d=Math.hypot(p.x-m.x,p.y-m.y);if(d<bd){bd=d;b=i}});return b}
+function hitBody(m){for(let k=0;k<st.length;k++){const a=N[2*k],b=N[2*k+1];if(seg(P(a.x,a.y,a.z),P(b.x,b.y,b.z),m)<10)return k}return -1}
+function xy(e){const r=cv.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
+const ptrs=new Map();let pinch=0;
+cv.onpointerdown=e=>{cv.setPointerCapture(e.pointerId);const m=xy(e);ptrs.set(e.pointerId,m);if(ptrs.size==2){const[a,b]=[...ptrs.values()];pinch=Math.hypot(a.x-b.x,a.y-b.y);drag=null;return}
+drag={lx:m.x,ly:m.y,mv:0,node:-1,body:-1};if(mode=='build'){drag.node=hitNode(m);if(drag.node<0)drag.body=hitBody(m)}};
+cv.onpointermove=e=>{const m=xy(e);if(!ptrs.has(e.pointerId))return;ptrs.set(e.pointerId,m);
+if(ptrs.size==2){const[a,b]=[...ptrs.values()],d=Math.hypot(a.x-b.x,a.y-b.y);D=Math.max(2.5,Math.min(12,D*pinch/d));pinch=d;return}
+if(!drag)return;const dx=m.x-drag.lx,dy=m.y-drag.ly;drag.mv+=Math.abs(dx)+Math.abs(dy);drag.lx=m.x;drag.ly=m.y;
+if(drag.node>=0&&drag.mv>5){const n=N[drag.node],o=N[drag.node^1],p=P(n.x,n.y,n.z),w=R(dx/p.s,-dy/p.s,0,true),L=S[st[drag.node>>1].t].L;
+let vx=n.x+w[0]-o.x,vy=n.y+w[1]-o.y,vz=n.z+w[2]-o.z,l=Math.hypot(vx,vy,vz)||1;n.x=o.x+vx/l*L;n.y=Math.max(0,o.y+vy/l*L);n.z=o.z+vz/l*L}
+else if(drag.body>=0&&drag.mv>5){const a=N[2*drag.body],b=N[2*drag.body+1],p=P(a.x,a.y,a.z),w=R(dx/p.s,-dy/p.s,0,true),lift=Math.max(0,-Math.min(a.y+w[1],b.y+w[1]));
+[a,b].forEach(n=>{n.x+=w[0];n.y+=w[1]+lift;n.z+=w[2]})}
+else if(drag.node<0&&drag.body<0){yaw-=dx*.01;pit=Math.max(-.3,Math.min(1.45,pit+dy*.01))}};
+cv.onpointerup=cv.onpointercancel=e=>{ptrs.delete(e.pointerId);if(drag&&drag.node>=0&&drag.mv<=5&&mode=='build'){const i=drag.node;
+if(sel<0){sel=i;msg('줄의 한쪽 끝을 골랐어요. 이어질 다른 막대의 끝점을 클릭하세요.')}else if(sel==i)sel=-1;
+else if(sel>>1==i>>1){msg('같은 막대의 양 끝은 줄로 잇지 않아요. 다른 막대의 끝점을 골라 보세요.','bad');sel=-1}
+else{addCable(sel,i,selC);sel=-1;msg(`${C[selC].n}을(를) 연결했어요. (줄 ${cb.length}개)`)}}drag=null;if(ptrs.size<2)pinch=0};
+cv.onwheel=e=>{e.preventDefault();D=Math.max(2.5,Math.min(12,D*(1+e.deltaY*.001)))};
+/* draw */
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()}
+function draw(){const dp=devicePixelRatio||1,r=cv.getBoundingClientRect();if(cv.width!=Math.round(r.width*dp)||cv.height!=Math.round(r.height*dp)){cv.width=Math.round(r.width*dp);cv.height=Math.round(r.height*dp)}
+W=r.width;H=r.height;g.setTransform(dp,0,0,dp,0,0);g.clearRect(0,0,W,H);
+cy_=Math.cos(yaw);sy_=Math.sin(yaw);cp_=Math.cos(pit);sp_=Math.sin(pit);
+if(mode=='test'&&!res||mode=='test'&&t<20)step();
+const gr=css('--gr'),gl=css('--gl'),tx=css('--tx');
+const Q=[[-2.5,-2.5],[2.5,-2.5],[2.5,2.5],[-2.5,2.5]].map(a=>P(a[0],0,a[1]));g.fillStyle=gr;g.beginPath();Q.forEach((p,i)=>i?g.lineTo(p.x,p.y):g.moveTo(p.x,p.y));g.fill();
+g.strokeStyle=gl;g.lineWidth=1;g.beginPath();for(let i=-2.5;i<=2.5;i+=.5){let a=P(i,0,-2.5),b=P(i,0,2.5),c=P(-2.5,0,i),d=P(2.5,0,i);g.moveTo(a.x,a.y);g.lineTo(b.x,b.y);g.moveTo(c.x,c.y);g.lineTo(d.x,d.y)}g.stroke();
+N.forEach(n=>{const p=P(n.x,0,n.z);g.fillStyle='rgba(0,0,0,.18)';g.beginPath();g.ellipse(p.x,p.y,6*p.s/160*Math.max(1,2.2-n.y),3*p.s/160*Math.max(1,2.2-n.y),0,0,7);g.fill()});
+const items=[];
+st.forEach((q,k)=>{const a=N[2*k],b=N[2*k+1],pa=P(a.x,a.y,a.z),pb=P(b.x,b.y,b.z);items.push({z:(pa.z+pb.z)/2,f:()=>{const o=S[q.t];g.lineCap=o.cap;g.setLineDash([]);g.strokeStyle=o.c;g.lineWidth=o.w*(pa.s+pb.s)/2/170;g.beginPath();g.moveTo(pa.x,pa.y);g.lineTo(pb.x,pb.y);g.stroke()}})});
+cb.forEach(c=>{const a=N[c.a],b=N[c.b],pa=P(a.x,a.y,a.z),pb=P(b.x,b.y,b.z),o=C[c.t];let tn=0;if(mode=='test')tn=Math.max(0,Math.min(1,(dist(c.a,c.b)-c.rest)/(c.rest*.25+1e-6)));
+items.push({z:(pa.z+pb.z)/2+.001,f:()=>{g.lineCap='round';g.setLineDash(o.dash);g.strokeStyle=o.c;g.globalAlpha=mode=='test'?.4+.6*tn:1;g.lineWidth=(o.w+tn*2)*(pa.s+pb.s)/2/170;g.beginPath();g.moveTo(pa.x,pa.y);g.lineTo(pb.x,pb.y);g.stroke();g.globalAlpha=1;g.setLineDash([])}})});
+items.sort((a,b)=>a.z-b.z).forEach(i=>i.f());
+if(hl){g.lineCap='round';g.setLineDash([]);g.strokeStyle='rgba(255,200,40,.55)';hl.c.forEach(j=>{const c=cb[j],a=N[c.a],b=N[c.b],p=P(a.x,a.y,a.z),q=P(b.x,b.y,b.z);g.lineWidth=10*(p.s+q.s)/340;g.beginPath();g.moveTo(p.x,p.y);g.lineTo(q.x,q.y);g.stroke()});
+const a=N[2*hl.s],b=N[2*hl.s+1],p=P(a.x,a.y,a.z),q=P(b.x,b.y,b.z);g.lineWidth=18*(p.s+q.s)/340;g.beginPath();g.moveTo(p.x,p.y);g.lineTo(q.x,q.y);g.stroke()}
+if(mode=='test')bad.forEach(i=>{const p=P(N[i].x,N[i].y,N[i].z);g.beginPath();g.arc(p.x,p.y,14,0,7);g.lineWidth=3;g.strokeStyle='#e5391f';g.stroke()});
+g.font='700 15px sans-serif';g.textAlign='center';g.fillStyle=tx;st.forEach((q,k)=>{const a=N[2*k],b=N[2*k+1],p=P((a.x+b.x)/2,(a.y+b.y)/2,(a.z+b.z)/2);g.fillText(k+1,p.x+16,p.y)});
+if(mode=='build')N.forEach((n,i)=>{const p=P(n.x,n.y,n.z);g.beginPath();g.arc(p.x,p.y,i==sel?9:6.5,0,7);g.fillStyle=i==sel?'#f2a516':css('--pn');g.fill();g.lineWidth=2.5;g.strokeStyle=i==sel?'#c47d00':tx;g.stroke()});
+requestAnimationFrame(draw)}
+draw();
+</script></body></html>
