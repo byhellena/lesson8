@@ -24,72 +24,195 @@ p.s{margin:0;font-size:13px;opacity:.8}
 button.b{font:inherit;padding:10px 14px;border-radius:10px;border:2px solid var(--ac);background:var(--ac);color:#fff;cursor:pointer;margin:6px 6px 0 0}
 button.b.g{background:transparent;color:var(--tx);border-color:var(--bd)}
 button.b:focus-visible,.chip:focus-visible{outline:3px solid #f2a516;outline-offset:2px}
-#msg{white-space:pre-line;margin-top:14px;padding:12px 14px;border-radius:10px;background:var(--inb);font-size:14px}
+#msg{white-space:pre-line;margin-top:14px;padding:12px 14px;border-radius:10px;background:var(--inb);font-size:14px;position:sticky;bottom:0;z-index:2;box-shadow:0 0 0 6px var(--pn),0 16px 0 6px var(--pn)}
 #msg.ok{background:var(--okb);color:var(--ok)}#msg.bad{background:var(--badb);color:var(--bad)}
-#stage{position:relative;flex:1;min-width:0;border:1px solid var(--bd);border-radius:14px;overflow:hidden;background:var(--cv)}
+#stage{display:grid;grid-template-columns:30px 1fr;grid-template-rows:30px 1fr;flex:1;min-width:0;border:1px solid var(--bd);border-radius:14px;overflow:hidden;background:var(--cv)}
 canvas{width:100%;height:100%;display:block;touch-action:none;cursor:grab}
 #badge{position:absolute;left:12px;top:12px;padding:4px 12px;border-radius:99px;background:var(--pn);border:1px solid var(--bd);font-family:Jua,sans-serif}
 #tip{position:absolute;left:12px;right:12px;bottom:10px;font-size:12.5px;opacity:.8}
+canvas{cursor:default}
+#cn{grid-area:1/1;display:flex;align-items:center;justify-content:center;background:var(--pn);font-size:14px}
+#cw{position:relative;grid-area:2/2;min-width:0;min-height:0}
+.bar{display:flex;background:var(--pn);user-select:none;touch-action:none}
+.bar.h{grid-area:1/2;border-bottom:1px solid var(--bd)}.bar.v{grid-area:2/1;flex-direction:column;border-right:1px solid var(--bd)}
+.bar .tr{position:relative;flex:1;background:var(--inb)}
+.bar .th{position:absolute;background:var(--ac);border-radius:8px;opacity:.85;cursor:pointer;touch-action:none}
+.bar.h .th{top:4px;bottom:4px;width:64px}.bar.v .th{left:4px;right:4px;height:64px}
+.bar .ab{flex:none;width:30px;height:30px;border:0;background:var(--pn);color:var(--tx);cursor:pointer;font-size:12px;padding:0}
+.bar .th:focus-visible,.bar .ab:focus-visible{outline:3px solid #f2a516}
+#ask{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);background:var(--pn);border:2px solid #e08a00;border-radius:14px;padding:16px 20px;text-align:center;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+#ask[hidden]{display:none}#ask p{margin:0 0 6px;font-family:Jua,sans-serif;font-size:19px}
 @media (max-width:760px){#app{flex-direction:column-reverse}#side{width:100%;max-height:48%}}
+#split{position:absolute;inset:0;display:flex}
+.pane{position:relative;flex:1 1 0;min-width:0;min-height:0;overflow:hidden}
+.pane[hidden]{display:none}
+.pane canvas{position:absolute;left:0;top:0;width:100%;height:100%}
+#p2{border-left:3px solid var(--ac)}
+.ph{position:absolute;left:10px;right:10px;top:10px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.ph .tag{padding:4px 12px;border-radius:99px;background:var(--pn);border:1px solid var(--bd);font-family:Jua,"Noto Sans KR",sans-serif}
+.ph button.b{margin:0;padding:4px 10px;font-size:13px;border-radius:8px;background:var(--pn);color:var(--tx);border-color:var(--bd)}
+#exc{grid-template-columns:repeat(3,1fr);margin-top:6px}
+#exc .chip{flex-direction:column;justify-content:center;text-align:center;gap:2px;padding:8px 4px;font-size:14px}
+#exc .chip b{font-size:22px;font-weight:400;line-height:1.2}
+#sb{position:absolute;right:10px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;z-index:3}
+#sb[hidden]{display:none}
+#sb button{display:flex;flex-direction:column;align-items:center;gap:2px;width:80px;padding:8px 4px;border-radius:12px;border:2px solid var(--ac);background:var(--pn);color:var(--tx);font:inherit;font-size:13px;line-height:1.25;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.14)}
+#sb button b{font-size:22px;line-height:1;font-weight:700}
+#sb button:focus-visible{outline:3px solid #f2a516;outline-offset:2px}
+@media (max-width:760px){#split{flex-direction:column}#p2{border-left:0;border-top:3px solid var(--ac)}#sb{top:8px;right:8px;transform:none;flex-direction:row}#sb button{width:68px;font-size:12px}}
+#split.two #tip{display:none}
+#tip{right:70px}
+#tr{position:absolute;right:12px;bottom:12px;z-index:3;width:52px;height:52px;border-radius:50%;border:2px solid var(--bad);background:var(--pn);color:var(--bad);font-size:24px;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+#tr[hidden]{display:none}
+#tr:focus-visible,#del:focus-visible{outline:3px solid #f2a516;outline-offset:2px}
+button.b:disabled{opacity:.45;cursor:default}
 </style></head><body>
 <div id="app">
 <aside id="side">
 <h1>텐세그리티 실험실</h1>
 <p class="s">🎯 <b>미션</b>: 막대를 줄로 이어서, 막대끼리 닿지 않고 공중에 뜬 것처럼 세워 보세요! 막대는 <b>밀고</b>, 줄은 <b>당겨요</b>.</p>
-<h2>① 막대(압축 부재) 고르기</h2>
+<h2>① 압축 부재·본드 고르기</h2>
 <div class="chips" id="sc"></div>
-<button class="b" id="addS">막대 놓기</button>
+<div id="shw"><p class="s" style="margin:8px 0 4px">모양 고르기 (막대로 만들어요)</p><div class="chips" id="shp" style="grid-template-columns:repeat(3,1fr)"></div></div>
+<button class="b" id="addS">재료 놓기</button><button class="b g" id="del" disabled>🗑 삭제하기</button>
+<p class="s" style="margin-top:10px">▢ 화면에서 재료를 누르면 점선 상자로 선택돼요. 가운데를 끌면 옮겨요.</p>
+<div id="tools"><button class="b g" data-r="0">⟲ 돌리기</button><button class="b g" data-r="1">⟳ 돌리기</button><button class="b g" data-r="2">⤴ 기울이기</button><button class="b g" data-r="3">⤵ 기울이기</button></div>
 <h2>② 줄(장력 부재) 고르기</h2>
 <div class="chips" id="cc"></div>
 <p class="s" style="margin-top:8px">막대 끝의 동그란 점을 <b>차례로 두 번 클릭</b>하면 선택한 줄이 연결돼요.</p>
 <h2>③ 균형 확인</h2>
 <button class="b" id="go">▶ 균형 시험하기</button>
 <button class="b g" id="rs">처음 모양으로</button>
-<button class="b g" id="un">되돌리기</button>
-<button class="b g" id="ex">예시 불러오기</button>
+<button class="b g" id="un">↩ 방금 한 작업 취소</button>
 <button class="b g" id="cl">모두 지우기</button>
+<h2>④ 예시 불러오기</h2>
+<p class="s">모양을 하나 고르면 옆 칸에 예시가 나타나서 내 작업과 나란히 비교할 수 있어요.</p>
+<div class="chips" id="exc"></div>
 <div id="msg" role="status">1) 막대를 3개 놓아요.
 2) 줄을 고르고 막대 끝점을 두 번 클릭해 이어요.
 3) “균형 시험하기”를 눌러요!
-(어려우면 “예시 불러오기”를 먼저 구경해요.)</div>
+(어려우면 아래 “예시 불러오기”에서 모양을 골라 구경해요.)</div>
 </aside>
-<main id="stage"><canvas id="cv"></canvas><div id="badge">만드는 중</div>
-<div id="tip">빈 곳 드래그: 화면 돌리기 · 휠/두 손가락: 확대·축소 · 막대 끝 드래그: 방향 바꾸기 · 막대 가운데 드래그: 옮기기</div></main>
+<main id="stage"><div id="cn" title="화면 돌리기">🔄</div>
+<div class="bar h" id="hb"><button class="ab" data-d="-1" aria-label="왼쪽으로 돌리기">◀</button><div class="tr"><div class="th" role="slider" tabindex="0" aria-label="화면 좌우로 돌리기"></div></div><button class="ab" data-d="1" aria-label="오른쪽으로 돌리기">▶</button></div>
+<div class="bar v" id="vb"><button class="ab" data-d="-1" aria-label="위에서 보기">▲</button><div class="tr"><div class="th" role="slider" tabindex="0" aria-label="화면 위아래로 보기"></div></div><button class="ab" data-d="1" aria-label="아래에서 보기">▼</button></div>
+<div id="cw"><div id="split"><section class="pane" id="p1"><canvas id="cv"></canvas><div id="badge">만드는 중</div>
+<button id="tr" hidden title="선택한 재료 삭제하기" aria-label="선택한 재료 삭제하기">🗑</button>
+<div id="sb" role="group" aria-label="선택한 재료 자세 바꾸기"><button data-k="up" title="선택한 재료를 수직으로 세워요"><b>↕</b>수직으로<br>세우기</button><button data-k="flat" title="선택한 재료를 수평으로 눕혀요"><b>↔</b>수평으로<br>눕히기</button></div>
+<div id="ask" hidden><p>이대로 붙입니까?</p><button class="b" id="yes">예</button><button class="b g" id="no">아니요</button></div>
+<div id="tip">위쪽 막대: 화면 좌우 돌리기 · 왼쪽 막대: 위아래 보기 · 휠/두 손가락: 확대·축소 · 재료 가운데 끌기: 옮기기 · 막대 끝 끌기: 방향 바꾸기 · 오른쪽 버튼: 선택한 재료 세우기/눕히기</div></section>
+<section class="pane" id="p2" hidden><canvas id="cv2"></canvas><div class="ph"><span class="tag" id="exn">예시</span><span class="tag" id="exs"></span><button class="b g" id="exr">⟲ 다시 보기</button><button class="b g" id="exu">내 작업으로 가져오기</button><button class="b g" id="exx">✕ 닫기</button></div></section></div></div></main>
 </div>
 <script>
 const $=id=>document.getElementById(id);
-const S=[{n:'나무 막대',L:1.25,w:8,c:'#c08a4a',cap:'round'},{n:'짧고 굵은 막대',L:.9,w:12,c:'#8a5a2b',cap:'butt'},{n:'긴 철 막대',L:1.6,w:5,c:'#8ea3b3',cap:'butt'},{n:'플라스틱 빨대',L:1.1,w:4,c:'#2fb0a0',cap:'round'}];
+const S=[{n:'나무 막대',L:1.25,w:8,c:'#c08a4a',cap:'round'},{n:'나무 막대',L:.75,w:8,c:'#b07a3a',cap:'round'},{n:'나무 막대',L:.25,w:8,c:'#d6a566',cap:'round'},{n:'짧고 얇은 막대',L:.5,w:4,c:'#6b7f8a',cap:'round'}];
 const C=[{n:'고무줄',d:'쭉 늘어나고 되돌아와요',sh:.8,k:.05,c:'#e0457b',w:2.8,dash:[]},{n:'실(끈)',d:'늘어나지 않아요',sh:.97,k:.6,c:'#55646b',w:2.2,dash:[]}];
-let N=[],st=[],cb=[],acts=[],selS=0,selC=0,sel=-1,mode='build',snap=null,yaw=.6,pit=.35,D=5.2,t=0,calm=0,res=null,drag=null;
-const cv=$('cv'),g=cv.getContext('2d'),T=[0,.6,0];
+let N=[],st=[],cb=[],gl=[],rg=[],so=null,US=[],noU=0,pn=0,pend=null,shp=0,selS=0,selC=0,sel=-1,mode='build',snap=null,yaw=.6,pit=.35,D=5.2,t=0,calm=0,res=null,drag=null,EX=null,quiet=false;
+let cv=$('cv'),g=cv.getContext('2d');const T=[0,.6,0],cv2=$('cv2'),g2=cv2.getContext('2d');
 let W=1,H=1,cy_,sy_,cp_,sp_;
 function mk(list,box,sel0,fn){box.innerHTML='';list.forEach((o,i)=>{const b=document.createElement('button');b.className='chip'+(i==sel0?' on':'');
 b.innerHTML=`<i style="height:${o.w+2}px;background:${o.c};${o.dash&&o.dash.length?'background:repeating-linear-gradient(90deg,'+o.c+' 0 6px,transparent 6px 10px)':''};border-radius:${o.cap=='round'?'99px':'2px'}"></i><span>${o.n}<small>${o.L?'길이 '+Math.round(o.L*40)+'cm':o.d}</small></span>`;
 b.onclick=()=>{fn(i);[...box.children].forEach((x,j)=>x.classList.toggle('on',j==i))};box.appendChild(b)})}
-mk(S,$('sc'),0,i=>selS=i);mk(C,$('cc'),0,i=>selC=i);
-function msg(s,c){const m=$('msg');m.textContent=s;m.className=c||''}
+mk([...S,{n:'본드',d:'거의 붙은 두 재료를 붙여요',c:'#f0d98a',w:10,cap:'round'}],$('sc'),0,i=>{selS=i;upd()});
+$('shp').innerHTML=['▬ 막대','△ 세모','□ 네모'].map((t,i)=>`<button class="chip${i?'':' on'}" data-i="${i}">${t}</button>`).join('');
+$('shp').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;shp=+b.dataset.i;[...$('shp').children].forEach(x=>x.classList.toggle('on',x==b))};
+function upd(){$('shw').style.display=selS==S.length?'none':'block';$('addS').textContent=selS==S.length?'🧴 본드 쓰기':'재료 놓기'}mk(C,$('cc'),0,i=>selC=i);
+function msg(s,c){if(quiet)return;const m=$('msg');m.textContent=s;m.className=c||''}
 function addStrut(ti){const k=st.length,a=k*2.399,L=S[ti].L,bx=.5*Math.cos(a),bz=.5*Math.sin(a);
 let dx=.4*Math.cos(a+1.2),dz=.4*Math.sin(a+1.2),l=Math.hypot(dx,1,dz);dx/=l;dz/=l;const dy=1/l;
-N.push({x:bx,y:.02,z:bz},{x:bx+dx*L,y:.02+dy*L,z:bz+dz*L});st.push({t:ti});acts.push('s')}
-function addCable(a,b,ti){if(a==b||a>>1==b>>1||cb.some(c=>(c.a==a&&c.b==b)||(c.a==b&&c.b==a)))return;cb.push({a,b,t:ti});acts.push('c')}
-function reset(){N=[];st=[];cb=[];acts=[];sel=-1;mode='build';res=null;hl=null;bad=[];badge()}
-function badge(){$('badge').textContent=mode=='build'?'만드는 중':'시험 중'}
-$('addS').onclick=()=>{if(mode!='build')return;if(st.length>=8)return msg('막대는 8개까지 놓을 수 있어요.');addStrut(selS);msg('막대를 놓았어요. 끝점을 드래그해서 원하는 방향으로 세워 보세요.')};
-$('cl').onclick=()=>{reset();msg('모두 지웠어요. 새로 시작해 볼까요?')};
-$('un').onclick=()=>{if(mode!='build')return;const a=acts.pop();if(a=='c')cb.pop();else if(a=='s'){st.pop();N.length-=2;cb=cb.filter(c=>c.a<N.length&&c.b<N.length)}sel=-1};
+N.push({x:bx,y:.02,z:bz},{x:bx+dx*L,y:.02+dy*L,z:bz+dz*L});st.push({t:ti})}
+function addCable(a,b,ti){if(a==b||a>>1==b>>1||cb.some(c=>(c.a==a&&c.b==b)||(c.a==b&&c.b==a)))return;U();cb.push({a,b,t:ti})}
+function reset(){N=[];st=[];cb=[];gl=[];so=null;pend=null;sel=-1;mode='build';res=null;hl=null;bad=[];badge()}
+function badge(){$('badge').textContent=(EX?'내 작업 · ':'')+(mode=='build'?'만드는 중':'시험 중');$('sb').hidden=mode!='build';$('split').classList.toggle('two',!!EX)}
+function U(){if(noU)return;US.push(JSON.stringify({N,st,cb,gl}));if(US.length>60)US.shift()}
+function grp(k){const q=new Set([k]);let c=1;while(c){c=0;gl.forEach(e=>{if(q.has(e.a)!=q.has(e.b)){q.add(e.a);q.add(e.b);c=1}})}return[...q]}
+function mvG(ks,f){ks.forEach(k=>{f(N[2*k]);f(N[2*k+1])})}
+function lift(ks){let m=1e9;ks.forEach(k=>{m=Math.min(m,N[2*k].y,N[2*k+1].y)});if(m<0)mvG(ks,n=>n.y-=m)}
+function place(ti,sh){if(sh==0){addStrut(ti);so=[st.length-1];return}
+const L=S[ti].L,a=pn++*2.399,rd=Math.min(1.4,.3+.3*Math.sqrt(pn)),cx=rd*Math.cos(a),cz=rd*Math.sin(a),n=sh==1?3:4,k0=st.length;
+const pts=sh==1?[0,1,2].map(i=>{const t=Math.PI/2+i*2*Math.PI/3,r=L/Math.sqrt(3);return[cx+r*Math.cos(t),cz+r*Math.sin(t)]}):[[-1,-1],[1,-1],[1,1],[-1,1]].map(v=>[cx+v[0]*L/2,cz+v[1]*L/2]);
+for(let i=0;i<n;i++){const p=pts[i],q=pts[(i+1)%n];N.push({x:p[0],y:.02,z:p[1]},{x:q[0],y:.02,z:q[1]});st.push({t:ti});gl.push({a:k0+i,b:k0+(i+1)%n})}
+if(n==4)gl.push({a:k0,b:k0+2},{a:k0+1,b:k0+3});so=grp(k0)}
+function cp(p1,q1,p2,q2){const s=(a,b)=>[a.x-b.x,a.y-b.y,a.z-b.z],dt=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],d1=s(q1,p1),d2=s(q2,p2),r=s(p1,p2),a=dt(d1,d1),e=dt(d2,d2),f=dt(d2,r),c=dt(d1,r),b=dt(d1,d2),dn=a*e-b*b,cl=x=>Math.max(0,Math.min(1,x));
+let u=dn>1e-9?cl((b*f-c*e)/dn):0,v=(b*u+f)/e;if(v<0){v=0;u=cl(-c/a)}else if(v>1){v=1;u=cl((b-c)/a)}
+const A=[p1.x+d1[0]*u,p1.y+d1[1]*u,p1.z+d1[2]*u],B=[p2.x+d2[0]*v,p2.y+d2[1]*v,p2.z+d2[2]*v];return{d:Math.hypot(A[0]-B[0],A[1]-B[1],A[2]-B[2]),u,v}}
+function callBond(){let b=null;for(let i=0;i<st.length;i++)for(let j=i+1;j<st.length;j++){if(grp(i).includes(j))continue;if(so&&!so.includes(i)&&!so.includes(j))continue;
+const r=cp(N[2*i],N[2*i+1],N[2*j],N[2*j+1]);if(r.d<.12&&(!b||r.d<b.d))b={i,j,...r}}
+if(!b)return msg('본드로 붙일 만큼 가까이 닿은 재료가 없어요.\n두 재료를 거의 붙게 놓은 뒤 다시 눌러요. (재료 하나를 먼저 선택하면 그 재료 주변만 찾아요.)','bad');
+pend=b;so=null;$('ask').hidden=false;msg('🧴 붙일 곳을 찾았어요. 주황 점선으로 표시했어요.')}
+$('yes').onclick=()=>{if(!pend)return;U();gl.push({a:pend.i,b:pend.j,u:pend.u,v:pend.v,blob:1});so=grp(pend.i);pend=null;$('ask').hidden=true;msg('붙였어요! 두 재료는 이제 한 덩어리로 움직여요.','ok')};
+$('no').onclick=()=>{pend=null;$('ask').hidden=true;msg('붙이지 않았어요.')};
+function rot(ax,ang){if(mode!='build'||!so)return msg('먼저 화면에서 재료를 눌러 선택해요.');U();let c=[0,0,0],n=0;mvG(so,q=>{c[0]+=q.x;c[1]+=q.y;c[2]+=q.z;n++});c=c.map(v=>v/n);const co=Math.cos(ang),si=Math.sin(ang);
+mvG(so,q=>{const v=[q.x-c[0],q.y-c[1],q.z-c[2]],k=ax[0]*v[0]+ax[1]*v[1]+ax[2]*v[2],cr=[ax[1]*v[2]-ax[2]*v[1],ax[2]*v[0]-ax[0]*v[2],ax[0]*v[1]-ax[1]*v[0]];
+q.x=c[0]+v[0]*co+cr[0]*si+ax[0]*k*(1-co);q.y=c[1]+v[1]*co+cr[1]*si+ax[1]*k*(1-co);q.z=c[2]+v[2]*co+cr[2]*si+ax[2]*k*(1-co)});lift(so)}
+$('tools').onclick=e=>{const b=e.target.closest('button');if(!b)return;const r=+b.dataset.r,a=Math.PI/12;rot(r<2?[0,1,0]:R(1,0,0,true),[a,-a,a,-a][r])};
+$('addS').onclick=()=>{if(mode!='build')return;if(selS==S.length)return callBond();const need=[1,3,4][shp];if(st.length+need>16)return msg('막대는 16개까지 놓을 수 있어요.','bad');U();place(selS,shp);
+msg(['막대를 놓았어요. 끝점을 끌어 방향을 바꿔 보세요.','세모를 놓았어요. 가운데를 끌어 옮기고 “기울이기”로 세워 보세요.','네모를 놓았어요. 가운데를 끌어 옮기고 “기울이기”로 세워 보세요.'][shp])};
+$('cl').onclick=()=>{U();reset();msg('모두 지웠어요. 새로 시작해 볼까요?')};
+$('un').onclick=()=>{if(mode=='test'){$('rs').onclick();return}if(!US.length)return msg('되돌릴 작업이 없어요.');const o=JSON.parse(US.pop());N=o.N;st=o.st;cb=o.cb;gl=o.gl;sel=-1;so=null;pend=null;$('ask').hidden=true;msg('방금 한 작업을 취소했어요.')};
 $('rs').onclick=()=>{if(mode=='test'&&snap){N=snap.map(n=>({...n}));mode='build';res=null;hl=null;bad=[];badge();msg('처음 모양으로 돌아왔어요. 줄이나 막대를 고쳐서 다시 시험해 보세요.')}};
-$('ex').onclick=()=>{reset();const L=S[0].L,r=.5,h=Math.sqrt(L*L-Math.pow(2*r*Math.sin(5*Math.PI/12),2));
-for(let k=0;k<3;k++){const a=k*2*Math.PI/3,b=a+5*Math.PI/6;N.push({x:r*Math.cos(a),y:.02,z:r*Math.sin(a)},{x:r*Math.cos(b),y:.02+h,z:r*Math.sin(b)});st.push({t:0})}
-for(let i=0;i<3;i++){addCable(2*i,2*((i+1)%3),0);addCable(2*i+1,2*((i+1)%3)+1,0);addCable(2*i,2*((i+2)%3)+1,0)}
-msg('예시를 불러왔어요. 시험해 보고, 줄 종류를 바꿔 어떻게 달라지는지 비교해 보세요.')};
+const EXS=[{e:'🔺',n:'세모 탑',d:'막대 3개',f:()=>prism(3,.5)},{e:'🔲',n:'네모 탑',d:'막대 4개',f:()=>prism(4,.5)},{e:'⚪',n:'공 모양',d:'막대 6개',f:ico}];
+function getS(){return{N,st,cb,gl,rg,so,pend,sel,mode,res,hl,bad,t,calm}}
+function setS(o){({N,st,cb,gl,rg,so,pend,sel,mode,res,hl,bad,t,calm}=o)}
+function prism(n,r){const L=S[0].L,tw=Math.PI/2+Math.PI/n,ch=2*r*Math.sin(tw/2),h=Math.sqrt(L*L-ch*ch);
+for(let k=0;k<n;k++){const a=k*2*Math.PI/n,b=a+tw;N.push({x:r*Math.cos(a),y:.02,z:r*Math.sin(a)},{x:r*Math.cos(b),y:.02+h,z:r*Math.sin(b)});st.push({t:0})}
+for(let i=0;i<n;i++){const j=(i+1)%n,m=(i+n-1)%n;addCable(2*i,2*j,0);addCable(2*i+1,2*j+1,0);addCable(2*i,2*m+1,0)}}
+function ico(){const p=(1+Math.sqrt(5))/2,V=[[0,1,-p],[0,1,p],[0,-1,-p],[0,-1,p],[-p,0,1],[p,0,1],[-p,0,-1],[p,0,-1],[1,-p,0],[1,p,0],[-1,-p,0],[-1,p,0]];
+const th=Math.acos(-1/Math.sqrt(3)),k=[1/Math.SQRT2,0,-1/Math.SQRT2],co=Math.cos(th),si=Math.sin(th),sc=S[0].L/(2*p);
+const Q=V.map(v=>{const d=k[0]*v[0]+k[1]*v[1]+k[2]*v[2],c=[k[1]*v[2]-k[2]*v[1],k[2]*v[0]-k[0]*v[2],k[0]*v[1]-k[1]*v[0]];return[0,1,2].map(i=>(v[i]*co+c[i]*si+k[i]*d*(1-co))*sc)});
+const lo=Math.min(...Q.map(q=>q[1]));Q.forEach(q=>N.push({x:q[0],y:q[1]-lo+.02,z:q[2]}));
+for(let i=0;i<6;i++)st.push({t:0});
+for(let i=0;i<12;i++)for(let j=i+1;j<12;j++){if(i>>1==j>>1)continue;const a=V[i],b=V[j],df=[0,1,2].map(m=>Math.abs(a[m]-b[m]));if(Math.abs(Math.hypot(...df)-2)<1e-6&&df.filter(x=>x>1e-6).length>1)addCable(i,j,0)}}
+function loadEx(i){const me=getS(),nu=noU,e=EXS[i];let ex;
+N=[];st=[];cb=[];gl=[];rg=[];so=null;pend=null;sel=-1;mode='build';res=null;hl=null;bad=[];t=0;calm=0;noU=1;
+try{e.f();const src={N:N.map(n=>({x:n.x,y:n.y,z:n.z})),st:st.map(q=>({...q})),cb:cb.map(c=>({a:c.a,b:c.b,t:c.t}))};
+N.forEach(n=>{n.px=n.x;n.py=n.y;n.pz=n.z});cb.forEach(c=>c.rest=dist(c.a,c.b)*C[c.t].sh);mode='test';ex=Object.assign(getS(),{src,i})}
+finally{noU=nu;setS(me)}
+EX=ex;$('p2').hidden=false;$('exn').textContent='예시 · '+e.n;$('exs').textContent='시험 중…';
+[...$('exc').children].forEach((x,j)=>x.classList.toggle('on',j==i));badge();
+msg(`예시 “${e.n}”을 옆 칸에 불러왔어요. (${e.d}, 줄 ${ex.cb.length}개)\n왼쪽은 내 작업, 오른쪽은 예시예요. 화면을 돌리면 두 칸이 같이 돌아가요!\n마음에 들면 “내 작업으로 가져오기”를 눌러 직접 고쳐 볼 수 있어요.`)}
+function closeEx(){EX=null;$('p2').hidden=true;[...$('exc').children].forEach(x=>x.classList.remove('on'));badge();msg('예시 칸을 닫았어요.')}
+$('exc').innerHTML=EXS.map((e,i)=>`<button class="chip" data-i="${i}"><b>${e.e}</b>${e.n}<small>${e.d}</small></button>`).join('');
+$('exc').onclick=e=>{const b=e.target.closest('.chip');if(b)loadEx(+b.dataset.i)};
+$('exr').onclick=()=>{if(EX)loadEx(EX.i)};
+$('exx').onclick=closeEx;
+$('exu').onclick=()=>{if(!EX)return;if(mode=='test')$('rs').onclick();U();const o=EX.src;N=o.N.map(n=>({...n}));st=o.st.map(q=>({...q}));cb=o.cb.map(c=>({...c}));gl=[];rg=[];so=null;pend=null;sel=-1;mode='build';res=null;hl=null;bad=[];$('ask').hidden=true;badge();
+msg('예시를 내 작업 칸으로 가져왔어요.\n줄 종류를 바꾸거나 줄을 빼 보고 ▶ 균형 시험하기로 비교해 보세요. (↩ 취소로 이전 작업을 되돌릴 수 있어요.)','ok')};
+cv2.onwheel=e=>{e.preventDefault();D=Math.max(2.5,Math.min(12,D*(1+e.deltaY*.001)))};
+function vec(a,b){return[b.x-a.x,b.y-a.y,b.z-a.z]}
+function crs(u,v){return[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]]}
+function len(v){return Math.hypot(v[0],v[1],v[2])}
+function orient(kind){
+if(mode!='build'||!so||!so.length)return msg('먼저 화면에서 재료를 눌러 선택해요.\n(재료를 누르면 점선 상자가 생겨요.)','bad');
+const ds=so.map(k=>vec(N[2*k],N[2*k+1]));let nb=null,nl=0;
+for(let i=0;i<ds.length;i++)for(let j=i+1;j<ds.length;j++){const c=crs(ds[i],ds[j]),l=len(c);if(l>nl&&l>.1*len(ds[i])*len(ds[j])){nl=l;nb=c}}
+const cr=[cy_,0,sy_],fw=[-sy_,0,cy_];let u,tg;
+if(nb){u=nb.map(v=>v/nl);if(u[1]<0)u=u.map(v=>-v);if(kind=='up'){const h=Math.hypot(u[0],u[2]);tg=h>.2?[u[0]/h,0,u[2]/h]:fw}else tg=[0,1,0]}
+else{u=ds[0];const l=len(u);u=u.map(v=>v/l);if(u[1]<0)u=u.map(v=>-v);if(kind=='up')tg=[0,1,0];else{const h=Math.hypot(u[0],u[2]);tg=h>.2?[u[0]/h,0,u[2]/h]:cr}}
+U();const ax=crs(u,tg),as=len(ax),ang=Math.atan2(as,u[0]*tg[0]+u[1]*tg[1]+u[2]*tg[2]);
+if(as>1e-6&&ang>1e-4){const nu=noU;noU=1;try{rot(ax.map(v=>v/as),ang)}finally{noU=nu}}
+if(kind=='flat'){let m=1e9;mvG(so,q=>{m=Math.min(m,q.y)});if(m>.03)mvG(so,q=>{q.y-=m-.02})}
+else lift(so);
+msg(kind=='up'?'수직으로 세웠어요.'+(nb?'\n(세운 면이 화면 쪽을 향해요.)':''):'수평으로 눕혀서 바닥에 놓았어요.')}
+function delSel(){if(mode!='build'||!so||!so.length)return msg('먼저 화면에서 지울 재료를 눌러 선택해요.\n(재료를 누르면 점선 상자가 생겨요.)','bad');
+U();const del=new Set(so),mp=[];let c=0;st.forEach((q,k)=>{mp[k]=del.has(k)?-1:c++});
+const nN=[],nS=[];st.forEach((q,k)=>{if(mp[k]>=0){nS.push(q);nN.push(N[2*k],N[2*k+1])}});
+const nc=cb.filter(x=>mp[x.a>>1]>=0&&mp[x.b>>1]>=0).map(x=>({...x,a:2*mp[x.a>>1]+(x.a&1),b:2*mp[x.b>>1]+(x.b&1)}));
+const ng=gl.filter(x=>mp[x.a]>=0&&mp[x.b]>=0).map(x=>({...x,a:mp[x.a],b:mp[x.b]}));
+const n=del.size,lost=cb.length-nc.length;N=nN;st=nS;cb=nc;gl=ng;so=null;sel=-1;pend=null;$('ask').hidden=true;
+msg(`재료 ${n}개를 삭제했어요.`+(lost?`\n연결된 줄 ${lost}개도 함께 지웠어요.`:'')+'\n(↩ 방금 한 작업 취소로 되돌릴 수 있어요.)')}
+$('del').onclick=$('tr').onclick=delSel;
+addEventListener('keydown',e=>{if((e.key=='Delete'||e.key=='Backspace')&&!/INPUT|TEXTAREA|SELECT/.test((e.target||{}).tagName||'')){if(mode=='build'&&so&&so.length){e.preventDefault();delSel()}}});
+$('sb').onclick=e=>{const b=e.target.closest('button');if(b)orient(b.dataset.k)};
 function dist(a,b){return Math.hypot(N[a].x-N[b].x,N[a].y-N[b].y,N[a].z-N[b].z)}
 $('go').onclick=()=>{if(mode!='build')return;if(st.length<2||cb.length<3)return msg('막대 2개 이상, 줄 3개 이상이 필요해요.','bad');
-snap=N.map(n=>({...n}));N.forEach(n=>{n.px=n.x;n.py=n.y;n.pz=n.z});cb.forEach(c=>c.rest=dist(c.a,c.b)*C[c.t].sh);
-mode='test';t=0;calm=0;res=null;sel=-1;hl=null;bad=[];badge();msg('시험 중… 잠시 기다려 보세요.')};
+snap=N.map(n=>({...n}));N.forEach(n=>{n.px=n.x;n.py=n.y;n.pz=n.z});cb.forEach(c=>c.rest=dist(c.a,c.b)*C[c.t].sh);rg=[];gl.forEach(q=>[2*q.a,2*q.a+1].forEach(i=>[2*q.b,2*q.b+1].forEach(j=>rg.push({a:i,b:j,d:dist(i,j)}))));
+mode='test';so=null;pend=null;$('ask').hidden=true;t=0;calm=0;res=null;sel=-1;hl=null;bad=[];badge();msg('시험 중… 잠시 기다려 보세요.')};
 function step(){const d2=1/57600;
 for(let s=0;s<4;s++){N.forEach(n=>{const x=n.x+(n.x-n.px)*.998,y=n.y+(n.y-n.py)*.998-9.8*d2,z=n.z+(n.z-n.pz)*.998;n.px=n.x;n.py=n.y;n.pz=n.z;n.x=x;n.y=y;n.z=z});
 for(let it=0;it<8;it++){
 st.forEach((q,k)=>{const a=N[2*k],b=N[2*k+1],L=S[q.t].L;let dx=b.x-a.x,dy=b.y-a.y,dz=b.z-a.z,d=Math.hypot(dx,dy,dz)||1e-6,f=(d-L)/d*.5;a.x+=dx*f;a.y+=dy*f;a.z+=dz*f;b.x-=dx*f;b.y-=dy*f;b.z-=dz*f});
+rg.forEach(c=>{const a=N[c.a],b=N[c.b];let dx=b.x-a.x,dy=b.y-a.y,dz=b.z-a.z,d=Math.hypot(dx,dy,dz)||1e-6,f=(d-c.d)/d*.5;a.x+=dx*f;a.y+=dy*f;a.z+=dz*f;b.x-=dx*f;b.y-=dy*f;b.z-=dz*f});
 cb.forEach(c=>{const a=N[c.a],b=N[c.b];let dx=b.x-a.x,dy=b.y-a.y,dz=b.z-a.z,d=Math.hypot(dx,dy,dz)||1e-6;if(d>c.rest){const f=(d-c.rest)/d*.5*C[c.t].k;a.x+=dx*f;a.y+=dy*f;a.z+=dz*f;b.x-=dx*f;b.y-=dy*f;b.z-=dz*f}});
 N.forEach(n=>{if(n.y<0){n.y=0;n.x-=(n.x-n.px)*.5;n.z-=(n.z-n.pz)*.5}})}}
 let sp=0;N.forEach(n=>sp=Math.max(sp,Math.hypot(n.x-n.px,n.y-n.py,n.z-n.pz)*240));
@@ -125,29 +248,42 @@ function hitBody(m){for(let k=0;k<st.length;k++){const a=N[2*k],b=N[2*k+1];if(se
 function xy(e){const r=cv.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
 const ptrs=new Map();let pinch=0;
 cv.onpointerdown=e=>{cv.setPointerCapture(e.pointerId);const m=xy(e);ptrs.set(e.pointerId,m);if(ptrs.size==2){const[a,b]=[...ptrs.values()];pinch=Math.hypot(a.x-b.x,a.y-b.y);drag=null;return}
-drag={lx:m.x,ly:m.y,mv:0,node:-1,body:-1};if(mode=='build'){drag.node=hitNode(m);if(drag.node<0)drag.body=hitBody(m)}};
+drag={lx:m.x,ly:m.y,mv:0,node:-1,body:-1,u:0};if(mode=='build'){drag.node=hitNode(m);if(drag.node<0)drag.body=hitBody(m)}};
 cv.onpointermove=e=>{const m=xy(e);if(!ptrs.has(e.pointerId))return;ptrs.set(e.pointerId,m);
 if(ptrs.size==2){const[a,b]=[...ptrs.values()],d=Math.hypot(a.x-b.x,a.y-b.y);D=Math.max(2.5,Math.min(12,D*pinch/d));pinch=d;return}
 if(!drag)return;const dx=m.x-drag.lx,dy=m.y-drag.ly;drag.mv+=Math.abs(dx)+Math.abs(dy);drag.lx=m.x;drag.ly=m.y;
-if(drag.node>=0&&drag.mv>5){const n=N[drag.node],o=N[drag.node^1],p=P(n.x,n.y,n.z),w=R(dx/p.s,-dy/p.s,0,true),L=S[st[drag.node>>1].t].L;
+const k=drag.node>=0?drag.node>>1:drag.body;if(k<0||drag.mv<=5)return;if(!drag.u){U();drag.u=1}const ks=grp(k);
+if(drag.node>=0&&ks.length==1){const n=N[drag.node],o=N[drag.node^1],p=P(n.x,n.y,n.z),w=R(dx/p.s,-dy/p.s,0,true),L=S[st[k].t].L;
 let vx=n.x+w[0]-o.x,vy=n.y+w[1]-o.y,vz=n.z+w[2]-o.z,l=Math.hypot(vx,vy,vz)||1;n.x=o.x+vx/l*L;n.y=Math.max(0,o.y+vy/l*L);n.z=o.z+vz/l*L}
-else if(drag.body>=0&&drag.mv>5){const a=N[2*drag.body],b=N[2*drag.body+1],p=P(a.x,a.y,a.z),w=R(dx/p.s,-dy/p.s,0,true),lift=Math.max(0,-Math.min(a.y+w[1],b.y+w[1]));
-[a,b].forEach(n=>{n.x+=w[0];n.y+=w[1]+lift;n.z+=w[2]})}
-else if(drag.node<0&&drag.body<0){yaw-=dx*.01;pit=Math.max(-.3,Math.min(1.45,pit+dy*.01))}};
-cv.onpointerup=cv.onpointercancel=e=>{ptrs.delete(e.pointerId);if(drag&&drag.node>=0&&drag.mv<=5&&mode=='build'){const i=drag.node;
-if(sel<0){sel=i;msg('줄의 한쪽 끝을 골랐어요. 이어질 다른 막대의 끝점을 클릭하세요.')}else if(sel==i)sel=-1;
+else{const a=N[2*k],p=P(a.x,a.y,a.z),w=R(dx/p.s,-dy/p.s,0,true);mvG(ks,n=>{n.x+=w[0];n.y+=w[1];n.z+=w[2]});lift(ks)}so=ks};
+cv.onpointerup=cv.onpointercancel=e=>{ptrs.delete(e.pointerId);if(drag&&drag.mv<=5&&mode=='build'){const i=drag.node;
+if(i>=0){if(sel<0){sel=i;msg('줄의 한쪽 끝을 골랐어요. 이어질 다른 막대의 끝점을 클릭하세요.')}else if(sel==i)sel=-1;
 else if(sel>>1==i>>1){msg('같은 막대의 양 끝은 줄로 잇지 않아요. 다른 막대의 끝점을 골라 보세요.','bad');sel=-1}
-else{addCable(sel,i,selC);sel=-1;msg(`${C[selC].n}을(를) 연결했어요. (줄 ${cb.length}개)`)}}drag=null;if(ptrs.size<2)pinch=0};
+else{addCable(sel,i,selC);sel=-1;msg(`${C[selC].n}을(를) 연결했어요. (줄 ${cb.length}개)`)}}
+else if(drag.body>=0){so=grp(drag.body);sel=-1}else{so=null;sel=-1}}drag=null;if(ptrs.size<2)pinch=0};
+function bar(el,get,set,vert,wrap){const th=el.querySelector('.th'),tr=el.querySelector('.tr'),rg_=()=>Math.max(1,(vert?tr.clientHeight-th.offsetHeight:tr.clientWidth-th.offsetWidth)),cl=x=>Math.max(0,Math.min(1,x));let d=null;
+const step=k=>{const f=get()+k*.04;set(wrap?((f%1)+1)%1:cl(f))};
+th.onpointerdown=e=>{th.setPointerCapture(e.pointerId);d={p:vert?e.clientY:e.clientX,f:get()}};
+th.onpointermove=e=>{if(d)set(cl(d.f+((vert?e.clientY:e.clientX)-d.p)/rg_()))};th.onpointerup=th.onpointercancel=()=>d=null;
+tr.onpointerdown=e=>{if(e.target==th)return;const b=th.getBoundingClientRect();step(((vert?e.clientY>b.bottom:e.clientX>b.right)?1:-1)*2.5)};
+el.querySelectorAll('.ab').forEach(b=>b.onclick=()=>step(+b.dataset.d));
+th.onkeydown=e=>{const k={ArrowLeft:-1,ArrowUp:-1,ArrowRight:1,ArrowDown:1}[e.key];if(k){step(k);e.preventDefault()}};
+return()=>{th.style[vert?'top':'left']=get()*rg_()+'px'}}
+const bh=bar($('hb'),()=>(((yaw+Math.PI)%(2*Math.PI))+2*Math.PI)%(2*Math.PI)/(2*Math.PI),f=>yaw=f*2*Math.PI-Math.PI,0,1);
+const bv=bar($('vb'),()=>(1.45-pit)/1.75,f=>pit=1.45-f*1.75,1,0);
+function box(ks,col){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;ks.forEach(k=>[N[2*k],N[2*k+1]].forEach(n=>{const p=P(n.x,n.y,n.z);x0=Math.min(x0,p.x);x1=Math.max(x1,p.x);y0=Math.min(y0,p.y);y1=Math.max(y1,p.y)}));x0-=14;y0-=14;x1+=14;y1+=14;
+g.save();g.setLineDash([6,4]);g.lineWidth=1.6;g.strokeStyle=col;g.strokeRect(x0,y0,x1-x0,y1-y0);g.setLineDash([]);g.fillStyle='#fff';const mx=(x0+x1)/2,my=(y0+y1)/2;
+[[x0,y0],[mx,y0],[x1,y0],[x0,my],[x1,my],[x0,y1],[mx,y1],[x1,y1]].forEach(([x,y])=>{g.fillRect(x-4,y-4,8,8);g.strokeRect(x-4,y-4,8,8)});g.restore()}
 cv.onwheel=e=>{e.preventDefault();D=Math.max(2.5,Math.min(12,D*(1+e.deltaY*.001)))};
 /* draw */
 function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()}
-function draw(){const dp=devicePixelRatio||1,r=cv.getBoundingClientRect();if(cv.width!=Math.round(r.width*dp)||cv.height!=Math.round(r.height*dp)){cv.width=Math.round(r.width*dp);cv.height=Math.round(r.height*dp)}
+function paint(){const dp=devicePixelRatio||1,r=cv.getBoundingClientRect();if(cv.width!=Math.round(r.width*dp)||cv.height!=Math.round(r.height*dp)){cv.width=Math.round(r.width*dp);cv.height=Math.round(r.height*dp)}
 W=r.width;H=r.height;g.setTransform(dp,0,0,dp,0,0);g.clearRect(0,0,W,H);
 cy_=Math.cos(yaw);sy_=Math.sin(yaw);cp_=Math.cos(pit);sp_=Math.sin(pit);
 if(mode=='test'&&!res||mode=='test'&&t<20)step();
-const gr=css('--gr'),gl=css('--gl'),tx=css('--tx');
+const gr=css('--gr'),glc=css('--gl'),tx=css('--tx');
 const Q=[[-2.5,-2.5],[2.5,-2.5],[2.5,2.5],[-2.5,2.5]].map(a=>P(a[0],0,a[1]));g.fillStyle=gr;g.beginPath();Q.forEach((p,i)=>i?g.lineTo(p.x,p.y):g.moveTo(p.x,p.y));g.fill();
-g.strokeStyle=gl;g.lineWidth=1;g.beginPath();for(let i=-2.5;i<=2.5;i+=.5){let a=P(i,0,-2.5),b=P(i,0,2.5),c=P(-2.5,0,i),d=P(2.5,0,i);g.moveTo(a.x,a.y);g.lineTo(b.x,b.y);g.moveTo(c.x,c.y);g.lineTo(d.x,d.y)}g.stroke();
+g.strokeStyle=glc;g.lineWidth=1;g.beginPath();for(let i=-2.5;i<=2.5;i+=.5){let a=P(i,0,-2.5),b=P(i,0,2.5),c=P(-2.5,0,i),d=P(2.5,0,i);g.moveTo(a.x,a.y);g.lineTo(b.x,b.y);g.moveTo(c.x,c.y);g.lineTo(d.x,d.y)}g.stroke();
 N.forEach(n=>{const p=P(n.x,0,n.z);g.fillStyle='rgba(0,0,0,.18)';g.beginPath();g.ellipse(p.x,p.y,6*p.s/160*Math.max(1,2.2-n.y),3*p.s/160*Math.max(1,2.2-n.y),0,0,7);g.fill()});
 const items=[];
 st.forEach((q,k)=>{const a=N[2*k],b=N[2*k+1],pa=P(a.x,a.y,a.z),pb=P(b.x,b.y,b.z);items.push({z:(pa.z+pb.z)/2,f:()=>{const o=S[q.t];g.lineCap=o.cap;g.setLineDash([]);g.strokeStyle=o.c;g.lineWidth=o.w*(pa.s+pb.s)/2/170;g.beginPath();g.moveTo(pa.x,pa.y);g.lineTo(pb.x,pb.y);g.stroke()}})});
@@ -157,8 +293,18 @@ items.sort((a,b)=>a.z-b.z).forEach(i=>i.f());
 if(hl){g.lineCap='round';g.setLineDash([]);g.strokeStyle='rgba(255,200,40,.55)';hl.c.forEach(j=>{const c=cb[j],a=N[c.a],b=N[c.b],p=P(a.x,a.y,a.z),q=P(b.x,b.y,b.z);g.lineWidth=10*(p.s+q.s)/340;g.beginPath();g.moveTo(p.x,p.y);g.lineTo(q.x,q.y);g.stroke()});
 const a=N[2*hl.s],b=N[2*hl.s+1],p=P(a.x,a.y,a.z),q=P(b.x,b.y,b.z);g.lineWidth=18*(p.s+q.s)/340;g.beginPath();g.moveTo(p.x,p.y);g.lineTo(q.x,q.y);g.stroke()}
 if(mode=='test')bad.forEach(i=>{const p=P(N[i].x,N[i].y,N[i].z);g.beginPath();g.arc(p.x,p.y,14,0,7);g.lineWidth=3;g.strokeStyle='#e5391f';g.stroke()});
+gl.forEach(q=>{if(!q.blob)return;const A=N[2*q.a],B=N[2*q.a+1],E=N[2*q.b],F=N[2*q.b+1],p=P((A.x+(B.x-A.x)*q.u+E.x+(F.x-E.x)*q.v)/2,(A.y+(B.y-A.y)*q.u+E.y+(F.y-E.y)*q.v)/2,(A.z+(B.z-A.z)*q.u+E.z+(F.z-E.z)*q.v)/2);
+g.beginPath();g.arc(p.x,p.y,Math.max(5,.05*p.s),0,7);g.fillStyle='#f3d46b';g.fill();g.lineWidth=1.5;g.strokeStyle='#a07a10';g.stroke()});
+if(mode=='build'){if(so)box(so,'#3b82f6');if(pend){box(grp(pend.i),'#e08a00');box(grp(pend.j),'#e08a00')}}
 g.font='700 15px sans-serif';g.textAlign='center';g.fillStyle=tx;st.forEach((q,k)=>{const a=N[2*k],b=N[2*k+1],p=P((a.x+b.x)/2,(a.y+b.y)/2,(a.z+b.z)/2);g.fillText(k+1,p.x+16,p.y)});
 if(mode=='build')N.forEach((n,i)=>{const p=P(n.x,n.y,n.z);g.beginPath();g.arc(p.x,p.y,i==sel?9:6.5,0,7);g.fillStyle=i==sel?'#f2a516':css('--pn');g.fill();g.lineWidth=2.5;g.strokeStyle=i==sel?'#c47d00':tx;g.stroke()});
+}
+function exStatus(){const s=EX.res=='ok'?'✅ 균형 성공!':EX.res=='mid'?'서 있지만 흔들려요':EX.res=='bad'?'😢 무너졌어요':'시험 중…',e=$('exs');if(e.textContent!=s)e.textContent=s}
+function draw(){bh();bv();
+try{paint();{const off=!(mode=='build'&&so&&so.length);if($('tr').hidden!=off)$('tr').hidden=off;if($('del').disabled!=off)$('del').disabled=off}
+if(EX){const me=getS(),oc=cv,og=g,ow=W,oh=H;quiet=true;setS(EX);cv=cv2;g=g2;
+try{paint()}finally{Object.assign(EX,getS());setS(me);cv=oc;g=og;W=ow;H=oh;quiet=false}
+exStatus()}}catch(err){console.error(err)}
 requestAnimationFrame(draw)}
 draw();
 </script></body></html>
