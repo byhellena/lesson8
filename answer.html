@@ -86,6 +86,50 @@ h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(2rem, 
 .pip { width: 16px; height: 16px; border-radius: 50%; background: var(--sun); box-shadow: 0 0 0 3px rgba(255,210,63,.2); transition: background .3s, transform .3s; }
 .pip.spent { background: transparent; border: 2px solid var(--panel-edge); box-shadow: none; transform: scale(.85); }
 
+/* Treasure chest + padlock */
+.game { width: 100%; }
+.chest { position: relative; width: 100%; max-width: 520px; aspect-ratio: 400 / 340; container-type: inline-size; margin: 0 auto; }
+.chest-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 10px 18px rgba(0,0,0,.45)); }
+.chest.buzz { animation: buzz 1s linear; }
+@keyframes buzz{0%{transform:none} 4%{transform:translate(3px,-1.5px) rotate(0.9deg)} 8%{transform:translate(-3px,1.5px) rotate(-0.9deg)} 12%{transform:translate(3px,-1.5px) rotate(0.9deg)} 16%{transform:translate(-3px,1.5px) rotate(-0.9deg)} 20%{transform:translate(3px,-1.5px) rotate(0.9deg)} 24%{transform:translate(-3px,1.5px) rotate(-0.9deg)} 28%{transform:translate(3px,-1.5px) rotate(0.9deg)} 32%{transform:translate(-3px,1.5px) rotate(-0.9deg)} 36%{transform:translate(3px,-1.5px) rotate(0.9deg)} 40%{transform:translate(-3px,1.5px) rotate(-0.9deg)} 44%{transform:translate(3px,-1.5px) rotate(0.9deg)} 48%{transform:translate(-3px,1.5px) rotate(-0.9deg)} 52%{transform:translate(3px,-1.5px) rotate(0.9deg)} 56%{transform:translate(-3px,1.5px) rotate(-0.9deg)} 60%{transform:translate(3px,-1.5px) rotate(0.9deg)} 64%{transform:translate(-3px,1.5px) rotate(-0.9deg)} 68%{transform:translate(3px,-1.5px) rotate(0.9deg)} 72%{transform:translate(-3px,1.5px) rotate(-0.9deg)} 76%{transform:translate(3px,-1.5px) rotate(0.9deg)} 80%{transform:translate(-3px,1.5px) rotate(-0.9deg)} 84%{transform:translate(3px,-1.5px) rotate(0.9deg)} 88%{transform:translate(-3px,1.5px) rotate(-0.9deg)} 92%{transform:translate(3px,-1.5px) rotate(0.9deg)} 96%{transform:translate(-3px,1.5px) rotate(-0.9deg)} 100%{transform:none}}
+.chest .tiles { position: absolute; left: 33.75%; top: 54.4%; width: 32.5%; gap: 4.6%; }
+.chest .tile { flex: 1; display: block; min-width: 0; }
+.chest .tile input { width: 100%; border-radius: 10px; border: 3px solid #7a5200; background: var(--ink); color: var(--sun); font-size: clamp(1.6rem, 9vw, 2.8rem); font-size: 10.5cqw; box-shadow: inset 0 3px 8px rgba(0,0,0,.6), 0 2px 0 rgba(255,255,255,.35); }
+.chest .tile input.filled { border-color: #7a5200; }
+.chest .tile input:focus { border-color: var(--sun); box-shadow: 0 0 0 4px rgba(255,255,255,.55), inset 0 3px 8px rgba(0,0,0,.6); transform: none; }
+.sp { transform-box: fill-box; transform-origin: center; animation: twinkle 2.2s ease-in-out infinite; }
+.sp.s2 { animation-delay: .5s; } .sp.s3 { animation-delay: 1s; } .sp.s4 { animation-delay: 1.5s; }
+@keyframes twinkle { 0%,100% { opacity: .15; transform: scale(.6) } 50% { opacity: 1; transform: scale(1.15) } }
+@media (prefers-reduced-motion: reduce) { .chest.buzz, .sp { animation: none; } }
+
+/* Chest opening (about 3 seconds) */
+.lid-in { transform-origin: 200px 142px; transform: scaleY(0); }
+.lid-out { transform-origin: 200px 142px; }
+.burst { opacity: 0; transform-origin: 200px 110px; }
+.rays { transform-origin: 200px 110px; }
+.treasure { opacity: 0; transform-origin: 200px 150px; transform: translateY(90px) scale(.7); }
+.padlock { transform-origin: 200px 220px; }
+.tsp { opacity: 0; transform-box: fill-box; transform-origin: center; }
+.chest.opening .padlock { transform: translateY(260px) rotate(24deg); opacity: 0; animation: lockDrop .8s ease-in 0s both; }
+.chest.opening .tiles { transform: translateY(60cqw) rotate(24deg); opacity: 0; pointer-events: none; animation: tilesDrop .8s ease-in 0s both; }
+.chest.opening .lid-out { transform: scaleY(0); animation: lidOut .5s ease-in .7s both; }
+.chest.opening .lid-in { transform: scaleY(1); animation: lidIn .75s ease-out 1.15s both; }
+.chest.opening .burst { opacity: .95; animation: burstIn .9s ease-out 1.2s both; }
+.chest.opening .rays { animation: spin 14s linear 1.2s infinite; }
+.chest.opening .treasure { opacity: 1; transform: none; animation: treasureUp 1.3s cubic-bezier(.2,1.2,.4,1) 1.3s both; }
+.chest.opening .tsp { animation: twinkle 1s ease-in-out infinite; }
+.chest.opening .t1 { animation-delay: 2.0s; } .chest.opening .t2 { animation-delay: 2.2s; } .chest.opening .t3 { animation-delay: 2.4s; } .chest.opening .t4 { animation-delay: 2.1s; } .chest.opening .t5 { animation-delay: 2.5s; }
+.chest .tile input:disabled { opacity: 1; -webkit-text-fill-color: var(--sun); }
+@keyframes lockDrop { 0% { transform: none; opacity: 1 } 20% { transform: translateY(-12px) rotate(-6deg); opacity: 1 } 70% { opacity: 1 } }
+@keyframes tilesDrop { 0% { transform: none; opacity: 1 } 20% { transform: translateY(-3cqw) rotate(-6deg); opacity: 1 } 70% { opacity: 1 } }
+@keyframes lidOut { 0% { transform: scaleY(1) } }
+@keyframes lidIn { 0% { transform: scaleY(0) } 70% { transform: scaleY(1.08) } }
+@keyframes burstIn { 0% { opacity: 0; transform: scale(.2) } }
+@keyframes treasureUp { 0% { opacity: 0; transform: translateY(90px) scale(.7) } 30% { opacity: 1 } 70% { transform: translateY(-14px) scale(1.04) } }
+@media (prefers-reduced-motion: reduce) {
+  .chest.opening .padlock, .chest.opening .tiles, .chest.opening .lid-out, .chest.opening .lid-in, .chest.opening .burst, .chest.opening .rays, .chest.opening .treasure, .chest.opening .tsp { animation: none; }
+}
+
 /* Out of chances */
 #lose { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; background: radial-gradient(circle at 50% 40%, #3a1830 0%, #1a0f2a 55%, #0d0b1f 100%); padding: 24px max(16px, env(safe-area-inset-left, 0px)); }
 #lose.open { animation: fadein .35s ease-out; }
@@ -139,14 +183,110 @@ h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(2rem, 
   </header>
 
   <section class="game" aria-label="정답 입력">
-    <div class="tiles" id="tiles">
-      <label class="tile"><span class="sr" style="position:absolute;left:-9999px">첫 번째 알파벳</span>
-        <input id="l1" type="text" inputmode="text" lang="en" maxlength="1" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="next">
-      </label>
-      <span class="comma" aria-hidden="true">,</span>
-      <label class="tile"><span class="sr" style="position:absolute;left:-9999px">두 번째 알파벳</span>
-        <input id="l2" type="text" inputmode="text" lang="en" maxlength="1" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="done">
-      </label>
+    <div class="chest" id="chest">
+      <svg class="chest-svg" viewBox="0 0 400 340" role="img" aria-label="보물상자와 번호 자물쇠">
+        <defs>
+          <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b8692c"/><stop offset="1" stop-color="#733815"/></linearGradient>
+          <linearGradient id="woodLid" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d28236"/><stop offset="1" stop-color="#92491c"/></linearGradient>
+          <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff0a0"/><stop offset=".45" stop-color="#ffc72c"/><stop offset="1" stop-color="#d28a12"/></linearGradient>
+          <radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffd23f" stop-opacity=".5"/><stop offset="1" stop-color="#ffd23f" stop-opacity="0"/></radialGradient>
+          <radialGradient id="burstGlow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fffbe0" stop-opacity=".95"/><stop offset=".5" stop-color="#ffd23f" stop-opacity=".45"/><stop offset="1" stop-color="#ffd23f" stop-opacity="0"/></radialGradient>
+          <radialGradient id="rayFade" gradientUnits="userSpaceOnUse" cx="200" cy="110" r="230"><stop offset="0" stop-color="#fff6c2" stop-opacity=".42"/><stop offset=".45" stop-color="#fff6c2" stop-opacity=".2"/><stop offset=".72" stop-color="#fff6c2" stop-opacity="0"/></radialGradient>
+          <clipPath id="lidClip"><path d="M30 142V104Q30 28 200 28Q370 28 370 104V142Z"/></clipPath>
+          <clipPath id="bodyClip"><rect x="30" y="140" width="340" height="172" rx="10"/></clipPath>
+          <clipPath id="burstClip"><rect x="-30" y="-25" width="460" height="360"/></clipPath>
+        </defs>
+        <circle cx="200" cy="170" r="215" fill="url(#glow)"/>
+        <ellipse cx="200" cy="322" rx="190" ry="13" fill="rgba(0,0,0,.4)"/>
+
+        <!-- inside of the open lid -->
+        <g class="lid-in">
+          <path d="M42 142V96Q42 44 200 44Q358 44 358 96V142Z" fill="#5a2b10" stroke="#431e08" stroke-width="4"/>
+          <path d="M56 142V98Q56 60 200 60Q344 60 344 98V142Z" fill="#3a1a08" opacity=".75"/>
+          <path d="M42 96Q42 44 200 44Q358 44 358 96" fill="none" stroke="#ffc72c" stroke-width="4" opacity=".8"/>
+        </g>
+
+        <!-- light burst -->
+        <g clip-path="url(#burstClip)"><g class="burst">
+          <circle cx="200" cy="110" r="150" fill="url(#burstGlow)"/>
+          <g class="rays"><path d="M200 110L428.3 82.0L428.3 138.0ZM200 110L411.7 199.9L383.7 248.4ZM200 110L338.4 293.7L289.9 321.7ZM200 110L228.0 338.3L172.0 338.3ZM200 110L110.1 321.7L61.6 293.7ZM200 110L16.3 248.4L-11.7 199.9ZM200 110L-28.3 138.0L-28.3 82.0ZM200 110L-11.7 20.1L16.3 -28.4ZM200 110L61.6 -73.7L110.1 -101.7ZM200 110L172.0 -118.3L228.0 -118.3ZM200 110L289.9 -101.7L338.4 -73.7ZM200 110L383.7 -28.4L411.7 20.1Z" fill="url(#rayFade)"/></g>
+        </g></g>
+
+        <!-- treasure (rises from behind the front wall) -->
+        <g class="treasure">
+          <path d="M168 114L172 62L188 86L200 54L212 86L228 62L232 114Z" fill="url(#gold)" stroke="#8a5a00" stroke-width="3" stroke-linejoin="round"/>
+          <rect x="168" y="100" width="64" height="12" fill="#d28a12" stroke="#8a5a00" stroke-width="2"/>
+          <circle cx="172" cy="60" r="5" fill="#ff5d73"/><circle cx="200" cy="52" r="5.5" fill="#6ec1ff"/><circle cx="228" cy="60" r="5" fill="#ff5d73"/>
+          <path d="M112 98L126 82L140 98L126 120Z" fill="#6ec1ff" stroke="#1f6aa0" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M262 104L276 88L290 104L276 126Z" fill="#ff5d73" stroke="#a8203a" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M60 152Q96 108 150 118Q200 92 250 118Q304 108 340 152Z" fill="url(#gold)" stroke="#8a5a00" stroke-width="3"/>
+          <g fill="#ffd23f" stroke="#8a5a00" stroke-width="2.5">
+            <ellipse cx="100" cy="130" rx="15" ry="6"/><ellipse cx="145" cy="124" rx="15" ry="6"/><ellipse cx="190" cy="116" rx="15" ry="6"/>
+            <ellipse cx="236" cy="120" rx="15" ry="6"/><ellipse cx="282" cy="127" rx="15" ry="6"/><ellipse cx="320" cy="138" rx="14" ry="6"/>
+            <ellipse cx="78" cy="144" rx="14" ry="6"/><ellipse cx="122" cy="141" rx="15" ry="6"/><ellipse cx="168" cy="134" rx="15" ry="6"/>
+            <ellipse cx="214" cy="135" rx="15" ry="6"/><ellipse cx="260" cy="140" rx="15" ry="6"/><ellipse cx="302" cy="148" rx="14" ry="5"/>
+          </g>
+          <path d="M240 112L248 98L256 112L248 126Z" fill="#3ddc97" stroke="#1b8a5c" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M150 126L157 115L164 126L157 137Z" fill="#c28bff" stroke="#6a3db0" stroke-width="2.5" stroke-linejoin="round"/>
+        </g>
+
+        <!-- body -->
+        <rect x="30" y="140" width="340" height="172" rx="10" fill="url(#wood)" stroke="#431e08" stroke-width="4"/>
+        <path d="M30 197H370M30 254H370" stroke="#431e08" stroke-opacity=".5" stroke-width="3"/>
+        <g clip-path="url(#bodyClip)">
+          <rect x="62" y="130" width="32" height="190" fill="url(#gold)" stroke="#8a5a00" stroke-width="3"/>
+          <rect x="306" y="130" width="32" height="190" fill="url(#gold)" stroke="#8a5a00" stroke-width="3"/>
+        </g>
+        <g fill="#8a5a00">
+          <circle cx="78" cy="176" r="4.5"/><circle cx="78" cy="226" r="4.5"/><circle cx="78" cy="280" r="4.5"/>
+          <circle cx="322" cy="176" r="4.5"/><circle cx="322" cy="226" r="4.5"/><circle cx="322" cy="280" r="4.5"/>
+        </g>
+        <rect x="24" y="298" width="352" height="20" rx="6" fill="#431e08"/>
+        <rect x="24" y="298" width="352" height="7" rx="3" fill="url(#gold)"/>
+
+        <!-- closed lid -->
+        <g class="lid-out">
+          <path d="M30 142V104Q30 28 200 28Q370 28 370 104V142Z" fill="url(#woodLid)" stroke="#431e08" stroke-width="4"/>
+          <path d="M34 92Q200 34 366 92M32 118Q200 82 368 118" fill="none" stroke="#431e08" stroke-opacity=".45" stroke-width="3"/>
+          <g clip-path="url(#lidClip)">
+            <rect x="62" y="0" width="32" height="150" fill="url(#gold)" stroke="#8a5a00" stroke-width="3"/>
+            <rect x="306" y="0" width="32" height="150" fill="url(#gold)" stroke="#8a5a00" stroke-width="3"/>
+          </g>
+        </g>
+        <rect x="22" y="132" width="356" height="18" rx="5" fill="url(#gold)" stroke="#8a5a00" stroke-width="3"/>
+
+        <!-- padlock -->
+        <g class="padlock">
+          <path d="M158 172V136a42 42 0 0 1 84 0V172" fill="none" stroke="#4a4f60" stroke-width="20" stroke-linecap="round"/>
+          <path d="M158 172V136a42 42 0 0 1 84 0V172" fill="none" stroke="#d3d8e6" stroke-width="12" stroke-linecap="round"/>
+          <rect x="125" y="165" width="150" height="112" rx="18" fill="url(#gold)" stroke="#8a5a00" stroke-width="4"/>
+          <rect x="133" y="171" width="134" height="8" rx="4" fill="#fff" fill-opacity=".35"/>
+          <circle cx="200" cy="262" r="5.5" fill="#5a3a00"/><rect x="198" y="262" width="4" height="9" rx="1.5" fill="#5a3a00"/>
+        </g>
+
+        <!-- sparkles -->
+        <g fill="#fffdf5" class="sparks">
+          <path class="sp s1" d="M40 60l4 10 10 4-10 4-4 10-4-10-10-4 10-4z"/>
+          <path class="sp s2" d="M352 40l3 8 8 3-8 3-3 8-3-8-8-3 8-3z"/>
+          <path class="sp s3" d="M372 190l3 8 8 3-8 3-3 8-3-8-8-3 8-3z"/>
+          <path class="sp s4" d="M18 210l3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/>
+        </g>
+        <g fill="#fffdf5" class="tsparks">
+          <path class="tsp t1" d="M96 60l4 10 10 4-10 4-4 10-4-10-10-4 10-4z"/>
+          <path class="tsp t2" d="M300 52l4 10 10 4-10 4-4 10-4-10-10-4 10-4z"/>
+          <path class="tsp t3" d="M200 20l3 8 8 3-8 3-3 8-3-8-8-3 8-3z"/>
+          <path class="tsp t4" d="M330 110l3 8 8 3-8 3-3 8-3-8-8-3 8-3z"/>
+          <path class="tsp t5" d="M62 104l3 8 8 3-8 3-3 8-3-8-8-3 8-3z"/>
+        </g>
+      </svg>
+      <div class="tiles" id="tiles">
+        <label class="tile"><span class="sr" style="position:absolute;left:-9999px">첫 번째 알파벳</span>
+          <input id="l1" type="text" inputmode="text" lang="en" maxlength="1" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="next">
+        </label>
+        <label class="tile"><span class="sr" style="position:absolute;left:-9999px">두 번째 알파벳</span>
+          <input id="l2" type="text" inputmode="text" lang="en" maxlength="1" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="done">
+        </label>
+      </div>
     </div>
     <div class="chances"><span>남은 기회</span><span class="pips" id="pips" aria-label="남은 기회 3번"><i class="pip"></i><i class="pip"></i><i class="pip"></i></span></div>
     <p class="msg hint" id="msg" role="status" aria-live="polite">영어(알파벳) 키보드로 입력해 주세요.</p>
@@ -191,6 +331,12 @@ h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(2rem, 
   var againBtn = document.getElementById('again');
   var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  var chest = document.getElementById('chest');
+  function buzz() {
+    if (!reduce) { chest.classList.remove('buzz'); void chest.offsetWidth; chest.classList.add('buzz'); }
+    try { if (navigator.vibrate) navigator.vibrate(1000); } catch (err) {}
+  }
+  chest.addEventListener('animationend', function (e) { if (e.target === chest) chest.classList.remove('buzz'); });
   function clean(s) { return (s || '').replace(/[^a-zA-Z]/g, ''); }
   function setHint(text, isHint) { msg.textContent = text; msg.className = 'msg' + (isHint ? ' hint' : ''); }
   function update() {
@@ -203,7 +349,7 @@ h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(2rem, 
       var raw = el.value;
       var c = clean(raw);
       if (raw && !c) { setHint('알파벳만 입력할 수 있어요. 영어 키보드로 바꿔 주세요.', false); }
-      else if (c) { setHint('영어(알파벳) 키보드로 입력해 주세요.', true); }
+      else if (c) { setHint('영어(알파벳) 키보드로 입력해 주세요.', true); buzz(); }
       el.value = c.slice(-1).toUpperCase();
       if (el.value && i === 0) l2.focus();
       update();
@@ -223,7 +369,7 @@ h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(2rem, 
       l1.value = c.charAt(0) || '';
       l2.value = c.charAt(1) || '';
       (l2.value ? l2 : l1).focus();
-      update();
+      update(); buzz();
     });
   });
 
@@ -243,6 +389,7 @@ h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(2rem, 
   }
   function setLocked(on) { inputs.forEach(function (el) { el.disabled = on; }); if (on) checkBtn.disabled = true; else update(); }
   function resetGame() {
+    opening = false; chest.classList.remove('opening', 'buzz');
     tries = 0; renderPips(); setLocked(false);
     l1.value = ''; l2.value = '';
     setHint('영어(알파벳) 키보드로 입력해 주세요.', true);
@@ -256,10 +403,21 @@ h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(2rem, 
   }
   retryBtn.addEventListener('click', function () { lose.hidden = true; lose.classList.remove('open'); resetGame(); });
 
+  var opening = false;
+  function openChest() {
+    if (opening) return;
+    opening = true;
+    setLocked(true);
+    try { if (navigator.vibrate) navigator.vibrate(0); } catch (err) {}
+    setHint('자물쇠가 풀렸어요! 상자가 열려요...', true);
+    chest.classList.remove('buzz');
+    chest.classList.add('opening');
+    setTimeout(function () { celebrate(); }, reduce ? 600 : 3200);
+  }
   function check() {
     if (tries >= MAX_TRIES) return;
     if (!(l1.value && l2.value)) { setHint('알파벳 2개를 모두 입력해 주세요.', false); (l1.value ? l2 : l1).focus(); return; }
-    if (isCorrect()) { celebrate(); return; }
+    if (isCorrect()) { openChest(); return; }
     tries++; renderPips();
     tiles.classList.remove('shake'); void tiles.offsetWidth; tiles.classList.add('shake');
     if (tries >= MAX_TRIES) {
@@ -376,6 +534,7 @@ h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(2rem, 
   }
 
   function celebrate() {
+    try { if (navigator.vibrate) navigator.vibrate(0); } catch (err) {}
     win.hidden = false;
     win.classList.remove('open'); void win.offsetWidth; win.classList.add('open');
     big.classList.remove('wiggle');
