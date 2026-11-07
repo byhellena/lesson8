@@ -129,8 +129,8 @@ $('undo2').addEventListener('click',undoAssemblyStep);
 
 // 두 개의 압축 부재는 각각 삼각형 테두리와 안쪽으로 뻗은 막대가 결합된 한 몸체입니다.
 const partDefs=[
- {kind:'frame',name:'상부 압축 부재',angle:-.32},
- {kind:'frame',name:'하부 압축 부재',angle:.30},
+ {kind:'frame',name:'상부 압축 부재',angle:0},
+ {kind:'frame',name:'하부 압축 부재',angle:0},
  {kind:'long',name:'긴 장력 ①',angle:1.42},
  {kind:'long',name:'긴 장력 ②',angle:1.55},
  {kind:'long',name:'긴 장력 ③',angle:1.65},
@@ -237,8 +237,8 @@ function drawCompletedModel(){
  const fallX=fall*scale*.95, fallY=fall*scale*.9;
  const top=[[-r+fallX+springX,topY+fallY,-r*.58],[r+fallX+springX,topY+fallY+fall*scale*.4,-r*.58],[fallX+springX,topY+fallY,r*.94]];
  const bottom=[[-r,botY,-r*.58],[r,botY,-r*.58],[0,botY,r*.94]];
- const upperTip=[-r*.12+fallX+springX,topY+scale*.72+fallY,r*.08];
- const lowerBase=[0,botY,-r*.58],lowerTip=[r*.18,botY-scale*.72,r*.04];
+ const upperTip=[top[0][0]+r*.75,top[0][1]+r*1.35,top[0][2]+r*.90];
+ const lowerBase=[0,botY,-r*.58],lowerTip=[-r*.55,botY-r*1.25,r*.10];
  function project(q){const x=q[0],y=q[1],z=q[2], xx=x*Math.cos(assemblyYaw)+z*Math.sin(assemblyYaw),zz=-x*Math.sin(assemblyYaw)+z*Math.cos(assemblyYaw);return [cx+xx,cy+y*Math.cos(assemblyPitch)-zz*Math.sin(assemblyPitch)];}
  const edge=(a,b,c,w)=>line2([project(a),project(b)],c,w);
  // Three long suspension cables connect the three corners of the two plates.
@@ -262,7 +262,7 @@ function assemblyDraw(){
  ax.fillStyle='#e9f2f4';ax.fillRect(0,0,aw,Math.min(190,ah*.32));
  ax.fillStyle='#415b68';ax.textAlign='left';ax.font='bold 14px sans-serif';
  ax.fillText('재료 보관함 · 끌어서 배치',12,25);
- ax.font='12px sans-serif';ax.fillText('상판·하판 압축 부재 2개를 끌어 놓으세요. 고무줄은 왼쪽 버튼으로 추가합니다.',12,44);
+ ax.font='12px sans-serif';ax.fillText('상판·하판은 같은 방향의 삼각형입니다. 위치만 옮겨 조립하세요.',12,44);
  drawFloorReference();
  ax.fillStyle='#536c77';ax.fillText('파란 격자 = 바닥 기준면 (상·하판 삼각형과 평행)   ·   빨간 ○ = 줄 연결점   ·   빈 공간 드래그: 시점 회전',12,ah-38);
  if(answerModel||lockedAssembly||assemblyCollapseActive){drawCompletedModel();return;}
@@ -367,16 +367,16 @@ function validateAssembly(){
  const referenceHeight=Math.max(95,ah*.30);
  const heightError=placed?Math.abs(separation-referenceHeight)/referenceHeight:Infinity;
  const offsetError=placed?Math.abs(top.x-bottom.x)/referenceHeight:Infinity;
- // 완성 기준 대비 상하 거리 또는 중심축 어긋남이 50% 초과면 불안정한 모형으로 판정.
+ // 위치 오차는 성공 여부에 사용하지 않고 복원 애니메이션의 크기에만 사용합니다.
  const deformation=Math.max(heightError,offsetError);
- const geometry=placed&&separation>0&&deformation<=.50;
+ const geometry=placed; // 고무줄 연결이 정확하면 부재의 위치 오차는 탄성 복원으로 보정
  return {topology,placed,geometry,deformation,referenceHeight};
 }
 function checkAssembly(){
  if(answerModel){setInstruction('교사용 정답 예시입니다.');status('이 화면은 연결 관계를 보여주는 예시이며 물리적 평형 계산 결과가 아닙니다.');return}
  const v=validateAssembly();
  if(v.placed&&v.topology&&v.geometry){
-   // 50% 이내 오차는 고무줄의 당김으로 기준 형태에 수렴하는 탄성 애니메이션으로 표현합니다.
+   // 압축 부재의 위치 오차는 고무줄의 당김으로 기준 형태에 수렴하는 탄성 애니메이션으로 표현합니다.
    const ref=v.referenceHeight;
    settleHeight=((parts[1].y-parts[0].y)-ref)/ref*Math.min(aw*.27,ah*.29,155)*1.28;
    settleOffset=(parts[0].x-parts[1].x)/ref*Math.min(aw*.27,ah*.29,155)*1.28;
@@ -386,18 +386,18 @@ function checkAssembly(){
    $('r2').classList.remove('active');clearGuide();
    setInstruction('🎉 연결과 배치 확인 성공!');
    science('상·하판의 가장자리 3쌍과 돌출 막대 끝 1쌍이 연결되었습니다. 교육용 기하학적 검사이며 실제 힘의 평형을 계산하지는 않습니다.');
-   status('균형 시험 통과! 50% 이내의 배치 오차는 고무줄이 당기며 기준 형태로 돌아가는 모습을 보여줍니다. 이후 작품을 눌러 압축·복원해 보세요. (교육용 효과)');
+   status('균형 시험 통과! 고무줄 4개를 올바르게 연결했다면 부재의 위치 오차는 탄성 복원으로 바로잡는 모습을 보여줍니다. 이후 작품을 눌러 압축·복원해 보세요. (교육용 효과)');
  }else{
    if(!balanceFailed){preBalanceSnapshot={parts:parts.map(p=>({...p})),assemblyDone,finished,assemblyYaw,assemblyPitch,answerModel,joinedCables:joinedCables.map(c=>({...c})),rubberMode,firstAnchor,firstCableGuideDone};}
    balanceFailed=true;resetSettle();
    assemblyDone=false;finished=false;lockedAssembly=false;
-   assemblyCollapseActive=v.placed&&v.topology&&v.deformation>.50;
+   assemblyCollapseActive=false;
    if(assemblyCollapseActive)assemblyCollapseStart=performance.now();
    setInstruction('균형 시험 실패! 연결과 위치를 다시 확인하세요.');
    if(!v.placed)status('압축 부재 2개를 먼저 작업 공간에 놓으세요.');
    else if(joinedCables.length!==4)status(`고무줄 4개가 필요합니다. 현재 ${joinedCables.length}개입니다.`);
    else if(!v.topology)status('고무줄 4개를 연결했지만 연결점이 올바르지 않습니다. 가장자리 연결과 막대 끝 연결을 다시 살펴보세요.');
-   else status('완성 기준에서 50%를 넘게 변형되어 구조가 기울어 무너집니다. 「마지막 작업 취소」를 눌러 시험 전 상태로 돌아가세요. (교육용 판정)');
+   else status('부재 배치 또는 연결이 올바르지 않습니다. 「마지막 작업 취소」를 눌러 시험 전 상태로 돌아가세요. (교육용 판정)');
  }
 }
 
