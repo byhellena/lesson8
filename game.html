@@ -1,0 +1,123 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>쿼리도 전략가에 도전!</title><style>
+:root{--bg:#eef7ff;--tx:#1b2b3a;--cd:#fff;--bl:#2f7cf6;--rd:#e84a4a;--wl:#8b5a2b;--gr:#9be564;--ye:#ffe066;--bd:#cfe3f7;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box}
+@media(prefers-color-scheme:dark){:root{--bg:#14212e;--tx:#eef3f8;--cd:#1f3245;--bd:#2c4a66}}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;background:var(--bg);color:var(--tx);font-size:18px}
+.w{max-width:980px;margin:0 auto;padding:12px}h1{font-size:2em;margin:.3em 0}
+.card{background:var(--cd);border-radius:16px;padding:14px;box-shadow:0 2px 8px #0002;margin:8px 0}
+button,select{font:inherit;font-weight:700;border:0;border-radius:14px;padding:12px 16px;min-height:52px;background:var(--bl);color:#fff;margin:4px;cursor:pointer}
+button.s{background:#6b8299}.g button{display:block;width:100%;margin:6px 0;font-size:1.1em}
+#play{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}#side{flex:1;min-width:260px;max-width:420px}
+#bd{position:relative;width:min(92vw,60vh,560px);aspect-ratio:1;background:var(--bd);border-radius:12px;touch-action:manipulation}#bd>*{position:absolute}
+.c{background:#fff;border-radius:6px}.c.go{background:var(--ye)}.c.mv{background:var(--gr);cursor:pointer;z-index:2}.c.rec{box-shadow:0 0 0 4px #ff9800}.c.dg{background:#ffb74d}
+.p{border-radius:50%;border:3px solid #fff;pointer-events:none;z-index:3}.pb{background:var(--bl)}.pr{background:var(--rd)}
+.wl{background:var(--wl);border-radius:3px;pointer-events:none;z-index:4}.wl.pv{opacity:.5}.wl.bad{background:var(--rd)}
+.x{border-radius:50%;z-index:6;cursor:pointer;background:#ffffff55}.x.tg{outline:4px dashed var(--rd)}
+.d{background:#2a9d4a;border-radius:50%;z-index:2;pointer-events:none}.cf{font-size:2.4em;animation:b 1s infinite alternate}@keyframes b{to{transform:translateY(-10px)}}
+textarea{width:100%;min-height:70px;font:inherit;border-radius:10px;border:2px solid var(--bd);padding:8px;background:var(--cd);color:var(--tx)}
+</style></head><body><div id="app"></div><script>
+const $=s=>document.querySelector(s),U=100/11.4,D=[[-1,0],[1,0],[0,-1],[0,1]],clone=o=>JSON.parse(JSON.stringify(o));
+let S={ruleDone:0,found:[0,0,0],notes:['','',''],lv:0,hint:1,undo:1};
+try{Object.assign(S,JSON.parse(localStorage.getItem('qd')||'{}'))}catch(e){}
+const save=()=>{try{localStorage.setItem('qd',JSON.stringify(S))}catch(e){}};
+/* ---- 규칙 엔진 ---- */
+const inb=(r,c)=>r>=0&&r<9&&c>=0&&c<9;
+function blk(W,r,c,r2,c2){if(c==c2){const t=Math.min(r,r2);return W.some(w=>w.o=='h'&&w.r==t&&(w.c==c||w.c==c-1))}const l=Math.min(c,c2);return W.some(w=>w.o=='v'&&w.c==l&&(w.r==r||w.r==r-1))}
+function moves(st,i){const a=st.p[i],b=st.p[1-i],W=st.W,o=[];
+for(const[dr,dc]of D){const r=a.r+dr,c=a.c+dc;if(!inb(r,c)||blk(W,a.r,a.c,r,c))continue;
+if(r==b.r&&c==b.c){const r2=r+dr,c2=c+dc;
+if(inb(r2,c2)&&!blk(W,r,c,r2,c2))o.push([r2,c2]);
+else for(const[er,ec]of D){if(dr*er+dc*ec)continue;const r3=r+er,c3=c+ec;if(inb(r3,c3)&&!blk(W,r,c,r3,c3))o.push([r3,c3])}}
+else o.push([r,c])}return o}
+function sp(W,r,c,g){const q=[[r,c]],pr={},k=(a,b)=>a*9+b;pr[k(r,c)]=-1;
+for(let i=0;i<q.length;i++){const[a,b]=q[i];if(a==g){const p=[];let x=k(a,b);while(x>=0){p.unshift([x/9|0,x%9]);x=pr[x]}return p}
+for(const[dr,dc]of D){const r2=a+dr,c2=b+dc;if(inb(r2,c2)&&!(k(r2,c2)in pr)&&!blk(W,a,b,r2,c2)){pr[k(r2,c2)]=k(a,b);q.push([r2,c2])}}}return null}
+const GL=[0,8],dd=(st,i)=>sp(st.W,st.p[i].r,st.p[i].c,GL[i]).length-1;
+function wallOK(st,w){if(w.r<0||w.r>7||w.c<0||w.c>7)return'판 밖이에요';
+for(const x of st.W){if(x.r==w.r&&x.c==w.c)return'벽이 겹치거나 교차해요!';
+if(x.o==w.o&&(w.o=='h'?x.r==w.r&&Math.abs(x.c-w.c)==1:x.c==w.c&&Math.abs(x.r-w.r)==1))return'벽이 겹쳐요!'}
+const W=st.W.concat([w]);if(!sp(W,st.p[0].r,st.p[0].c,0)||!sp(W,st.p[1].r,st.p[1].c,8))return'상대방도 끝까지 갈 수 있는 길이 남아 있어야 해요!';return''}
+const apply=(st,i,a)=>{if(a.t=='m'){st.p[i].r=a.m[0];st.p[i].c=a.m[1]}else{st.W.push(a.w);st.p[i].w--}};
+const init=()=>({p:[{r:8,c:4,w:10},{r:0,c:4,w:10}],W:[]});
+/* ---- AI ---- */
+const dj=(st,i,m)=>{const a=st.p[1-i],q=st.p[i],dr=m[0]-a.r,dc=m[1]-a.c;if(Math.abs(m[0]-q.r)+Math.abs(m[1]-q.c)!=1||Math.abs(dr)+Math.abs(dc)!=1||blk(st.W,a.r,a.c,m[0],m[1]))return 0;const r2=m[0]+dr,c2=m[1]+dc;return inb(r2,c2)&&!blk(st.W,m[0],m[1],r2,c2)?1:0};
+function ai(st,lv){const P=st.p[1],mv=moves(st,1);
+const best=()=>{let b=null,bd=99;const pl=lv>0?mv.filter(m=>!dj(st,1,m)):mv;for(const m of(pl.length?pl:mv)){const d=sp(st.W,m[0],m[1],8).length-1;if(d<bd||(d==bd&&Math.random()<.5)){bd=d;b=m}}return{t:'m',m:b}};
+const walls=()=>{const L=[];for(const o of'hv')for(let r=0;r<8;r++)for(let c=0;c<8;c++){const w={r,c,o};if(!wallOK(st,w))L.push(w)}return L};
+if(P.w>0){if(lv==2){const a0=dd(st,0),b0=dd(st,1);let b=null,g=a0<b0?0:1;for(const w of walls()){const s2={p:st.p,W:st.W.concat([w])};const gain=dd(s2,0)-a0-(dd(s2,1)-b0);if(gain>g){g=gain;b=w}}if(b&&Math.random()<.35)return{t:'w',w:b}}
+else if(P.w>(lv?2:4)&&Math.random()<(lv?.15:.08)){const L=walls().filter(w=>dd({p:st.p,W:st.W.concat([w])},1)==dd(st,1));const H=L.filter(w=>dd({p:st.p,W:st.W.concat([w])},0)>dd(st,0)),Z=(lv||Math.random()<.5)&&H.length?H:L;if(Z.length)return{t:'w',w:Z[Math.random()*Z.length|0]}}}
+if(Math.random()<(lv==0?.1:lv==1?.03:0)){const cd=dd(st,1),ok=mv.filter(m=>sp(st.W,m[0],m[1],8).length-1<=cd),pool=ok.length?ok:mv;return{t:'m',m:pool[Math.random()*pool.length|0]}}return best()}
+/* ---- 화면 ---- */
+const Q=[["목적지에 빨리 도착하려면 무엇을 확인해야 할까요?",["남은 칸 수가 가장 적은 길","무조건 앞으로 한 칸","벽을 많이 놓기"]],["좋은 벽은 어떤 벽일까요?",["상대 길은 길게, 내 길은 그대로인 벽","내 길이 길어지는 벽","아무 데나 놓는 벽"]],["내 차례뿐 아니라 상대방의 차례도 생각해야 하는 이유는?",["상대의 반응에 따라 내 선택의 결과가 달라지니까","상대가 느리니까","상관없다"]]];
+const K=["핵심 전략: 남은 칸 수(최단 경로)를 세고, 벽을 피해 가장 빠른 길로 가요!","핵심 전략: 상대의 길은 길게, 내 길은 그대로인 벽이 좋은 벽이에요. 놓기 전과 후를 비교해요!","핵심 전략: 내 차례 다음 상대의 차례까지 생각하면 더 안전하고 유리해요!"];
+const N=["빠른 길을 찾는 방법","좋은 벽을 설치하는 방법","상대방의 다음 행동을 예상하는 방법"],C=[["가장 빠른 길을 찾아 남은 칸 수를 센다.","벽이 있으면 돌아가는 길도 비교한다."],["상대방의 길은 (길게), 내 길은 (그대로) 만드는 벽을 놓는다.","벽을 놓기 전과 후의 칸 수를 비교한다."],["내가 움직인 뒤 상대가 무엇을 할지 먼저 생각한다.","상대의 다음 수까지 생각하고 고른다."]];
+const TIPS={m0:["앞으로 한 칸이 항상 가장 빠른 길일까요? 몇 칸 앞까지 살펴보세요.","앞길이 막다른 길은 아닐까요? 벽으로 막힌 곳을 찾아보세요.","목적지까지 몇 번 움직여야 하는지 생각해 보세요."],m1:["벽은 상대방 앞에 놓기만 하면 좋은 걸까요?","내 길까지 막히지는 않을까요?","벽을 놓기 전과 후를 비교해 보세요."],m2:["🟧 주황색 칸에 먼저 들어가면 상대가 나를 뛰어넘어요. 마주 보는 칸에 먼저 들어가면 손해예요!","내가 이곳으로 움직이면 상대방은 어떻게 할까요?","상대방이 벽을 설치하면 다른 길이 있을까요? 지금 당장보다 다음 차례까지 생각해 보세요."],f:["내가 움직이면 목적지에 가까워질까요?","상대방이 다음에 무엇을 할지 예상해 보세요.","나와 상대의 남은 칸 수를 비교해 보세요.","벽은 10개뿐이에요. 상대가 좁은 길에 깊이 들어갈 때까지 기다렸다가 놓으면 효과가 커요."],W:["벽을 놓을 자리를 눌러 미리 보세요. 내 길과 상대 길이 몇 칸이 되는지 알 수 있어요.","상대 길은 길게, 내 길은 그대로인 벽을 찾아보세요.","벽을 놓기 전에 나와 상대의 남은 칸 수를 비교해 보세요.","너무 일찍 놓으면 상대가 한 칸만 돌아가면 돼요. 상대가 돌아가기 힘들 때 놓아 보세요."],t:[""]};
+const TT=["1단계: 파란 말이 내 말이에요. 초록색 칸을 눌러 말을 움직여 보세요!","2단계: 노란 줄이 목표예요. 상대편 끝줄에 먼저 도착하면 이겨요! (다음 →)","3단계: '벽 설치' 상태예요. 갈색 선을 놓을 자리를 누르면 미리 보이고, 한 번 더 누르면 놓여요. 벽을 놓으면 상대방이 돌아가야 할 수도 있어요!","4단계: 빨간 점선 자리에 벽을 놓아 보세요. 상대방도 끝까지 갈 수 있는 길이 남아 있어야 해요!"];
+const nd=()=>S.notes.every(x=>x.trim());
+const VW={home(){const n=S.found.reduce((a,b)=>a+b,0);return`<div class=w><h1>🎲 쿼리도 전략가에 도전!</h1><p>AI와 연습하며 나만의 필승 전략을 찾아보자!</p><div class=card><b>전략 발견 ${n}/3</b><br>${S.ruleDone?'✅':'⬜'} 규칙 배우기 · ${[0,1,2].map(i=>(S.found[i]?'✅':'⬜')+' 전략'+(i+1)).join(' · ')} · ${nd()?'✅':'⬜'} 친구와 대결 준비</div>${nd()?'<div class=card>🏆 축하합니다! 쿼리도 전략가가 되었어요! 이제 친구와 실제 쿼리도 대결에 도전해 보세요!</div>':''}<div class=g><button data-b=rules>📖 게임 규칙 배우기</button><button data-b=ms>🧭 전략 연습 시작</button><button data-b=free>🤖 AI와 자유 대결</button><button data-b=notes>📝 내가 발견한 전략</button><button class=s data-b=set>⚙️ 교사 설정</button></div></div>`},
+ms(){return`<div class=w><h1>전략 연습</h1><div class=g>${["미션 1: 가장 빠른 길을 찾아라!","미션 2: 벽을 똑똑하게 설치하라!","미션 3: 상대방의 다음 행동을 예상하라!"].map((t,i)=>`<button data-b="m:${i}">${S.found[i]?'✅ ':''}${t}</button>`).join('')}<button class=s data-b=home>🏠 홈</button></div></div>`},
+notes(){return`<div class=w><h1>📝 나만의 쿼리도 전략 노트</h1>${N.map((t,i)=>`<div class=card><b>${i+1}. ${t}</b><textarea oninput="S.notes[${i}]=this.value;save()">${S.notes[i]}</textarea>${C[i].map((c,k)=>`<button class=s data-b="chip:${i}:${k}">+ ${c}</button>`).join('')}</div>`).join('')}${nd()?'<div class=card>🏆 축하합니다! 쿼리도 전략가가 되었어요! 이제 친구와 실제 쿼리도 대결에 도전해 보세요!</div>':''}<button data-b=home>🏠 홈</button></div>`},
+set(){return`<div class=w><h1>⚙️ 교사 설정</h1><div class=card>기본 AI 난이도: ${['연습 AI','초보 AI','도전 AI'].map((t,i)=>`<button class="${S.lv==i?'':'s'}" data-b="sl:${i}">${t}</button>`).join('')}<br>힌트 버튼: <button data-b=uh>${S.hint?'켜짐':'꺼짐'}</button> 자유 대결 되돌리기: <button data-b=uu>${S.undo?'허용':'금지'}</button></div><div class=card><button class=s data-b=rs>미션 초기화</button><button class=s data-b=sk>튜토리얼 건너뛰기</button><button class=s data-b=fs>전체 화면</button><button data-b=free>자유 대결 바로 시작</button></div><button data-b=home>🏠 홈</button></div>`}};
+const V=n=>{$('#app').innerHTML=VW[n]();scrollTo(0,0)};
+const bx=(cl,x,y,w,h,ex='')=>`<div class="${cl}" style="left:${x*U}%;top:${y*U}%;width:${w*U}%;height:${h*U}%" ${ex}></div>`;
+let G;
+function newG(ctx,st,x={}){G={ctx,st:st||init(),h:[],mode:'m',o:'h',pv:null,hint:0,over:0,busy:0,msg:'',lv:ctx=='m2'?2:S.lv,pred:null,rd:0,reflect:null,rf:0,m0:x.mode||'m',...x};G.start=clone(G.st);
+$('#app').innerHTML=`<div class=w><div style="display:flex;justify-content:space-between;align-items:center"><b>${{t:'규칙 배우기',f:'AI와 자유 대결',m0:'미션 1',m1:'미션 2',m2:'미션 3'}[ctx]}</b><button class=s data-b=home>🏠 홈</button></div><div id=play><div id=bd></div><div id=side></div></div><div id=bar></div></div>`;draw()}
+function tut(i){const st=init();if(i==3){st.p[1]={r:0,c:0,w:10};st.W=[{r:0,c:0,o:'v'}]}newG('t',st,{ts:i,mode:i>=2?'w':'m',msg:TT[i]})}
+function draw(){const st=G.st,c=G.ctx,mv=G.mode=='m'&&!G.over&&!G.busy&&G.reflect==null?moves(st,0):[],dm=dd(st,0),da=dd(st,1);let rec=null;
+if(G.hint==3&&mv.length){let bd=99;for(const m of mv){const d=sp(st.W,m[0],m[1],0).length-1;if(d<bd){bd=d;rec=m}}}
+let h='';for(let r=0;r<9;r++)for(let k=0;k<9;k++){const m=mv.some(a=>a[0]==r&&a[1]==k);h+=bx('c'+(r==0?' go':'')+(m?(c!='t'&&dj(st,0,[r,k])?' mv dg':' mv'):'')+(rec&&rec[0]==r&&rec[1]==k?' rec':''),k*1.3,r*1.3,1,1,m?`data-a="m${r},${k}"`:'')}
+if(G.hint>=2){for(const[r,k]of sp(st.W,st.p[0].r,st.p[0].c,0).slice(1))h+=bx('d',k*1.3+.4,r*1.3+.4,.2,.2)}
+st.p.forEach((p,i)=>h+=bx('p '+(i?'pr':'pb'),p.c*1.3+.15,p.r*1.3+.15,.7,.7));
+const wb=(w,cl)=>w.o=='h'?bx(cl,w.c*1.3,w.r*1.3+1,2.3,.3):bx(cl,w.c*1.3+1,w.r*1.3,.3,2.3);
+st.W.forEach(w=>h+=wb(w,'wl'));if(G.pv&&G.mode=='w')h+=wb(G.pv,'wl pv'+(wallOK(st,G.pv)?' bad':''));
+if(G.mode=='w'&&!G.over&&!G.busy&&G.reflect==null)for(let r=0;r<8;r++)for(let k=0;k<8;k++)h+=bx('x'+(c=='t'&&G.ts==3&&r==1&&k==0?' tg':''),k*1.3+.75,r*1.3+.75,.8,.8,`data-a="w${r},${k}"`);
+$('#bd').innerHTML=h;
+let x='';if(c=='f')x+=`<div class=card>AI: ${['연습','초보','도전'].map((t,i)=>`<button class="${G.lv==i?'':'s'}" data-b="lv:${i}">${t}</button>`).join('')}</div>`;
+if(c=='t')x+=`<div class=card>${G.ts+1}/4 <button class=s data-b="tn:-1">←</button><button class=s data-b="tn:0">↻</button><button data-b="tn:1">다음 →</button></div>`;
+if(c=='m2'&&!G.over&&G.reflect==null)x+=G.pred==null?`<div class=card><b>🔮 AI는 어떻게 할까요?</b><br><button data-b="pr:m">말 이동</button><button data-b="pr:w">벽 설치</button></div>`:`<div class=card>내 예상: AI는 ${G.pred=='m'?'말을 움직인다':'벽을 놓는다'}</div>`;
+if(G.reflect!=null){const i=G.reflect;x+=`<div class=card><b>${Q[i][0]}</b>`+(G.rf?`<p>${K[i]}</p><button data-b=notes>📝 전략 노트에 적기</button><button class=s data-b=ms>다음 미션</button>`:Q[i][1].map((o,k)=>`<button data-b="ans:${k}">${o}</button>`).join(''))+'</div>'}
+if(G.ctx=='m1'&&G.ph===0&&G.reflect==null)x+=`<div class=card><b>😮 AI의 벽에 막혔어요! 내 길 ${G.hurt[0]}칸 → ${G.hurt[1]}칸. 어떤 느낌이었나요?</b>${['내 길이 길어져서 손해를 봤다','벽 하나로 큰 차이가 났다','상대의 벽이 얄미웠다'].map((t,k)=>`<button data-b="fe:${k}">${t}</button>`).join('')}</div>`;
+if(G.cf)x+='<div class=cf>🎉🎊🎉</div>';
+const tp=c=='f'?(G.mode=='w'?TIPS.W:TIPS.f):TIPS[c],tip=tp[G.h.length%tp.length];
+$('#side').innerHTML=`<div class=card><span style="color:var(--bl)">●</span> 나: <b>${dm}칸</b> · 벽 ${st.p[0].w}개<br><span style="color:var(--rd)">●</span> AI: <b>${da}칸</b> · 벽 ${st.p[1].w}개<br>${G.over?'':G.busy?'AI 생각 중…':'내 차례!'}</div><div class=card>${G.msg||'💭 '+tip}</div>${x}`;
+$('#bar').innerHTML=`<div style="text-align:center"><button class="${G.mode=='m'?'':'s'}" data-b="mode:m">🚶 말 이동</button><button class="${G.mode=='w'?'':'s'}" data-b="mode:w">🧱 벽 설치</button>${G.mode=='w'?`<button class=s data-b=ori>${G.o=='h'?'━ 가로':'┃ 세로'}</button>`:''}${S.hint?'<button class=s data-b=hint>💡 힌트</button>':''}${S.undo||c!='f'?'<button class=s data-b=undo>↩ 되돌리기</button>':''}<button class=s data-b=reset>🔄 다시 시작</button><button class=s data-b=notes>📝 전략 노트</button></div>`}
+function reflect(i){G.reflect=i;G.rf=0;G.over=1;draw()}
+function fin(i){G.over=1;const c=G.ctx;if(c=='m0'&&i==0){G.msg='🎉 도착했어요!';return reflect(0)}if(c=='m2'&&i==0)return reflect(2);
+G.msg=i==0?'🎉 승리했어요! 축하해요!':'AI가 먼저 도착했어요. 다시 도전해요!';G.cf=i==0;draw()}
+function stu(a){if(G.over||G.busy)return;const st=G.st,c=G.ctx,b=clone(st),d0=dd(st,0),e0=dd(st,1);
+if(c=='m0'&&a.t=='w'){G.msg='이번엔 말을 움직여 보세요!';return draw()}
+if(c=='m1'&&a.t=='m'){G.msg='이번엔 벽을 설치해 보세요!';return draw()}
+if(c=='m1'&&G.ph===0){G.msg='먼저 아래에서 느낀 점을 골라 주세요 👆';return draw()}
+if(a.t=='w'){const e=st.p[0].w<1?'벽을 다 썼어요!':wallOK(st,a.w);if(e){G.msg=c=='t'&&G.ts==3?'🚫 '+e+' 그래서 이 벽은 놓을 수 없어요!':e;return draw()}}
+if(c=='m2'&&G.pred==null){G.msg='먼저 AI가 어떻게 할지 예상해 보세요! 👇';return draw()}
+if(a.t=='m'&&c!='t'&&dj(st,0,a.m)){const k=a.m+'';if(G.warn!=k){G.warn=k;G.msg='⚠️ 여기로 가면 상대가 뛰어넘을 수 있어요! 그래도 가려면 한 번 더 누르세요.';return draw()}}G.warn=null;
+const jp=a.t=='m'&&(Math.abs(a.m[0]-st.p[0].r)==2||Math.abs(a.m[1]-st.p[0].c)==2);G.h.push(b);apply(st,0,a);G.pv=null;G.hint=0;
+const d1=dd(st,0),e1=dd(st,1);let m;
+if(a.t=='m')m=jp?`👏 상대를 뛰어넘어 한 번에 2칸을 갔어요!${d1<d0?' 유리해요!':''} 목표까지 ${d1}칸 남았어요.`:d1<d0?`좋은 선택이에요! 목표까지 ${d1}칸 남았어요.`:`이동했지만 최단 경로는 더 길어졌어요(${d1}칸). ↩로 다시 도전해도 좋아요!`;
+else{m=e1>e0?`상대방의 길이 ${e1-e0}칸 길어졌어요! (${e0}→${e1}칸)`:'이 벽은 상대방의 이동 거리를 늘리지 못했어요.';if(d1>d0)m+=` 내 길도 ${d1-d0}칸 길어졌어요.`}
+G.msg=m;
+if(c=='m1'){if(e1>e0&&d1<=d0){G.good=(G.good||0)+1;const gd=G.good;G.busy=1;G.msg=`⭐ 좋은 벽이에요! 상대 길은 ${e1-e0}칸 길어지고 내 길은 그대로예요. (${gd}/2)`;draw();return setTimeout(()=>{apply(st,1,ai(st,2));G.busy=0;if(gd>=2)return reflect(1);draw()},700)}G.st=b;G.h.pop();G.msg=e1<=e0?'이 벽은 상대방의 이동 거리를 늘리지 못했어요. 상대가 가는 길 위에 놓아 볼까요?':`상대 길은 늘렸지만 내 길도 ${d1-d0}칸 길어졌어요. 내 길은 그대로인 곳을 찾아보세요!`;return draw()}
+if(st.p[0].r==0)return fin(0);
+if(c=='f'||c=='m2'||c=='m0'){G.busy=1;draw();setTimeout(()=>{const a2=ai(st,G.lv);apply(st,1,a2);G.busy=0;
+if(c=='m2'){G.rd++;G.msg=`AI는 ${a2.t=='m'?'말을 움직였어요':'벽을 놓았어요'}. 예상이 ${G.pred==a2.t?'맞았어요! 👏':'달랐어요. 다음엔 어떨까요?'}`;G.pred=null}
+if(st.p[1].r==8)return fin(1);if(c=='m2'&&G.rd>=2)return reflect(2);draw()},600)}else draw()}
+const B={home:()=>V('home'),ms:()=>V('ms'),notes:()=>V('notes'),set:()=>V('set'),rules:()=>tut(0),free:()=>newG('f'),
+m(i){i=+i;const st=init();if(i==0){st.p[0]={r:7,c:4,w:0};st.p[1].w=0;st.W=[{r:3,c:4,o:'h'},{r:4,c:3,o:'v'},{r:4,c:4,o:'v'}]}
+if(i==1){st.p[0]={r:6,c:4,w:5};st.p[1]={r:2,c:8,w:1};st.W=[{r:4,c:1,o:'h'},{r:4,c:5,o:'h'}]}if(i==2){st.p[0]={r:5,c:4,w:5};st.p[1]={r:3,c:4,w:5}}let x={mode:i==1?'w':'m'};if(i==1){const d0=dd(st,0);let bw=null,g=0;for(const o of'hv')for(let r=0;r<8;r++)for(let k=0;k<8;k++){const w={r,c:k,o};if(wallOK(st,w))continue;const gn=dd({p:st.p,W:st.W.concat([w])},0)-d0;if(gn>g&&dd({p:st.p,W:st.W.concat([w])},1)==dd(st,1)){g=gn;bw=w}}if(bw)apply(st,1,{t:'w',w:bw});st.p[1].w=0;x.ph=0;x.hurt=[d0,dd(st,0)];x.msg=`😮 AI가 먼저 벽을 놓았어요! 내 길이 ${d0}칸에서 ${x.hurt[1]}칸으로 늘었어요.`}newG('m'+i,st,x)},
+tn(d){d=+d;if(!d)return tut(G.ts);const n=G.ts+d;if(n<0)return;if(n>3){S.ruleDone=1;save();return V('home')}tut(n)},
+mode(x){G.mode=x;G.pv=null;draw()},ori(){G.o=G.o=='h'?'v':'h';if(G.pv)G.pv.o=G.o;draw()},
+hint(){G.hint=G.hint%3+1;const s=G.ctx=='f'?(dd(G.st,0)<=dd(G.st,1)?'🧱 벽의 타이밍: 지금은 내가 앞서고 있어요. 서두르지 말고 달리다가, 상대가 좁은 길에 깊이 들어갔을 때 큰 효과가 나는 벽을 놓으세요.':'🧱 벽의 타이밍: 지금은 내가 뒤지고 있어요. 상대 길이 2칸 이상 늘어나고 내 길은 그대로인 벽을 찾아 지금 놓아 보세요.'):'🤔 내가 움직이면 목적지에 가까워질까요? 상대방의 다음 행동도 생각해요.';G.msg=['',s,'초록 점이 지금 가장 빠른 길이에요. 몇 칸 남았나요?','반짝이는 칸을 눌러 보세요!'][G.hint];draw()},
+undo(){if(G.busy||!G.h.length)return;G.st=G.h.pop();G.warn=null;G.over=0;G.cf=0;G.reflect=null;G.msg='되돌렸어요 ↩';draw()},
+reset(){if(G.busy)return;if(G.ctx=='m1')return B.m(1);const{ctx,ts,m0}=G;newG(ctx,clone(G.start),{ts,mode:m0})},
+pr(x){G.pred=x;G.msg='';draw()},fe(k){G.ph=1;G.good=0;G.msg='느낀 점을 골라 줘서 고마워요! 벽은 상대의 길을 길게 만드는 무기예요. 이번엔 내가 AI에게 해 볼 차례! 상대 길은 길게, 내 길은 그대로인 벽을 2번 놓아 보세요.';draw()},lv(i){G.lv=S.lv=+i;save();draw()},
+ans(k){if(+k==0){S.found[G.reflect]=1;save();G.rf=1;G.msg='⭕ 맞아요!'}else G.msg='❌ 아니에요. 그 답은 목표에 도움이 되지 않아요. 다시 생각해 보세요!';draw()},
+chip(i,k){S.notes[i]+=(S.notes[i]?' ':'')+C[i][k];save();V('notes')},
+sl(i){S.lv=+i;save();V('set')},uh(){S.hint=S.hint?0:1;save();V('set')},uu(){S.undo=S.undo?0:1;save();V('set')},
+rs(){S.found=[0,0,0];S.ruleDone=0;save();V('set')},sk(){S.ruleDone=1;save();V('set')},fs(){try{document.documentElement.requestFullscreen()}catch(e){}}};
+document.addEventListener('click',e=>{const t=e.target.closest('[data-b],[data-a]');if(!t)return;
+if(t.dataset.a){const a=t.dataset.a,[r,c]=a.slice(1).split(',').map(Number);
+if(a[0]=='m'){if(G.mode=='m')stu({t:'m',m:[r,c]})}
+else if(G.mode=='w'){const w={r,c,o:G.o};if(G.pv&&G.pv.r==r&&G.pv.c==c&&G.pv.o==G.o)stu({t:'w',w});else{G.pv=w;const e=wallOK(G.st,w);G.msg=e||(G.ctx=='t'?'한 번 더 누르면 벽이 놓여요!':(()=>{const s2={p:G.st.p,W:G.st.W.concat([w])};return`이 벽을 놓으면 상대 길 ${dd(G.st,1)}→${dd(s2,1)}칸, 내 길 ${dd(G.st,0)}→${dd(s2,0)}칸이 돼요. 누구에게 더 유리할까요? (한 번 더 누르면 놓여요)`})());draw()}}return}
+const[f,...a]=t.dataset.b.split(':');B[f]&&B[f](...a)});
+V('home');
+</script></body></html>
